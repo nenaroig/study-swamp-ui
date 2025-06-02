@@ -37,6 +37,9 @@ npm run start
 yarn start
 ```
 
+The app will be available at [http://localhost:9000](http://localhost:9000).
+If your browser doesn’t open automatically, simply open your preferred browser and enter this URL in the address bar.
+
 ### Building for Production
 To create an optimized production build:
 

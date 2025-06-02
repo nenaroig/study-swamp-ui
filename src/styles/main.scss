@@ -1,0 +1,9 @@
+// Main SCSS Entry Point
+
+// 1. Abstracts - Variables, mixins, functions
+// @import 'abstracts/variables';
+// @import 'abstracts/mixins';
+// @import 'abstracts/functions';
+
+// 2. Vendors - Third-party SCSS
+@import '~bootstrap';

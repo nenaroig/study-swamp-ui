@@ -27,16 +27,12 @@ module.exports = {
   },
   
   resolve: {
-    extensions: ['.js', '.mjs', '.jsx', '.ts', '.tsx', '.scss', '.css', '.json'],
+    extensions: ['.js', '.scss', '.css', '.json'],
     alias: {
       '@': path.resolve(__dirname, '../../src'),
-      '@assets': path.resolve(__dirname, '../../src/assets'),
+      '@assets': path.resolve(__dirname, '../../src/images'),
       '@styles': path.resolve(__dirname, '../../src/styles'),
       '@scripts': path.resolve(__dirname, '../../src/scripts'),
-      '@templates': path.resolve(__dirname, '../../src/templates'),
-      '@data': path.resolve(__dirname, '../../src/data'),
-      '@components': path.resolve(__dirname, '../../src/scripts/components'),
-      '@utils': path.resolve(__dirname, '../../src/scripts/utils'),
     },
   },
   
@@ -130,12 +126,14 @@ module.exports = {
   plugins: [
     // Generate HTML pages
     new HtmlWebpackPlugin({
-      template: './src/templates/pages/index.html',
+      template: './public/index.html',
       filename: 'index.html',
-      title: 'My Project - Home',
+      title: 'Study Swamp - Login',
       inject: 'body',
       scriptLoading: 'defer',
       chunks: ['main', 'styles'],
+      contentTemplate: 'login.html',
+      showNav: false,
     }),
     
     // Copy public assets
@@ -145,6 +143,9 @@ module.exports = {
           from: 'public',
           to: '.',
           noErrorOnMissing: true,
+          globOptions: {
+            ignore: ['**/index.html'],
+          },
         },
         {
           from: 'src/data',

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Study Swamp - Your learning management platform">
+    <meta name="keywords" content="study, learning, education, swamp">
+    <meta name="author" content="Study Swamp Team">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<%= htmlWebpackPlugin.options.title %>">
+    <meta property="og:description" content="Study Swamp - Your learning management platform">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="<%= htmlWebpackPlugin.options.title %>">
+    <meta property="twitter:description" content="Study Swamp - Your learning management platform">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <title><%= htmlWebpackPlugin.options.title %></title>
+</head>
+<body>
+    <!-- Navigation (show/hide based on page) -->
+    <!-- <% if (htmlWebpackPlugin.options.showNav) { %>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">Study Swamp</a>
+            <ul class="nav-menu">
+                <li><a href="/dashboard.html">Dashboard</a></li>
+                <li><a href="/courses.html">Courses</a></li>
+                <li><a href="/profile.html">Profile</a></li>
+                <li><a href="/" class="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    <% } %> -->
+
+    <!-- Main App Container -->
+    <div id="app">
+        <!-- Include page-specific content -->
+        <%= require('html-loader!../src/templates/' + htmlWebpackPlugin.options.contentTemplate).default %>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading" style="display: none;">
+        <div class="loading-spinner">Loading...</div>
+    </div>
+
+    <!-- Scripts will be injected here by HtmlWebpackPlugin -->
+</body>
+</html>

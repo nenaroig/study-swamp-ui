@@ -1,0 +1,59 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Main gradient from cyan to purple with light pink in middle -->
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00bcd4"/>
+      <stop offset="25%" style="stop-color:#2196f3"/>
+      <stop offset="50%" style="stop-color:#ffb3d9"/>
+      <stop offset="75%" style="stop-color:#9c27b0"/>
+      <stop offset="100%" style="stop-color:#673ab7"/>
+    </linearGradient>
+    
+    <!-- Geometric shape gradients -->
+    <linearGradient id="shapeGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00e5ff;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#3f51b5;stop-opacity:0.2"/>
+    </linearGradient>
+    
+    <linearGradient id="shapeGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8bbd9;stop-opacity:0.4"/>
+      <stop offset="50%" style="stop-color:#ffb3d9;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#9c27b0;stop-opacity:0.2"/>
+    </linearGradient>
+    
+    <linearGradient id="shapeGrad3" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00bcd4;stop-opacity:0.3"/>
+      <stop offset="50%" style="stop-color:#f8bbd9;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#ffb3d9;stop-opacity:0.2"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main background gradient -->
+  <rect width="1920" height="1080" fill="url(#mainGradient)"/>
+  
+  <!-- Large geometric triangular shapes -->
+  <polygon points="0,0 800,0 400,600" fill="url(#shapeGrad1)"/>
+  <polygon points="1920,0 1920,400 1200,200" fill="url(#shapeGrad2)"/>
+  <polygon points="0,1080 600,1080 300,500" fill="url(#shapeGrad3)"/>
+  <polygon points="1920,1080 1920,600 1400,1080" fill="url(#shapeGrad1)"/>
+  
+  <!-- Medium angular shapes -->
+  <polygon points="600,200 1000,100 1200,500 800,600" fill="url(#shapeGrad2)"/>
+  <polygon points="1200,600 1600,500 1800,900 1000,1000" fill="url(#shapeGrad3)"/>
+  <polygon points="200,700 700,600 500,1080 0,900" fill="url(#shapeGrad1)"/>
+  
+  <!-- Small accent triangles -->
+  <polygon points="1400,200 1600,150 1500,400" fill="#ffb3d9" opacity="0.3"/>
+  <polygon points="300,300 500,250 400,500" fill="#f8bbd9" opacity="0.3"/>
+  <polygon points="1000,800 1200,750 1100,1000" fill="#ffb3d9" opacity="0.2"/>
+  <polygon points="100,100 300,50 200,300" fill="#f8bbd9" opacity="0.2"/>
+  <polygon points="1600,700 1800,650 1700,900" fill="#ffb3d9" opacity="0.2"/>
+  
+  <!-- Additional angular elements for depth -->
+  <polygon points="800,0 1200,200 900,400 500,300" fill="url(#shapeGrad1)" opacity="0.5"/>
+  <polygon points="1400,400 1920,300 1800,800 1200,700" fill="url(#shapeGrad2)" opacity="0.4"/>
+  <polygon points="0,400 400,300 600,800 200,900" fill="url(#shapeGrad3)" opacity="0.3"/>
+  
+  <!-- Subtle overlay for smooth blending -->
+  <rect width="1920" height="1080" fill="url(#mainGradient)" opacity="0.1"/>
+</svg>

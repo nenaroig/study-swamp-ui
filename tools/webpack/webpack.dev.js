@@ -2,37 +2,61 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const { merge } = require('webpack-merge');
+const common = require('./webpack.common.js');
 
-module.exports = {
+module.exports = merge(common, {
   mode: 'development',
   devtool: 'eval-source-map',
   
   // Enhanced dev server configuration
   devServer: {
-    static: {
-      directory: path.resolve(__dirname, '../../dist'),
-      publicPath: '/',
+    static: [
+      {
+        directory: path.resolve(__dirname, '../../dist'),
+        publicPath: '/',
+      },
+      {
+        directory: path.resolve(__dirname, '../../public'),
+        publicPath: '/',
+      }
+    ],
+    historyApiFallback: {
+      rewrites: [
+        // { from: /^\/dashboard/, to: '/dashboard.html' },
+        // { from: /^\/courses/, to: '/courses.html' },
+        // { from: /^\/profile/, to: '/profile.html' },
+        { from: /./, to: '/index.html' }
+      ]
     },
-    historyApiFallback: true,
     port: 9000,
     host: 'localhost',
     open: true,
-    hot: true, // Enable Hot Module Replacement
+    hot: true,
+    liveReload: true,
     compress: true,
+    
+    // Watch for file changes!
+    watchFiles: [
+      'src/**/*',           // Watch all source files
+      'public/**/*',        // Watch public files
+      'tools/webpack/**/*'  // Watch webpack config changes
+    ],
+    
     client: {
       overlay: {
         errors: true,
         warnings: false,
       },
       progress: true,
+      logging: 'info',
     },
+    
     // Security headers
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
     },
-    // Enable HTTPS if needed
-    // https: true,
   },
   
   // Enhanced caching for faster rebuilds
@@ -46,15 +70,23 @@ module.exports = {
     filename: 'assets/js/[name].js',
     chunkFilename: 'assets/js/[name].chunk.js',
     assetModuleFilename: 'assets/[type]/[name][ext]',
+    clean: false, // Don't clean in development for faster rebuilds
+  },
+  
+  // Watch mode configuration
+  watchOptions: {
+    ignored: /node_modules/,
+    aggregateTimeout: 300,
+    poll: false,
   },
   
   module: {
     rules: [
-      // SCSS/SASS
+      // SCSS/SASS - Override common config to use style-loader for HMR
       {
         test: /\.s[ac]ss$/i,
         use: [
-          'style-loader', // Creates `style` nodes from JS strings
+          'style-loader',
           {
             loader: 'css-loader',
             options: {
@@ -79,6 +111,7 @@ module.exports = {
               sourceMap: true,
               sassOptions: {
                 outputStyle: 'expanded',
+                quietDeps: true,
               },
             }
           },
@@ -119,12 +152,19 @@ module.exports = {
     
     // Progress plugin for build feedback
     new webpack.ProgressPlugin({
-      activeModules: true,
+      activeModules: false,
       entries: true,
-      modules: true,
-      dependencies: true,
+      modules: false,
+      dependencies: false,
     }),
   ],
+  
+  // Optimization for development
+  optimization: {
+    runtimeChunk: 'single',
+    moduleIds: 'named',
+    chunkIds: 'named',
+  },
   
   // Disable performance hints in development
   performance: {
@@ -141,8 +181,9 @@ module.exports = {
     hash: false,
     timings: true,
     version: false,
-    warnings: true,
+    warnings: false,
     errors: true,
     errorDetails: true,
+    builtAt: true,
   },
-};
+});

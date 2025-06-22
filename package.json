@@ -7,18 +7,9 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "start": "webpack serve --mode=development",
-    "dev": "webpack serve --mode=development --open",
-    "build": "webpack --mode=production",
-    "build:dev": "webpack --mode=development",
-    "build:analyze": "webpack --mode=production --env analyze",
-    "clean": "rimraf dist",
-    "lint": "eslint src/**/*.js",
-    "lint:fix": "eslint src/**/*.js --fix",
-    "format": "prettier --write \"src/**/*.{js,scss,css,html,json}\"",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "serve": "serve dist -s -l 3000"
+    "start": "webpack serve --config tools/webpack/webpack.dev.js",
+    "dev": "webpack serve --config tools/webpack/webpack.dev.js --open",
+    "build": "webpack --config tools/webpack/webpack.prod.js"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",

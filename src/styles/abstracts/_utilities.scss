@@ -1,0 +1,135 @@
+@use '~bootstrap' as *;
+@use 'variables' as custom;
+
+/** ===========================================
+  # Bootstrap Height and Width Classes
+  # This variable affects the `.h-*` and `.w-*` classes.
+  # Iterate for what you need.
+============================================ */
+$sizes: () !default;
+@for $i from 1 through 2000 {
+  @if $i <= 100 {
+    @if $i%5 == 0 {
+      $holdingArrayPercent: (
+      // Escape the Percentage Sign
+      '#{$i}': #{$i}#{'%'}
+      );
+      $sizes: map-merge($sizes, $holdingArrayPercent);
+      $holdingArrayPixels: (
+      '#{$i}p': #{$i}px
+      );
+      $sizes: map-merge($sizes, $holdingArrayPixels);
+    }
+  }
+  @if $i%5 == 0 {
+    $holdingArrayPixels: (
+    '#{$i}p': #{$i}px
+    );
+    $sizes: map-merge($sizes, $holdingArrayPixels);
+  }
+}
+
+/** ===========================================
+  # MD Screen Size Width/Heights
+============================================ */
+$sizesMd: () !default;
+$sizesMd: map-merge($sizes, $sizesMd);
+
+@media (min-width: 768px) {
+  @each $prop, $abbrev in (width: w-md, height: h-md, max-width: mw-md, max-height: mh-md, min-width: minw-md, min-height: minh-md) {
+    @each $size, $length in $sizesMd {
+        html .#{$abbrev}-#{$size} { #{$prop}: $length !important;
+      }
+    }
+  }
+}
+
+/** ===========================================
+  # LG Screen Size Width/Heights
+============================================ */
+$sizesLg: () !default;
+$sizesLg: map-merge($sizes, $sizesLg);
+
+@media (min-width: 991px) {
+  @each $prop, $abbrev in (width: w-lg, height: h-lg, max-width: mw-lg, max-height: mh-lg, min-width: minw-lg, min-height: minh-lg) {
+    @each $size, $length in $sizesLg {
+      html .#{$abbrev}-#{$size} { #{$prop}: $length !important; }
+    }
+  }
+}
+
+/** ===========================================
+  # XL Screen Size Width/Heights
+============================================ */
+$sizesXL: () !default;
+$sizesXL: map-merge($sizes, $sizesXL);
+
+@media (min-width: 1200px) {
+  @each $prop, $abbrev in (width: w-xl, height: h-xl, max-width: mw-xl, max-height: mh-xl, min-width: minw-xl, min-height: minh-xl) {
+    @each $size, $length in $sizesXL {
+      html .#{$abbrev}-#{$size} { #{$prop}: #{$length} !important; }
+    }
+  }
+}
+
+/** ===========================================
+  # Loop through Bootstrap's grid-breakpoints
+  # This creates responsive classes for each breakpoint
+============================================ */
+@each $breakpoint-key, $breakpoint in $grid-breakpoints {
+  @if $breakpoint > 0 {
+    @media (min-width: #{$breakpoint}) {
+      @each $prop, $abbrev in (width: w-#{$breakpoint-key}, height: h-#{$breakpoint-key}, max-width: mw-#{$breakpoint-key}, max-height: mh-#{$breakpoint-key}, min-width: minw-#{$breakpoint-key}, min-height: minh-#{$breakpoint-key}) {
+        @each $size, $length in $sizes {
+          html .#{$abbrev}-#{$size} { #{$prop}: #{$length} !important;}
+        }
+      }
+    }
+  } @else {
+    // For xs breakpoint (0px)
+    @each $prop, $abbrev in (width: w-#{$breakpoint-key}, height: h-#{$breakpoint-key}, max-width: mw-#{$breakpoint-key}, max-height: mh-#{$breakpoint-key}, min-width: minw-#{$breakpoint-key}, min-height: minh-#{$breakpoint-key}) {
+      @each $size, $length in $sizes {
+        html .#{$abbrev}-#{$size} { #{$prop}: #{$length} !important;}
+      }
+    }
+  }
+}
+
+/** ===========================================
+  # Custom Theme Color Utilities
+============================================ */
+@each $color-name, $color-value in custom.$theme-colors {
+  .btn-#{$color-name} {
+    // Simple button variant without Bootstrap mixins
+    color: #fff;
+    background-color: #{$color-value};
+    border-color: #{$color-value};
+    border: 1px solid #{$color-value};
+    
+    &:hover,
+    &:focus,
+    &.focus {
+      color: #fff;
+      background-color: darken($color-value, 7.5%);
+      border-color: darken($color-value, 10%);
+    }
+    
+    &:active,
+    &.active {
+      color: #fff;
+      background-color: darken($color-value, 10%);
+      border-color: darken($color-value, 12.5%);
+    }
+    
+    &:disabled,
+    &.disabled {
+      color: #fff;
+      background-color: #{$color-value};
+      border-color: #{$color-value};
+      opacity: 0.65;
+    }
+  }
+  .text-#{$color-name} {
+    color: #{$color-value} !important;
+  }
+}

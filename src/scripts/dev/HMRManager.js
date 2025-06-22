@@ -27,7 +27,17 @@ class HMRManager {
       this.router.loadPageContent();
     });
 
-    module.hot.accept('../../templates/dashboard.html', () => {
+    module.hot.accept('../../templates/signup.html', () => {
+      console.log('📄 Sign up template updated via HMR!');
+      this.router.loadPageContent();
+    });
+
+    module.hot.accept('../../templates/forgot-password.html', () => {
+      console.log('📄 Forgot Password template updated via HMR!');
+      this.router.loadPageContent();
+    });
+
+    module.hot.accept('../../templates/dashboard/dashboard.html', () => {
       console.log('📄 Dashboard template updated via HMR!');
       this.router.loadPageContent();
     });

@@ -181,7 +181,7 @@ module.exports = merge(common, {
     hash: false,
     timings: true,
     version: false,
-    warnings: true,
+    warnings: false,
     errors: true,
     errorDetails: true,
     builtAt: true,

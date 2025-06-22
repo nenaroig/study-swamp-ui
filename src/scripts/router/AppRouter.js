@@ -1,12 +1,16 @@
 
 import loginContent from '../../templates/login.html';
 import navigationContent from '../../templates/navigation.html';
-import dashboardContent from '../../templates/dashboard.html';
+import signUpContent from '../../templates/signup.html';
+import forgotPasswordContent from '../../templates/forgot-password.html';
+import dashboardContent from '../../templates/dashboard/dashboard.html';
 
 class AppRouter {
   constructor() {
     this.contentMap = {
       'index': loginContent,
+      'signup': signUpContent,
+      'forgot-password': forgotPasswordContent,
       'dashboard': dashboardContent,
     };
 
@@ -14,7 +18,9 @@ class AppRouter {
     
     this.titles = {
       'index': 'Study Swamp - Login',
+      'signup': 'Study Swamp - Sign Up',
       'dashboard': 'Study Swamp - Dashboard',
+      'forgot-password': 'Study Swamp - Forgot Password',
     };
 
     this.navigationContent = navigationContent;

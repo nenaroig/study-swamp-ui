@@ -6,16 +6,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Study Swamp - Your learning management platform">
     <meta name="keywords" content="study, learning, education, swamp">
-    <meta name="author" content="Study Swamp Team">
+    <meta name="author" content="The Study Squad Team">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="<%= htmlWebpackPlugin.options.title %>">
+    <meta property="og:title" content="Study Swamp">
     <meta property="og:description" content="Study Swamp - Your learning management platform">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="<%= htmlWebpackPlugin.options.title %>">
+    <meta property="twitter:title" content="Study Swamp">
     <meta property="twitter:description" content="Study Swamp - Your learning management platform">
     
     <!-- Favicon -->
@@ -30,13 +30,12 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     
-    <title><%= htmlWebpackPlugin.options.title %></title>
+    <title>Study Swamp</title>
 </head>
 <body>
     <!-- Main App Container -->
     <div id="app">
-        <!-- Include page-specific content -->
-        <%= require('html-loader!../src/templates/' + htmlWebpackPlugin.options.contentTemplate).default %>
+        <!-- Content will be loaded here by JavaScript -->
     </div>
 
     <!-- Loading indicator -->

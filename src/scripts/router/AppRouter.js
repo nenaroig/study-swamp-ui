@@ -2,14 +2,12 @@
 import loginContent from '../../templates/login.html';
 import navigationContent from '../../templates/navigation.html';
 import dashboardContent from '../../templates/dashboard.html';
-// import profileContent from '../../templates/profile.html';
 
 class AppRouter {
   constructor() {
     this.contentMap = {
       'index': loginContent,
       'dashboard': dashboardContent,
-      // 'profile': profileContent,
     };
 
     this.pagesWithNav = ['dashboard'];
@@ -17,7 +15,6 @@ class AppRouter {
     this.titles = {
       'index': 'Study Swamp - Login',
       'dashboard': 'Study Swamp - Dashboard',
-      // 'profile': 'Study Swamp - Profile'
     };
 
     this.navigationContent = navigationContent;

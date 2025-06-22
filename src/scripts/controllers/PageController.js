@@ -1,6 +1,9 @@
+import LoginPage from './LoginPage.js';
+import DashboardPage from './DashboardPage.js';
+
 class PageController {
   constructor() {
-    this.pages = new Map();
+    this.currentPage = null;
     this.init();
   }
 
@@ -20,82 +23,73 @@ class PageController {
     // Initialize current page
     switch(page) {
       case 'index':
-        this.initLoginPage();
+        this.currentPage = new LoginPage();
+        this.currentPage.init();
         break;
       case 'dashboard':
-        this.initDashboardPage();
+        this.currentPage = new DashboardPage();
+        this.currentPage.init();
         break;
-      // case 'profile':
-      //   this.initProfilePage();
-      //   break;
       default:
-        console.warn(`No initialization found for page: ${page}`);
+        console.warn(`No page class found for: ${page}`);
     }
   }
-
-  initLoginPage() {
-    console.log('🔐 Login page initialized');
-    
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-      const handleLogin = (e) => {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        
-        if (username && password) {
-          window.dispatchEvent(new CustomEvent('navigateToPage', {
-            detail: { page: 'dashboard' }
-          }));
-        } else {
-          alert('Please fill in all fields');
-        }
-      };
-
-      loginForm.addEventListener('submit', handleLogin);
-      
-      // Store cleanup function
-      this.pages.set('index', {
-        cleanup: () => {
-          if (loginForm) {
-            loginForm.removeEventListener('submit', handleLogin);
-          }
-        }
-      });
-    }
-  }
-
-  initDashboardPage() {
-    console.log('📊 Dashboard page initialized');
-    
-    // Dashboard specific functionality
-    const welcomeMessage = () => {
-      console.log('Welcome to your dashboard!');
-    };
-
-    welcomeMessage();
-
-    // Store cleanup function if needed
-    this.pages.set('dashboard', {
-      cleanup: () => {
-        // Clean up dashboard event listeners, timers, etc.
-      }
-    });
-  }
-
-  // initProfilePage() {
-  //   console.log('👤 Profile page initialized');
-  //   // Profile specific functionality
-  // }
 
   cleanup() {
-    // Clean up the current page
-    this.pages.forEach((pageData) => {
-      if (pageData.cleanup) {
-        pageData.cleanup();
+    if (this.currentPage) {
+      console.log(`🧹 Cleaning up ${this.currentPage.pageName} page`);
+      
+      // Clean up event listeners
+      if (this.currentPage.eventListeners) {
+        this.currentPage.eventListeners.forEach(({ element, event, handler }) => {
+          if (element) {
+            element.removeEventListener(event, handler);
+          }
+        });
       }
-    });
-    this.pages.clear();
+      
+      // Reset page state
+      this.currentPage.isInitialized = false;
+      this.currentPage = null;
+    }
+  }
+
+  // Helper methods that pages can use
+  static addEventListener(element, event, handler, listeners) {
+    if (element) {
+      element.addEventListener(event, handler);
+      listeners.push({ element, event, handler });
+    }
+  }
+
+  static navigateTo(page) {
+    window.dispatchEvent(new CustomEvent('navigateToPage', {
+      detail: { page }
+    }));
+  }
+
+  static showError(message, container = null) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger mt-3';
+    errorDiv.textContent = message;
+    
+    if (container) {
+      container.appendChild(errorDiv);
+      setTimeout(() => errorDiv.remove(), 5000);
+    } else {
+      console.error(message);
+    }
+  }
+
+  static showSuccess(message, container = null) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'alert alert-success mt-3';
+    successDiv.textContent = message;
+    
+    if (container) {
+      container.appendChild(successDiv);
+      setTimeout(() => successDiv.remove(), 3000);
+    }
   }
 }
 

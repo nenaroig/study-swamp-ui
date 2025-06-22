@@ -132,8 +132,6 @@ module.exports = {
       inject: 'body',
       scriptLoading: 'defer',
       chunks: ['main', 'styles'],
-      contentTemplate: 'login.html',
-      showNav: false,
     }),
     
     // Copy public assets

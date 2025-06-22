@@ -25,25 +25,14 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     
     <title><%= htmlWebpackPlugin.options.title %></title>
 </head>
 <body>
-    <!-- Navigation (show/hide based on page) -->
-    <!-- <% if (htmlWebpackPlugin.options.showNav) { %>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-logo">Study Swamp</a>
-            <ul class="nav-menu">
-                <li><a href="/dashboard.html">Dashboard</a></li>
-                <li><a href="/courses.html">Courses</a></li>
-                <li><a href="/profile.html">Profile</a></li>
-                <li><a href="/" class="logout-btn">Logout</a></li>
-            </ul>
-        </div>
-    </nav>
-    <% } %> -->
-
     <!-- Main App Container -->
     <div id="app">
         <!-- Include page-specific content -->
@@ -56,5 +45,6 @@
     </div>
 
     <!-- Scripts will be injected here by HtmlWebpackPlugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"></script>
 </body>
 </html>

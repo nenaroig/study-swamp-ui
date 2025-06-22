@@ -1,0 +1,22 @@
+@use 'variables' as *;
+
+// Base typography
+html {
+  font-size: $font-size-base;
+}
+
+body {
+  font-family: $font-family-primary;
+  color: var(--bs-dark-gray);
+  background-color: var(--bs-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-primary;
+  font-weight: 600;
+  color: var(--bs-dark-gray);
+  margin-bottom: 0.5rem;
+}

@@ -29,7 +29,7 @@ module.exports = merge(common, {
         { from: /./, to: '/index.html' }
       ]
     },
-    port: 9000,
+    port: 8000,
     host: 'localhost',
     open: true,
     hot: true,
@@ -48,8 +48,8 @@ module.exports = merge(common, {
         errors: true,
         warnings: false,
       },
-      progress: true,
-      logging: 'info',
+      progress: false,
+      logging: 'error',
     },
     
     // Security headers
@@ -108,10 +108,11 @@ module.exports = merge(common, {
           {
             loader: 'sass-loader',
             options: {
-              sourceMap: true,
+              api: 'legacy',
               sassOptions: {
-                outputStyle: 'expanded',
+                outputStyle: 'compressed',
                 quietDeps: true,
+                verbose: false
               },
             }
           },

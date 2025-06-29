@@ -4,6 +4,7 @@
 @use '~bootstrap/scss/bootstrap' as Bootstrap;
 
 // Abstracts 
+@use 'abstracts/app';
 @use 'abstracts/utilities';
 @use 'abstracts/typography';
 @use 'abstracts/mixins';
@@ -11,6 +12,7 @@
 // Components
 @use 'components/button';
 @use 'components/form';
+@use 'components/navigation';
 
 // Pages
 @use 'pages/login';

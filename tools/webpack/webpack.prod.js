@@ -130,11 +130,14 @@ module.exports = {
           {
             loader: 'sass-loader',
             options: {
+              api: 'legacy',
               sassOptions: {
                 outputStyle: 'compressed',
+                quietDeps: true,
+                verbose: false
               },
             }
-          },
+          }
         ],
       },
       

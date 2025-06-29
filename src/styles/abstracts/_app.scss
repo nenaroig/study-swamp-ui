@@ -1,0 +1,11 @@
+#app {
+  display: flex;
+  background: url('../images/abstract_background.svg') center center no-repeat;
+  background-size: cover;
+  height: 100vh;
+  .inner-wrapper {
+    width: 100%;
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+}

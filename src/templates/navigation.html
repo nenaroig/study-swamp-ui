@@ -1,10 +1,12 @@
-<nav class="navbar bg-clay">
+<nav class="navbar bg-black w-xs-80p align-items-start p-3 d-flex flex-column justify-content-between">
   <div class="nav-container">
-    <a href="#" class="nav-logo text-white" data-page="dashboard">Study Swamp</a>
-    <ul class="nav-menu">
-      <li><a href="#" class="nav-link text-white" data-page="dashboard">Dashboard</a></li>
-      <li><a href="#" class="nav-link text-white" data-page="profile">Profile</a></li>
-      <li><a href="#" class="nav-link text-white logout-btn" data-page="index">Logout</a></li>
+    <a href="/" class="nav-logo text-white" data-page="dashboard"><strong>LOGO</strong></a>
+    <ul class="list-unstyled">
+      <li><a href="/dashboard" class="nav-link text-white" data-page="dashboard" aria-label="Dashboard"><span class="fa-solid fa-lg fa-gauge-high"></span></a></li>
     </ul>
   </div>
+  <ul class="list-unstyled d-flex align-items-center flex-column">
+    <li><a href="/profile" class="text-white border border-2 border-white rounded-2 p-2 w-xs-40p h-xs-40p" data-page="profile"><span class="fa-solid fa-lg fa-user"></span></a></li>
+    <li class="mt-4"><a href="/logout" class="nav-link text-white logout-btn" data-page="index"><span class="fa-solid fa-lg fa-arrow-right-from-bracket"></span></a></li>
+  </ul>
 </nav>

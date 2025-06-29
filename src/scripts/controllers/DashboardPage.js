@@ -22,15 +22,14 @@ class DashboardPage {
     let greeting;
     
     if (currentHour < 12) {
-      greeting = 'Good morning';
+      greeting = 'Good morning, ';
     } else if (currentHour < 18) {
-      greeting = 'Good afternoon';
+      greeting = 'Good afternoon, ';
     } else {
-      greeting = 'Good evening';
+      greeting = 'Good evening, ';
     }
-    
-    console.log(`${greeting}! Welcome to your dashboard! 👋`);
-  }
+    return greeting;
+  } 
 
   async loadDashboardData() {
     try {
@@ -49,16 +48,15 @@ class DashboardPage {
 
   updateDashboardUI() {
     if (this.userData && this.userData.data) {
-      const userList = document.getElementById('user-list');
-      console.log(this.userData);
       
-      userList.innerHTML = '';
-
-      this.userData.data.forEach(user => {
-        const li = document.createElement('li');
-        li.textContent = `${user.attributes.username} (${user.attributes.email}) ${user.attributes.first_name} ${user.attributes.last_name}`;
-        userList.appendChild(li);
-      });
+      const h1 = document.getElementById('greeting');
+      const currentUser = this.userData.data[0];
+      
+      if (h1 && currentUser) {
+        const currentGreeting = this.setupWelcomeMessage(),
+        firstName = currentUser.attributes.first_name || '';
+        h1.textContent = `${currentGreeting}${firstName}!`;
+      }
     }
   }
 

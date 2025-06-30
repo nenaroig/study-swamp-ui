@@ -4,31 +4,35 @@ import PageController from './PageController.js';
 
 class LogoutManager {
   static init() {
-    // Listen for logout events
-    window.addEventListener('userLoggedOut', () => {
-      this.handleLogout();
-    });
+
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+      this.logoutBtn = logoutBtn;
+      this.setupLogoutButtons();
+    }
     
-    this.setupLogoutButtons();
   }
   
   static setupLogoutButtons() {
-    document.addEventListener('click', (e) => {
-      if (e.target.matches('.logout-btn')) {
-        e.preventDefault();
-        this.performLogout();
-      }
+    this.logoutBtn.addEventListener('click', (e) => {
+      console.log(e.target);
+        
+      e.preventDefault();
+      this.performLogout();
     });
   }
   
   static performLogout() {
     const confirmed = confirm('Are you sure you want to logout?');
-    if (confirmed) ApiService.logout();
+    if (confirmed) {
+      ApiService.logout();
+      this.handleLogout();
+    }
   }
   
   static handleLogout() {
     // Redirect to login page
-    PageController.navigateTo('/');
+    PageController.navigateTo('index');
     
     // Show logout message
     setTimeout(() => {

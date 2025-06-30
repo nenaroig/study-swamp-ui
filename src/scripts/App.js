@@ -19,9 +19,6 @@ class App {
       console.log('Restored user session');
     }
     
-    // Initialize logout manager
-    LogoutManager.init();
-    
     // Initialize router
     this.router = new AppRouter();
     
@@ -33,6 +30,10 @@ class App {
     
     // Initialize router (this will load the current page)
     this.router.init();
+    
+    setTimeout(() => {
+      LogoutManager.init();
+    }, 100);
     
     // Initialize HMR in development
     if (process.env.NODE_ENV === 'development') {

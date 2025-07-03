@@ -1,4 +1,5 @@
-import ApiService from '../ApiService.js';
+import UserService from '../api/UserService.js';
+import MeetingService from '../api/MeetingService.js';
 import PageController from './PageController.js';
 
 class DashboardPage {
@@ -6,25 +7,24 @@ class DashboardPage {
     this.isInitialized = false;
     this.userData = null;
     this.currentUser = null;
+    this.upcomingMeetings = null;
   }
   
   async init() {
     if (this.isInitialized) return;
     
-    if (!ApiService.isLoggedIn()) {
-      console.log('User not logged in, redirecting...'); // remove
+    if (!UserService.isLoggedIn()) {
       PageController.navigateTo('/');
       return;
     }
     
     // Get current user info including stored user data
-    this.currentUser = ApiService.getCurrentUser();
-    console.log('Dashboard - Current user from ApiService:', this.currentUser); //remove
-
-    console.log('SessionStorage currentUserData:', sessionStorage.getItem('currentUserData')); // remove
+    this.currentUser = UserService.getCurrentUser();
+    this.upcomingMeetings = MeetingService.getUpcomingMeetings();
     
     // Setup welcome message
     this.setupWelcomeMessage();
+    this.displayUpcomingMeetings();
     
     this.isInitialized = true;
   }
@@ -44,11 +44,8 @@ class DashboardPage {
     const h1 = document.getElementById('greeting');
     if (h1) {
       let name = 'Gator';
-
-    console.log('Setting up welcome message');
-    console.log('Current user:', this.currentUser);
-    console.log('User data:', this.currentUser?.userData);
       
+      console.log('Current user:', this.currentUser); // remove
       
       // Get currentUser
       if (this.currentUser?.userData?.attributes?.first_name) {
@@ -63,6 +60,20 @@ class DashboardPage {
     }
     
     return greeting;
+  }
+  
+  async displayUpcomingMeetings() {
+    try {
+      const response = await MeetingService.getUpcomingMeetings(),
+      meetings = response.meetingData.data || [];
+      
+      if (meetings.length > 0) {
+        MeetingService.renderMeetings(meetings, 'meetings-container');
+      }
+      
+    } catch (error) {
+      console.error('Failed to load meetings:', error);
+    }
   }
 }
 

@@ -11,45 +11,20 @@
           <h2 class="mb-0">Upcoming Meetings</h2>
         </div>
         
-        <div class="d-flex align-items-center justify-content-between mt-4">
-          <div>
-            <h3 class="h5">Advanced Algorithms Study Group</h3>
-            <p>CS Building, Room 204 • 12 attendees</p>
-          </div>
-          <div class="btn btn-violet btn-sm">Today 3:00 PM</div>
+        <div id="meetings-container">
+          <!-- Meeting cards will be inserted here -->
         </div>
         
-        <div class="d-flex align-items-center justify-content-between mt-4">
-          <div>
-            <h3 class="h5">Database Design Workshop</h3>
-            <p>Library Study Room A • 8 attendees</p>
+        <!-- Hidden template (this is invisible to users) -->
+        <template id="meeting-template">
+          <div class="d-flex align-items-center justify-content-between mt-4">
+            <div>
+              <h3 class="h5 meeting-title"></h3>
+              <p class="meeting-description text-muted mb-0"></p>
+            </div>
+            <div class="btn btn-violet btn-sm meeting-join-btn">Join</div>
           </div>
-          <div class="btn btn-violet btn-sm">Tomorrow 10:00 AM</div>
-        </div>
-        
-        <div class="d-flex align-items-center justify-content-between mt-4">
-          <div>
-            <h3 class="h5">Machine Learning Fundamentals</h3>
-            <p>Online Meeting • 25 attendees</p>
-          </div>
-          <div class="btn btn-violet btn-sm">Wed 2:00 PM</div>
-        </div>
-        
-        <div class="d-flex align-items-center justify-content-between mt-4">
-          <div>
-            <h3 class="h5">Web Development Bootcamp</h3>
-            <p>Tech Lab 101 • 18 attendees</p>
-          </div>
-          <div class="btn btn-violet btn-sm">Thu 4:30 PM</div>
-        </div>
-        
-        <div class="d-flex align-items-center justify-content-between mt-4">
-          <div>
-            <h3 class="h5">Data Structures Review</h3>
-            <p>Student Center • 15 attendees</p>
-          </div>
-          <div class="btn btn-violet btn-sm">Fri 1:00 PM</div>
-        </div>
+        </template>
       </div>
     </div>
     <div class="col mt-4">

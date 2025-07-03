@@ -1,5 +1,5 @@
 import PageController from './PageController.js';
-import ApiService from '../ApiService.js';
+import ApiService from '../api/ApiService.js';
 
 class LoginPage {
   constructor() {

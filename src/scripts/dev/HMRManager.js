@@ -6,7 +6,6 @@ class HMRManager {
 
   init() {
     if (module.hot) {
-      console.log('🔥 HMR is enabled!');
       this.setupHMR();
     }
 

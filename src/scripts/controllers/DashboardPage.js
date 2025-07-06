@@ -1,5 +1,8 @@
+// Updated DashboardPage.js
 import UserService from '../api/UserService.js';
 import MeetingService from '../api/MeetingService.js';
+import StudyGroupsService from '../api/StudyGroupsService.js';
+import StatsService from '../api/StatsService.js';
 import PageController from './PageController.js';
 
 class DashboardPage {
@@ -7,7 +10,8 @@ class DashboardPage {
     this.isInitialized = false;
     this.userData = null;
     this.currentUser = null;
-    this.upcomingMeetings = null;
+    this.meetings = [];
+    this.groups = [];
   }
   
   async init() {
@@ -18,15 +22,44 @@ class DashboardPage {
       return;
     }
     
-    // Get current user info including stored user data
     this.currentUser = UserService.getCurrentUser();
-    this.upcomingMeetings = MeetingService.getUpcomingMeetings();
-    
-    // Setup welcome message
     this.setupWelcomeMessage();
-    this.displayUpcomingMeetings();
+    
+    // Load all data and render dashboard
+    await this.loadDashboardData();
     
     this.isInitialized = true;
+  }
+  
+  async loadDashboardData() {
+    try {
+      // Load meetings and groups in parallel
+      const [meetingsResponse, groupsResponse] = await Promise.all([
+        MeetingService.getUpcomingMeetings(),
+        StudyGroupsService.getMyStudyGroups()
+      ]);
+      
+      // Extract data arrays
+      this.meetings = meetingsResponse.meetingData?.data || [];
+      this.groups = groupsResponse.studyGroupsData?.data || [];
+      
+      // Render all dashboard sections
+      this.renderDashboard();
+      
+    } catch (error) {
+      this.handleLoadError();
+    }
+  }
+  
+  renderDashboard() {
+    // Render Stats
+    StatsService.renderStats(this.meetings, this.groups, 'stats-container');
+    
+    // Render Meetings
+    MeetingService.renderMeetings(this.meetings.slice(0, 3), 'meetings-container');
+    
+    // Render Groups
+    StudyGroupsService.renderStudyGroups(this.groups.slice(0, 3), 'groups-container');
   }
   
   setupWelcomeMessage() {
@@ -45,15 +78,10 @@ class DashboardPage {
     if (h1) {
       let name = 'Gator';
       
-      console.log('Current user:', this.currentUser); // remove
-      
-      // Get currentUser
       if (this.currentUser?.userData?.attributes?.first_name) {
         name = this.currentUser.userData.attributes.first_name;
-        console.log('Using first name:', name);
       } else if (this.currentUser?.username) {
         name = this.currentUser.username;
-        console.log('Using username:', name);
       }
       
       h1.textContent = `${greeting}, ${name}!`;
@@ -62,18 +90,22 @@ class DashboardPage {
     return greeting;
   }
   
-  async displayUpcomingMeetings() {
-    try {
-      const response = await MeetingService.getUpcomingMeetings(),
-      meetings = response.meetingData.data || [];
-      
-      if (meetings.length > 0) {
-        MeetingService.renderMeetings(meetings, 'meetings-container');
-      }
-      
-    } catch (error) {
-      console.error('Failed to load meetings:', error);
+  handleLoadError() {
+    // Show error message in stats container
+    const statsContainer = document.getElementById('stats-container');
+    if (statsContainer) {
+      statsContainer.innerHTML = `
+        <div class="alert alert-warning" role="alert">
+          <h4 class="alert-heading">Unable to load dashboard data</h4>
+          <p>Please try refreshing the page. If the problem persists, please contact support.</p>
+        </div>
+      `;
     }
+  }
+  
+  // Method to refresh dashboard data
+  async refreshDashboard() {
+    await this.loadDashboardData();
   }
 }
 

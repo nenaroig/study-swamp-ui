@@ -44,15 +44,14 @@ class MeetingService {
   static createMeetingCard(meeting, index = 0) {
     const template = document.getElementById('meeting-template');
     if (!template) {
-      console.error('Meeting template not found in HTML');
-      return this.createMeetingCardFallback(meeting, index);
+      return;
     }
     
     const clone = template.content.cloneNode(true);
     
     // Fill in the data
-    const title = meeting.attributes?.name || 'Untitled Meeting';
-    const timeDescription = this.formatMeetingTime(meeting);
+    const title = meeting.attributes?.name || 'Untitled Meeting',
+    timeDescription = this.formatMeetingTime(meeting);
     
     clone.querySelector('.meeting-title').textContent = title;
     clone.querySelector('.meeting-description').textContent = timeDescription;
@@ -65,40 +64,6 @@ class MeetingService {
     meetingDiv.id = `meeting-${meeting.id || index}`;
     
     return clone;
-  }
-  
-  // Fallback method if template doesn't exist
-  static createMeetingCardFallback(meeting, index = 0) {
-    const meetingDiv = document.createElement('div');
-    meetingDiv.className = 'd-flex align-items-center justify-content-between mt-4';
-    meetingDiv.id = `meeting-${meeting.id || index}`;
-    
-    const contentDiv = document.createElement('div');
-    
-    const title = document.createElement('h3');
-    title.className = 'h5';
-    title.textContent = meeting.attributes?.name || 'Untitled Meeting';
-    
-    const description = document.createElement('p');
-    description.className = 'text-muted mb-0';
-    description.textContent = this.formatMeetingTime(meeting);
-    
-    contentDiv.appendChild(title);
-    contentDiv.appendChild(description);
-    
-    const button = document.createElement('div');
-    button.className = 'btn btn-violet btn-sm';
-    button.textContent = 'Join';
-    button.style.cursor = 'pointer';
-    
-    button.addEventListener('click', () => {
-      this.handleMeetingAction(meeting);
-    });
-    
-    meetingDiv.appendChild(contentDiv);
-    meetingDiv.appendChild(button);
-    
-    return meetingDiv;
   }
   
   static formatMeetingTime(meeting) {
@@ -182,35 +147,6 @@ class MeetingService {
       </div>
     `;
     container.appendChild(emptyDiv);
-  }
-  
-  // Replace existing single meeting div
-  static replaceSingleMeeting(meeting, meetingId = 'meetings') {
-    const existingDiv = document.getElementById(meetingId);
-    
-    if (!existingDiv) {
-      console.error(`Meeting div with id "${meetingId}" not found`);
-      return;
-    }
-    
-    // Update the existing div content
-    const contentDiv = existingDiv.querySelector('div:first-child');
-    const title = contentDiv.querySelector('h3');
-    const description = contentDiv.querySelector('p');
-    const button = existingDiv.querySelector('.btn');
-    
-    if (title) {
-      title.textContent = meeting.attributes?.name || 'Untitled Meeting';
-    }
-    
-    if (description) {
-      description.textContent = this.formatMeetingTime(meeting);
-    }
-    
-    if (button) {
-      button.textContent = 'Join';
-      button.onclick = () => this.handleMeetingAction(meeting);
-    }
   }
 }
 

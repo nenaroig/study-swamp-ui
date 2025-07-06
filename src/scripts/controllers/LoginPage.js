@@ -11,8 +11,6 @@ class LoginPage {
   init() {
     if (this.isInitialized) return;
     
-    console.log('Login page initialized'); // remove
-    
     const loginForm = document.getElementById('loginForm');
     
     if (loginForm) {
@@ -38,20 +36,14 @@ class LoginPage {
         
         // Test the credentials by calling the base API endpoint
         const apiData = await ApiService.getData('');
-        console.log('API base response:', apiData); // remove
         
         // Get the user data and find current user
         const usersData = await ApiService.getData('users/');
-        console.log('Users data response:', usersData); //remove
 
         const currentUser = this.findCurrentUserInList(usersData, username);
-        console.log('Found current user:', currentUser); //remove
         
         if (currentUser) {
           ApiService.setCurrentUserData(currentUser);
-          console.log('✅ Login successful - Current user found:', currentUser);
-        } else {
-          console.log('✅ Login successful - User data not found in users list');
         }
         
         PageController.showSuccess('Login successful!', e.target);

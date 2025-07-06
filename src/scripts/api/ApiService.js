@@ -15,11 +15,8 @@ class ApiService {
         headers['Authorization'] = authHeader;
       }
       
-      console.log('Making request to:', url);
-      console.log('With headers:', headers);
-      
-      const response = await fetch(url, { headers });
-      const contentType = response.headers.get('content-type');
+      const response = await fetch(url, { headers }),
+      contentType = response.headers.get('content-type');
       
       if (!response.ok) {
         // Try to get error details from response
@@ -64,9 +61,6 @@ class ApiService {
       if (authHeader) {
         headers['Authorization'] = authHeader;
       }
-      
-      console.log('Making POST request to:', url);
-      console.log('With headers:', headers);
       
       const response = await fetch(url, {
         method: 'POST',

@@ -10,8 +10,6 @@ class SignUpPage {
   init() {
     if (this.isInitialized) return;
     
-    console.log('🔐 Sign Up page initialized');
-    
     this.isInitialized = true;
   }
 

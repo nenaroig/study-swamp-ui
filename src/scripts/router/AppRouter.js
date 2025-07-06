@@ -33,7 +33,6 @@ class AppRouter {
 
   loadPageContent() {
     const page = this.getCurrentPage();
-    console.log(`🚀 Loading ${page} page`);
     
     const content = this.contentMap[page];
     

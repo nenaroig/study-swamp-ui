@@ -15,8 +15,6 @@ class PageController {
   }
 
   initPageFunctionality(page) {
-    console.log(`🎯 Initializing ${page} page functionality`);
-    
     // Clean up previous page
     this.cleanup();
     
@@ -37,7 +35,6 @@ class PageController {
 
   cleanup() {
     if (this.currentPage) {
-      console.log(`🧹 Cleaning up ${this.currentPage.pageName} page`);
       
       // Clean up event listeners
       if (this.currentPage.eventListeners) {

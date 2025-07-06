@@ -7,7 +7,7 @@ import '../styles/main.scss';
 
 // App
 import App from './App.js';
-import ApiService from './ApiService.js';
+import ApiService from './api/ApiService.js';
 
 // Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {

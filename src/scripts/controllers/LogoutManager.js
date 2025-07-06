@@ -1,5 +1,5 @@
 // LogoutManager.js
-import ApiService from '../ApiService.js';
+import ApiService from '../api/ApiService.js';
 import PageController from './PageController.js';
 
 class LogoutManager {

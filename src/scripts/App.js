@@ -1,7 +1,8 @@
 import AppRouter from './router/AppRouter.js';
 import PageController from './controllers/PageController.js';
 import HMRManager from './dev/HMRManager.js';
-import ApiService from './ApiService.js';
+import UserService from './api/UserService.js';
+import ApiService from './api/ApiService.js';
 import LogoutManager from './controllers/LogoutManager.js';
 
 class App {
@@ -15,7 +16,7 @@ class App {
     console.log('🚀 Study Swamp App Starting...');
     
     // Try to restore user session
-    if (ApiService.loadStoredCredentials()) {
+    if (UserService.loadStoredCredentials()) {
       console.log('Restored user session');
     }
     
@@ -70,7 +71,7 @@ class App {
   
   // Check if user is authenticated
   isAuthenticated() {
-    return ApiService.isLoggedIn();
+    return UserService.isLoggedIn();
   }
   
   logout() {

@@ -8,6 +8,10 @@ import navigationContent from '../../templates/navigation.html';
 import signUpContent from '../../templates/signup.html';
 import forgotPasswordContent from '../../templates/forgot-password.html';
 import dashboardContent from '../../templates/dashboard/dashboard.html';
+import groupsContent from '../../templates/groups/groups.html';
+import meetingsContent from '../../templates/meetings/meetings.html';
+import awardsContent from '../../templates/awards/awards.html';
+import profileContent from '../../templates/profile/profile.html';
 
 class AppRouter {
   constructor() {
@@ -17,10 +21,14 @@ class AppRouter {
       'signup': signUpContent,
       'forgot-password': forgotPasswordContent,
       'dashboard': dashboardContent,
+      'groups': groupsContent,
+      'meetings': meetingsContent,
+      'awards': awardsContent,
+      'profile': profileContent,
     };
 
     // Pages that need navigation sidebar
-    this.pagesWithNav = ['dashboard'];
+    this.pagesWithNav = ['dashboard', 'groups', 'meetings', 'awards', 'profile'];
     
     // Page titles for browser tab
     this.titles = {
@@ -28,6 +36,10 @@ class AppRouter {
       'signup': 'Study Swamp - Sign Up',
       'dashboard': 'Study Swamp',
       'forgot-password': 'Study Swamp - Forgot Password',
+      'groups': 'Study Swamp - My Study Groups',
+      'meetings': 'Study Swamp - Meetings',
+      'awards': 'Study Swamp - Awards',
+      'profile': 'Study Swamp - My Profile',
     };
 
     this.navigationContent = navigationContent;

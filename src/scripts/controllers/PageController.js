@@ -20,7 +20,7 @@ class PageController {
     
     // Initialize current page
     switch(page) {
-      case 'index':
+      case 'login':
         this.currentPage = new LoginPage();
         this.currentPage.init();
         break;

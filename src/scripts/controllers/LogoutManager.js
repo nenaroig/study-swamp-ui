@@ -1,5 +1,6 @@
 // LogoutManager.js
 import ApiService from '../api/ApiService.js';
+import UserService from '../api/UserService.js';
 import PageController from './PageController.js';
 
 class LogoutManager {
@@ -25,14 +26,14 @@ class LogoutManager {
   static performLogout() {
     const confirmed = confirm('Are you sure you want to logout?');
     if (confirmed) {
-      ApiService.logout();
+      UserService.logout();
       this.handleLogout();
     }
   }
   
   static handleLogout() {
     // Redirect to login page
-    PageController.navigateTo('index');
+    PageController.navigateTo('login');
     
     // Show logout message
     setTimeout(() => {

@@ -17,7 +17,7 @@ class AppRouter {
   constructor() {
     // Map page names to their HTML content
     this.contentMap = {
-      'index': loginContent,
+      'login': loginContent,
       'signup': signUpContent,
       'forgot-password': forgotPasswordContent,
       'dashboard': dashboardContent,
@@ -32,7 +32,7 @@ class AppRouter {
     
     // Page titles for browser tab
     this.titles = {
-      'index': 'Study Swamp - Login',
+      'login': 'Study Swamp - Login',
       'signup': 'Study Swamp - Sign Up',
       'dashboard': 'Study Swamp',
       'forgot-password': 'Study Swamp - Forgot Password',

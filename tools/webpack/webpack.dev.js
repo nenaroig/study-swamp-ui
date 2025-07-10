@@ -29,7 +29,7 @@ module.exports = merge(common, {
         { from: /./, to: '/index.html' }
       ]
     },
-    port: 8000,
+    port: 9000,
     host: 'localhost',
     open: true,
     hot: true,

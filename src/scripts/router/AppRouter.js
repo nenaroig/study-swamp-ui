@@ -48,7 +48,7 @@ class AppRouter {
   // Extract page name from current URL
   getCurrentPage() {
     const path = window.location.pathname;
-    return path.split('/').pop() || 'dashboard';
+    return path.split('/').pop() || 'login';
   }
 
   // Load and render content for current page

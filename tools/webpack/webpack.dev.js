@@ -23,13 +23,10 @@ module.exports = merge(common, {
     ],
     historyApiFallback: {
       rewrites: [
-        // { from: /^\/dashboard/, to: '/dashboard.html' },
-        // { from: /^\/courses/, to: '/courses.html' },
-        // { from: /^\/profile/, to: '/profile.html' },
         { from: /./, to: '/index.html' }
       ]
     },
-    port: 8000,
+    port: 9000,
     host: 'localhost',
     open: true,
     hot: true,

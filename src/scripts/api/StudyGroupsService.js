@@ -73,7 +73,7 @@ class StudyGroupsService extends BaseService {
   static populateCardData(clone, data) {
     const titleElement = clone.querySelector('.groups-title'),
     descriptionElement = clone.querySelector('.groups-description'),
-    buttonElement = clone.querySelector('.groups-btn');
+    buttonElement = clone.querySelector('a');
     
     if (titleElement && data.title) {
       titleElement.textContent = data.title;
@@ -128,12 +128,12 @@ class StudyGroupsService extends BaseService {
     
     if (!groups || groups.length === 0) {
       // Show empty state
-      if (emptyStateCard) emptyStateCard.style.display = 'block';
+      if (emptyStateCard) emptyStateCard.style.display = 'flex';
       if (container) container.style.display = 'none';
     } else {
       // Show groups
       if (emptyStateCard) emptyStateCard.style.display = 'none';
-      if (container) container.style.display = 'block';
+      if (container) container.style.display = 'flex';
       this.renderItems(groups, containerId, 'study groups', 'dashboard-groups-template');
     }
   }

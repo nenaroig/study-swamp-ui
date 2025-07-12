@@ -1,4 +1,3 @@
-// Updated DashboardPage.js
 import UserService from '../api/UserService.js';
 import MeetingService from '../api/MeetingService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';

@@ -48,7 +48,20 @@ class AppRouter {
   // Extract page name from current URL
   getCurrentPage() {
     const path = window.location.pathname;
-    return path.split('/').pop() || 'login';
+    return path.split('/').pop() || 'dashboard';
+  }
+
+    // Handle initial load
+  handleInitialLoad() {
+    const path = window.location.pathname;
+    
+    // Only redirect to login if we're on root path during initial load
+    if (path === '/') {
+      this.navigateToPage('login');
+      return true;
+    }
+    
+    return false;
   }
 
   // Load and render content for current page
@@ -123,8 +136,11 @@ class AppRouter {
       this.loadPageContent();
     });
 
-    // Load initial page
-    this.loadPageContent();
+    // Check if we need to redirect to login on initial load
+    if (!this.handleInitialLoad()) {
+      // If no redirect happened, load the current page normally
+      this.loadPageContent();
+    }
   }
 }
 

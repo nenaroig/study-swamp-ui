@@ -1,4 +1,31 @@
 <div class="inner-wrapper">
-  <h1>Study Groups</h1>
-  <p>Content coming soon...</p>
+  <div class="mx-auto mw-md-730p text-center">
+    <h1 class="text-white">Study Groups</h1>
+    <p class="text-white mt-4 fw-500 fs-18p">Connect with classmates, share knowledge, and excel together in your academic journey. Join study groups to collaborate on assignments, prepare for exams, and build lasting friendships.</p>
+  
+     <div id="dashboard-groups-container">
+      <!-- Study group cards will be inserted here -->
+    </div>
+  
+    <!-- Empty State Card (shown when no groups) -->
+    <div class="bg-white text-center p-5 rounded-4 w-xs-500p mx-auto mt-5" id="empty-state-card">
+      <span class="fa-solid fa-users fa-2x text-teal"></span>
+      <h2 class="mt-4">No Study Groups Yet</h2>
+      <p class="mt-4">You haven't joined any study groups yet. Start collaborating with your classmates by joining or creating a study group. It's a great way to enhance your learning experience and build connections!</p>
+      <button class="btn btn-violet mt-4">
+        <span class="fas fa-plus me-2"></span>
+        Find Study Groups
+      </button>
+    </div>
+  
+    <template id="dashboard-groups-template">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h4 class="card-title groups-title"></h4>
+          <p class="card-text groups-description"></p>
+          <div class="btn btn-primary groups-btn">Join Discussion</div>
+        </div>
+      </div>
+    </template>
+  </div>
 </div>

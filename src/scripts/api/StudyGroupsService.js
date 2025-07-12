@@ -1,14 +1,4 @@
-/**
- * StudyGroupsService - Service for managing study group data and UI
- * 
- * Extends BaseService to provide study group-specific functionality including:
- * - Fetching user's study group memberships from the API
- * - Rendering study group cards in the UI
- * - Formatting group information for display
- * - Handling group-related user interactions
- * 
- * @extends BaseService
- */
+// StudyGroupsService - manages study group data and UI
 
 import ApiService from './ApiService.js';
 import UserService from './UserService.js';
@@ -19,8 +9,8 @@ class StudyGroupsService extends BaseService {
   /* ======= GETTERS ======= */
   
   /**
-   * Fetches all study groups that the current user is a member of
-   */
+  * Fetches all study groups that the current user is a member of
+  */
   static async getMyStudyGroups() {
     try {
       const authHeader = UserService.getAuthHeader();
@@ -34,13 +24,13 @@ class StudyGroupsService extends BaseService {
       throw error;
     }
   }
-
+  
   /* ======= ABSTRACT METHOD IMPLEMENTATIONS ======= */
   
   /**
-   * Creates a study group card element (implements BaseService abstract method)
-   */
-  static createCard(group, index = 0, templateId = 'groups-template') {
+  * Creates a study group card element (implements BaseService abstract method)
+  */
+  static createCard(group, index = 0, templateId = 'dashboard-groups-template') {
     const title = group.attributes?.name || 'Untitled Group',
     description = this.formatGroupDescription(group),
     id = `group-${group.id || index}`;
@@ -56,8 +46,8 @@ class StudyGroupsService extends BaseService {
   }
   
   /**
-   * Provides empty state configuration (implements BaseService abstract method)
-   */
+  * Provides empty state configuration (implements BaseService abstract method)
+  */
   static getEmptyStateConfig() {
     return {
       title: 'No study groups',
@@ -68,8 +58,8 @@ class StudyGroupsService extends BaseService {
   /* ======= CUSTOM CARD POPULATION ======= */
   
   /**
-   * Populates study group card template with data (overrides BaseService method)
-   */
+  * Populates study group card template with data (overrides BaseService method)
+  */
   static populateCardData(clone, data) {
     const titleElement = clone.querySelector('.groups-title'),
     descriptionElement = clone.querySelector('.groups-description'),
@@ -94,13 +84,13 @@ class StudyGroupsService extends BaseService {
       }
     }
   }
-
+  
   /* ======= DISPLAY/RENDERING ======= */
   
   /**
-   * Formats study group description for display
-   * Combines department and class number information into a readable format
-   */
+  * Formats study group description for display
+  * Combines department and class number information into a readable format
+  */
   static formatGroupDescription(group) {
     const department = group.attributes?.department,
     classNumber = group.attributes?.class_number;
@@ -120,7 +110,7 @@ class StudyGroupsService extends BaseService {
   static renderStudyGroups(groups, containerId = 'groups-container') {
     this.renderItems(groups, containerId, 'study groups');
   }
-
+  
   // Renders study groups using dashboard-specific template 
   static renderDashboardGroups(groups, containerId = 'dashboard-groups-container') {
     const emptyStateCard = document.getElementById('empty-state-card');
@@ -128,12 +118,24 @@ class StudyGroupsService extends BaseService {
     
     if (!groups || groups.length === 0) {
       // Show empty state
-      if (emptyStateCard) emptyStateCard.style.display = 'flex';
-      if (container) container.style.display = 'none';
+      if (emptyStateCard) {
+        emptyStateCard.classList.remove('d-none');
+        emptyStateCard.classList.add('d-flex');
+      }
+      if (container) {
+        container.classList.remove('d-flex');
+        container.classList.add('d-none');
+      }
     } else {
       // Show groups
-      if (emptyStateCard) emptyStateCard.style.display = 'none';
-      if (container) container.style.display = 'flex';
+      if (emptyStateCard) {
+        emptyStateCard.classList.remove('d-flex');
+        emptyStateCard.classList.add('d-none');
+      }
+      if (container) {
+        container.classList.remove('d-none');
+        container.classList.add('d-flex');
+      }
       this.renderItems(groups, containerId, 'study groups', 'dashboard-groups-template');
     }
   }
@@ -141,16 +143,16 @@ class StudyGroupsService extends BaseService {
   /* ======= ACTION HANDLERS ======= */
   
   /**
-   * Handles user interactions with study group cards (e.g., action button clicks)
-   * Currently logs the action - should be implemented with actual functionality
-   * 
-   * @todo Implement actual group actions such as:
-   *   - Showing group details modal - possibly
-   *   - Navigating to group page
-   *   - Joining/leaving group
-   *   - Viewing group members
-   *   - Accessing group resources
-   */
+  * Handles user interactions with study group cards (e.g., action button clicks)
+  * Currently logs the action - should be implemented with actual functionality
+  * 
+  * @todo Implement actual group actions such as:
+  *   - Showing group details modal - possibly
+  *   - Navigating to group page
+  *   - Joining/leaving group
+  *   - Viewing group members
+  *   - Accessing group resources
+  */
   static handleGroupAction(group) {
     console.log('Group action clicked:', group);
     

@@ -1,5 +1,6 @@
 import LoginPage from './LoginPage.js';
 import DashboardPage from './DashboardPage.js';
+import StudyGroupsPage from './StudyGroupsPage.js';
 
 class PageController {
   constructor() {
@@ -26,6 +27,10 @@ class PageController {
         break;
       case 'dashboard':
         this.currentPage = new DashboardPage();
+        this.currentPage.init();
+        break;
+      case 'groups':
+        this.currentPage = new StudyGroupsPage();
         this.currentPage.init();
         break;
       default:

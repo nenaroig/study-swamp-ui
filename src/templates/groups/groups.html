@@ -1,7 +1,38 @@
 <div class="inner-wrapper">
-  <div class="mx-auto mw-md-730p text-center">
-    <h1 class="text-white">Study Groups</h1>
-    <p class="text-white mt-4 fw-500 fs-18p">Connect with classmates, share knowledge, and excel together in your academic journey. Join study groups to collaborate on assignments, prepare for exams, and build lasting friendships.</p>
+  <div class="mx-auto mw-md-730p">
+    <div class="bg-white opacity-75 p-5 text-center rounded-4">
+      <h1>Study Groups</h1>
+      <p class="mt-4 fw-500 fs-18p">Connect with classmates, share knowledge, and excel together in your academic journey. Join study groups to collaborate on assignments, prepare for exams, and build lasting friendships.</p>
+      
+      <div class="d-flex justify-content-center gap-3 mt-4">
+        <!-- Don't worry about this for now. We need to implement functionality -->
+        <button class="btn btn-violet">
+          <span class="fa-solid fa-user-plus me-3"></span>Create New Group
+        </button>
+      </div>
+    </div>
+    
+    <!-- Stats Row -->
+    <div class="row">
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <h2 class="text-teal" id="member-count">3</h2> <!-- Update to pull dynamically -->
+          <div class="text-muted">My Groups</div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <h2 class="text-teal" id="meeting-count">4</h2> <!-- Update to pull dynamically -->
+          <div class="text-muted">Meetings</div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <h2 class="text-teal" id="comment-count">6</h2> <!-- Update to pull dynamically -->
+          <div class="text-muted">Available Groups</div>
+        </div>
+      </div>
+    </div>
     
     <div id="dashboard-groups-container" class="row">
       <!-- Study group cards will be inserted here -->
@@ -12,22 +43,30 @@
       <span class="fa-solid fa-users fa-2x text-teal"></span>
       <h2 class="mt-4">No Study Groups Yet</h2>
       <p class="mt-4">You haven't joined any study groups yet. Start collaborating with your classmates by joining or creating a study group. It's a great way to enhance your learning experience and build connections!</p>
-      <a href="" class="btn btn-violet mt-4">
+      <a href="" class="btn btn-violet mt-4"> <!-- Don't worry about this. Need implementation -->
         <span class="fas fa-plus me-2"></span>
         Find Study Groups
       </a>
     </div>
     
     <template id="dashboard-groups-template">
-      <div class="col-md-4 col-sm-6 mt-5">
-        <div class="card mb-3 h-100" data-group-name="">
-          <div class="card-body text-start d-flex flex-column">
+      <div class="col-md-4 col-sm-6 mt-4">
+        <div class="bg-white p-4 mb-3 h-100 rounded-4" data-group-name="">
+          <div class="text-start d-flex flex-column h-100">
             <h3 class="h5 groups-title"></h3>
             <p class="groups-description"></p>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <div class="member-avatars d-flex">
+                <div class="member-avatar rounded-circle text-white">JV</div>
+                <div class="member-avatar rounded-circle text-white">CB</div>
+                <div class="member-avatar rounded-circle text-white">RF</div>
+                <div class="member-avatar rounded-circle text-white">6+</div>
+              </div>
+            </div>
             <a href="" id="group-url" class="small mt-auto">VIEW GROUP</a>
           </div>
         </div>
       </div>
-    </div>
-  </template>
+    </template>
+  </div>
 </div>

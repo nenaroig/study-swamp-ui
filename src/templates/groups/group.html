@@ -1,0 +1,173 @@
+<div class="inner-wrapper">
+  <div class="mx-auto mw-md-730p">
+    <div class="bg-white opacity-75 p-5 text-center rounded-4">
+      <h1 id="group-title"></h1>
+      <p id="group-department" class="h4mt-3">COP 3530</p> <!-- Update to pull dynamically -->
+      <div class="d-flex justify-content-center gap-3 mt-4">
+        <!-- Don't worry about this for now. We need to implement functionality -->
+        <button class="btn btn-violet">
+          <span class="fa-solid fa-user-plus me-3"></span>Leave Group
+        </button>
+      </div>
+    </div>
+    
+    <!-- Stats Row -->
+    <div class="row">
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <h2 class="text-teal" id="member-count">3</h2> <!-- Update to pull dynamically -->
+          <div class="text-muted">Members</div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <h2 class="text-teal" id="meeting-count">4</h2> <!-- Update to pull dynamically -->
+          <div class="text-muted">Meetings</div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <h2 class="text-teal" id="comment-count">6</h2> <!-- Update to pull dynamically -->
+          <div class="text-muted">Comments</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Members Section -->
+    <div class="bg-white rounded-4 p-4 mt-4">
+      <h3><span class="fa-solid fa-users text-teal me-3"></span>Members</h3>
+      <!-- You will only need 1 card. Look at groups for reference. -->
+      <div id="members-list">
+        <div class="d-flex align-items-center justify-content-between mt-4">
+          <div class="d-flex align-items-centermt-3">
+            <div class="member-avatar rounded-circle text-white me-3">JV</div> <!-- Update to pull dynamically -->
+            <div>
+              <div class="fw-500">Josie Vincent</div> <!-- Update to pull dynamically -->
+              <p class="smaller text-muted">user1@test.com</p> <!-- Update to pull dynamically -->
+            </div>
+          </div>
+          <div>
+            <span class="badge rounded-pill text-bg-info text-white">Creator</span>
+            <span class="badge rounded-pill bg-success ms-1">Editor</span> <!-- Update to pull dynamically -->
+          </div>
+        </div>
+        <!-- You will only need 1 card. Look at groups for reference. -->
+        <div class="d-flex align-items-center justify-content-between mt-4">
+          <div class="d-flex align-items-centermt-3">
+            <div class="member-avatar rounded-circle text-white me-3">CH</div>
+            <div>
+              <div class="fw-500">Camila Hubbard</div>
+              <p class="smaller text-muted">user2@test.com</p>
+            </div>
+          </div>
+          <div>
+            <span class="badge rounded-pill bg-secondary">Member</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mt-4">
+          <div class="d-flex align-items-centermt-3">
+            <div class="member-avatar rounded-circle text-white me-3">MR</div>
+            <div>
+              <div class="fw-500">Micah Rivas</div>
+              <p class="smaller text-muted">user3@test.com</p>
+            </div>
+          </div>
+          <div>
+            <span class="badge rounded-pill bg-warning">Inactive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Upcoming Meetings -->
+    <div class="bg-white rounded-4 p-4 mt-4">
+      <h3><span class="fa-solid fa-calendar-check text-teal me-3"></span>Upcoming Meetings</h3>
+      <div id="meetings-list">
+        <!-- You will only need 1 card. Look at groups for reference. -->
+        <div class="meeting-card">
+          <div class="d-flex justify-content-between align-items-start mt-4">
+            <div>
+              <h4 class="fw-500">Gator Minds Weekly Study</h4> <!-- Update to pull dynamically -->
+              <p class="text-muted mt-3">
+                <span class="fa-solid fa-clock me-2 fa-fw"></span>Today at 1:00 PM - 3:00 PM <!-- Update to pull dynamically -->
+              </p>
+              <p class="text-muted mb-0">
+                <span class="fa-solid fa-map-marker-alt me-2 fa-fw"></span>George A. Smathers, Room 336 <!-- Update to pull dynamically -->
+              </p>
+            </div>
+            <a href="https://zoom.us/signin" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-teal text-white">Join</a>
+          </div>
+        </div>
+        <!-- You will only need 1 card. Look at groups for reference. -->
+        <div class="meeting-card">
+          <div class="d-flex justify-content-between align-items-start mt-4">
+            <div>
+              <h4 class="fw-500">Finals CRAM!!!</h4>
+              <p class="text-muted mt-3">
+                <span class="fa-solid fa-clock me-2 fa-fw"></span>Aug 2 at 4:00 PM - 7:00 PM
+              </p>
+              <p class="text-muted mb-0">
+                <span class="fa-solid fa-map-marker-alt me-2 fa-fw"></span>J. Wayne Reitz, Room 302
+              </p>
+            </div>
+            <button class="btn btn-sm btn-outline-teal">RSVP</button>  <!-- Don't worry about this for now. Need to implement functionality or remove -->
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-violet w-100 mt-4">
+        <span class="fa-solid fa-plus me-3"></span>Schedule New Meeting  <!-- Don't worry about this for now. Need to implement functionality -->
+      </button>
+    </div>
+    
+    <!-- Group Discussion -->
+    <div class="bg-white rounded-4 p-4 mt-4">
+      <h3><span class="fa-solid fa-comments text-teal me-3"></span>Group Discussion</h3>
+      <div id="comments-list">
+        <!-- You will only need 1 card. Look at groups for reference. -->
+         <div class="d-flex mt-4">
+          <div class="member-avatar rounded-circle text-white me-3">JV</div><!-- Update to pull dynamically -->
+          <div class="flex-grow-1">
+            <p class="fw-500 mb-2">Josie Vincent</p><!-- Update to pull dynamically -->
+            <div class="comment-bubble">
+            <p class="mt-4 fw-500 mb-1">Just a FYSA. I am making a weekly study session.</p> <!-- Update to pull dynamically -->
+            <p class="smaller text-muted">2 hours ago</p> <!-- Update to pull dynamically -->
+            </div>
+          </div>
+        </div>
+        <!-- You will only need 1 card. Look at groups for reference. -->
+        <div class="d-flex mt-4">
+          <div class="member-avatar rounded-circle text-white me-3">CH</div>
+          <div class="flex-grow-1">
+            <p class="fw-500 mb-2">Camila Hubbard</p>
+            <div class="comment-bubble">
+              <p class="mt-4 fw-500 mb-1">Im in!</p>
+              <p class="smaller text-muted">1 hour ago</p>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex mt-4">
+          <div class="member-avatar rounded-circle text-white me-3">MR</div>
+          <div class="flex-grow-1">
+            <p class="fw-500 mb-2">Micah Rivas</p>
+            <div class="comment-bubble">
+            <p class="mt-4 fw-500 mb-1">Doh! Can't make the first meeting see you all next week!</p>
+            <p class="smaller text-muted">45 minutes ago</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add Comment Form -->
+      <div class="mt-4 pt-3 border-top">
+        <div class="d-flex align-items-startmt-3">
+          <div class="member-avatar rounded-circle text-white me-3">YU</div> <!-- Update to pull dynamically -->
+          <div class="flex-grow-1">
+            <textarea class="form-control" rows="3" placeholder="Share your thoughts with the group..."></textarea>
+            <button class="btn btn-tealmt-3">Post Comment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>

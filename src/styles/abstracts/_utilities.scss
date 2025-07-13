@@ -129,6 +129,35 @@ $sizesXL: map-merge($sizes, $sizesXL);
       opacity: 0.65;
     }
   }
+  .btn-outline-#{$color-name} {
+    color: #{$color-value};
+    background-color: transparent;
+    border-color: #{$color-value};
+    border: 1px solid #{$color-value};
+    
+    &:hover,
+    &:focus,
+    &.focus {
+      color: #fff;
+      background-color: darken($color-value, 7.5%);
+      border-color: darken($color-value, 10%);
+    }
+    
+    &:active,
+    &.active {
+      color: #fff;
+      background-color: darken($color-value, 10%);
+      border-color: darken($color-value, 12.5%);
+    }
+    
+    &:disabled,
+    &.disabled {
+      color: #fff;
+      background-color: #{$color-value};
+      border-color: #{$color-value};
+      opacity: 0.65;
+    }
+  }
   .text-#{$color-name} {
     color: #{$color-value} !important;
   }

@@ -1,4 +1,4 @@
-// StudyGroupsService - manages study group data and UI
+// StudyGroupsService - manages study groups data and UI
 
 import ApiService from './ApiService.js';
 import UserService from './UserService.js';
@@ -8,9 +8,7 @@ class StudyGroupsService extends BaseService {
   
   /* ======= GETTERS ======= */
   
-  /**
-  * Fetches all study groups that the current user is a member of
-  */
+  // Fetches all study groups that the current user is a member of
   static async getMyStudyGroups() {
     try {
       const authHeader = UserService.getAuthHeader();
@@ -27,9 +25,7 @@ class StudyGroupsService extends BaseService {
   
   /* ======= ABSTRACT METHOD IMPLEMENTATIONS ======= */
   
-  /**
-  * Creates a study group card element (implements BaseService abstract method)
-  */
+  // Creates a study group card element (implements BaseService abstract method)
   static createCard(group, index = 0, templateId = 'dashboard-groups-template') {
     const title = group.attributes?.name || 'Untitled Group',
     description = this.formatGroupDescription(group),
@@ -42,12 +38,18 @@ class StudyGroupsService extends BaseService {
       buttonHandler: () => this.handleGroupAction(group)
     };
     
-    return this.createCardFromTemplate(templateId, cardData);
+    const clone = this.createCardFromTemplate(templateId, cardData);
+    
+    // Add data-group-name attribute for URL generation
+    const card = clone.querySelector('.card');
+    if (card) {
+      card.dataset.groupName = title;
+    }
+    
+    return clone;
   }
   
-  /**
-  * Provides empty state configuration (implements BaseService abstract method)
-  */
+  // Provides empty state configuration (implements BaseService abstract method)
   static getEmptyStateConfig() {
     return {
       title: 'No study groups',
@@ -57,9 +59,7 @@ class StudyGroupsService extends BaseService {
   
   /* ======= CUSTOM CARD POPULATION ======= */
   
-  /**
-  * Populates study group card template with data (overrides BaseService method)
-  */
+  // Populates study group card template with data (overrides BaseService method)
   static populateCardData(clone, data) {
     const titleElement = clone.querySelector('.groups-title'),
     descriptionElement = clone.querySelector('.groups-description'),
@@ -87,10 +87,8 @@ class StudyGroupsService extends BaseService {
   
   /* ======= DISPLAY/RENDERING ======= */
   
-  /**
-  * Formats study group description for display
-  * Combines department and class number information into a readable format
-  */
+  // Formats study group description for display
+  // Combines department and class number information into a readable format
   static formatGroupDescription(group) {
     const department = group.attributes?.department,
     classNumber = group.attributes?.class_number;

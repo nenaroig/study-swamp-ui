@@ -1,6 +1,22 @@
 import PageController from './PageController.js';
 import UserService from '../api/UserService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
+import { createGroupUrl } from './StudyGroupDetailPage.js';
+
+// Update existing empty href link
+export function updateGroupLinks() {
+  const groupLinks = document.querySelectorAll('a#group-url');
+  
+  groupLinks.forEach(link => {
+    const groupCard = link.closest('[data-group-name]');
+    if (groupCard) {
+      const groupName = groupCard.dataset.groupName;
+      if (groupName) {
+        link.href = createGroupUrl(groupName);
+      }
+    }
+  });
+}
 
 class StudyGroupsPage {
  constructor() {
@@ -22,6 +38,8 @@ class StudyGroupsPage {
    
    // Load and render study groups
    await this.loadStudyGroups();
+
+   updateGroupLinks();
    
    this.isInitialized = true;
  }

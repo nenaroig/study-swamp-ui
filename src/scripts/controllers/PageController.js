@@ -1,6 +1,7 @@
 import LoginPage from './LoginPage.js';
 import DashboardPage from './DashboardPage.js';
 import StudyGroupsPage from './StudyGroupsPage.js';
+import StudyGroupDetailPage from './StudyGroupDetailPage.js';
 
 class PageController {
   constructor() {
@@ -32,6 +33,12 @@ class PageController {
       case 'groups':
         this.currentPage = new StudyGroupsPage();
         this.currentPage.init();
+        break;
+      case 'group':
+        // Extract the group slug from the URL
+        const groupSlug = this.extractSlugFromPath('groups');
+        this.currentPage = new StudyGroupDetailPage();
+        this.currentPage.init(groupSlug);
         break;
       default:
         console.warn(`No page class found for: ${page}`);
@@ -92,6 +99,14 @@ class PageController {
       container.appendChild(successDiv);
       setTimeout(() => successDiv.remove(), 3000);
     }
+  }
+
+  // Helper method to extract slug from URL path
+  extractSlugFromPath(basePath) {
+    const path = window.location.pathname;
+    const regex = new RegExp(`^/${basePath}/([^/]+)$`);
+    const matches = path.match(regex);
+    return matches ? matches[1] : null;
   }
 }
 

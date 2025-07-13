@@ -1,3 +1,6 @@
+@use '../abstracts/mixins' as *;
+@use '../abstracts/variables' as *;
+
 label {
   margin-bottom: .5rem;
 }
@@ -6,4 +9,10 @@ label {
   border: none;
   border-bottom: 2px solid var(--bs-gray-200);
   border-radius: 0;
+  @include placeholder {
+    font-size: $font-size-base;
+  }
+  &::placeholder {
+    font-size: $font-size-base;
+  }
 }

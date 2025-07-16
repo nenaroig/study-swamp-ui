@@ -58,8 +58,32 @@ export default class BaseService {
   static createCardFromTemplate(templateId, data) {
     const template = document.getElementById(templateId);
     if (!template) {
-      console.error(`Template with id "${templateId}" not found`);
-      return null;
+      const allTemplates = Array.from(document.querySelectorAll('template')).map(t => t.id).join(', ');
+      console.error(`Template with id "${templateId}" not found. Available templates: ${allTemplates || 'none'}`);
+      
+      // Create fallback element if template not found
+      const fallbackDiv = document.createElement('div');
+      fallbackDiv.className = 'd-flex align-items-center justify-content-between mt-4';
+      fallbackDiv.innerHTML = `
+        <div>
+          <h3 class="h5">${data.title || 'Untitled'}</h3>
+          <p class="text-muted mb-0">${data.description || ''}</p>
+        </div>
+      `;
+      
+      // If there's a buttonHandler, add a button
+      if (data.buttonHandler) {
+        const button = document.createElement('div');
+        button.className = 'btn btn-sm btn-violet';
+        button.textContent = 'View';
+        button.addEventListener('click', data.buttonHandler);
+        fallbackDiv.appendChild(button);
+      }
+      
+      // Create a document fragment to hold the fallback div
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(fallbackDiv);
+      return fragment;
     }
     
     const clone = template.content.cloneNode(true);

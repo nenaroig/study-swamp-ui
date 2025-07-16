@@ -27,6 +27,20 @@ class StudyGroupsService extends BaseService {
   
   // Creates a study group card element (implements BaseService abstract method)
   static createCard(group, index = 0, templateId = 'dashboard-groups-template') {
+    // Try to find the specified template, fall back to alternatives if not found
+    const fallbackTemplateIds = ['dashboard-groups-template', 'groups-template'];
+    
+    // If the specified template doesn't exist in the DOM, try the fallbacks
+    if (templateId && !document.getElementById(templateId)) {
+      for (const fallbackId of fallbackTemplateIds) {
+        if (fallbackId !== templateId && document.getElementById(fallbackId)) {
+          console.log(`Template "${templateId}" not found, using fallback "${fallbackId}"`);
+          templateId = fallbackId;
+          break;
+        }
+      }
+    }
+    
     const title = group.attributes?.name || 'Untitled Group',
     description = this.formatGroupDescription(group),
     id = `group-${group.id || index}`;
@@ -106,7 +120,10 @@ class StudyGroupsService extends BaseService {
   
   // Renders study groups into the specified container
   static renderStudyGroups(groups, containerId = 'groups-container') {
-    this.renderItems(groups, containerId, 'study groups');
+    // Check if we're rendering in the dashboard and use the right template ID
+    const isDashboard = containerId === 'groups-container';
+    const templateId = isDashboard ? 'groups-template' : 'dashboard-groups-template';
+    this.renderItems(groups, containerId, 'study groups', templateId);
   }
   
   // Renders study groups using dashboard-specific template 
@@ -157,12 +174,21 @@ class StudyGroupsService extends BaseService {
     const groupName = group.attributes?.name || 'Untitled Group',
     groupId = group.id;
     
-    // Example implementation possibilities:
-    // - Show group details modal: showGroupDetailsModal(group) - possibly
-    // - Navigate to group page: window.location.href = `/groups/${groupId}`
-    // - Join/leave group: toggleGroupMembership(groupId)
-    
-    console.log(`Action requested for group: ${groupName} (ID: ${groupId})`);
+    // Import the URL helpers
+    import('../utils/URLHelpers.js').then(module => {
+      if (module && module.createGroupUrl) {
+        // Navigate to the group detail page
+        const url = module.createGroupUrl(groupName);
+        window.location.href = url;
+      } else {
+        // Fallback if the import doesn't work
+        window.location.href = `/groups/${encodeURIComponent(groupName.toLowerCase().replace(/\s+/g, '-'))}`;
+      }
+    }).catch(error => {
+      console.error('Error navigating to group page:', error);
+      // Fallback navigation
+      window.location.href = `/groups/${encodeURIComponent(groupName.toLowerCase().replace(/\s+/g, '-'))}`;
+    });
   }
 }
 

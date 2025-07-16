@@ -1,7 +1,7 @@
 import PageController from './PageController.js';
 import UserService from '../api/UserService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
-import { createGroupUrl } from './StudyGroupDetailPage.js';
+import { createGroupUrl } from '../utils/URLHelpers.js';
 
 // Update existing empty href link
 export function updateGroupLinks() {

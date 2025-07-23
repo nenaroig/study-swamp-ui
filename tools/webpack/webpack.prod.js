@@ -2,6 +2,8 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const { merge } = require('webpack-merge');
+const common = require('./webpack.common.js');
 
 // Plugins
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -9,7 +11,7 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
-module.exports = {
+module.exports = merge(common, {
   mode: 'production',
   devtool: 'source-map',
   
@@ -76,8 +78,7 @@ module.exports = {
           reuseExistingChunk: true,
           enforce: true,
         },
-        styles: {
-          name: 'styles',
+        css: {
           type: 'css/mini-extract',
           chunks: 'all',
           enforce: true,
@@ -197,13 +198,6 @@ module.exports = {
       threshold: 8192,
       minRatio: 0.8,
     }),
-    
-    // Bundle analyzer - uncomment to analyze bundle size
-    // new (require('webpack-bundle-analyzer').BundleAnalyzerPlugin)({
-    //   analyzerMode: 'static',
-    //   openAnalyzer: false,
-    //   reportFilename: path.resolve(__dirname, '../../docs/bundle-report.html'),
-    // }),
   ],
   
   // Performance budgets
@@ -212,4 +206,4 @@ module.exports = {
     maxAssetSize: 512000,
     hints: 'warning',
   },
-};
+});

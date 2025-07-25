@@ -164,6 +164,33 @@ class StudyGroupsService extends BaseService {
     
     console.log(`Action requested for group: ${groupName} (ID: ${groupId})`);
   }
+
+  /* ======= CREATORS ======= */
+
+  // Creates a new study group
+  static async createStudyGroup(groupData) {
+    try {
+      const authHeader = UserService.getAuthHeader();
+      const response = await ApiService.postData('groups/', {
+        name: groupData.name,
+        course_code: `${groupData.department} ${groupData.courseNumber}`,
+        description: groupData.description,
+        department: groupData.department,
+        class_number: groupData.courseNumber
+      }, authHeader);
+      
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('Failed to create study group:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to create study group'
+      };
+    }
+  }
 }
 
 export default StudyGroupsService;

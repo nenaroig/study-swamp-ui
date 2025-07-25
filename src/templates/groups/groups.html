@@ -120,7 +120,17 @@
           </div>
 
           <!-- Error/Success Messages -->
-          <div id="modalMessages"></div>
+          <div id="modalErrorMessage" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+            <span class="fa-solid fa-exclamation-triangle me-2"></span>
+            <span id="errorText"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          
+          <div id="modalSuccessMessage" class="alert alert-success alert-dismissible fade d-none" role="alert">
+            <span class="fa-solid fa-check-circle me-2"></span>
+            <span id="successText"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
         </form>
       </div>
       

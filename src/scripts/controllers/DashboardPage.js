@@ -2,6 +2,7 @@ import UserService from '../api/UserService.js';
 import MeetingService from '../api/MeetingService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
 import StatsService from '../api/StatsService.js';
+import ApiService from '../api/ApiService.js';
 import PageController from './PageController.js';
 
 class DashboardPage {
@@ -17,6 +18,7 @@ class DashboardPage {
     if (this.isInitialized) return;
     
     if (!UserService.isLoggedIn()) {
+      console.log('User not logged in, redirecting to home');
       PageController.navigateTo('/');
       return;
     }
@@ -32,6 +34,15 @@ class DashboardPage {
   
   async loadDashboardData() {
     try {
+      console.log('Loading dashboard data...');
+      
+      // Test authentication first
+      const authHeader = UserService.getAuthHeader();
+      
+      if (!authHeader) {
+        throw new Error('No authentication header available');
+      }
+      
       // Load meetings and groups in parallel
       const [meetingsResponse, groupsResponse] = await Promise.all([
         MeetingService.getUpcomingMeetings(),
@@ -42,10 +53,13 @@ class DashboardPage {
       this.meetings = meetingsResponse.meetingData?.data || [];
       this.groups = groupsResponse.studyGroupsData?.data || [];
       
+      console.log(`Successfully loaded ${this.meetings.length} meetings and ${this.groups.length} groups`);
+      
       // Render all dashboard sections
       this.renderDashboard();
       
     } catch (error) {
+      console.error('Dashboard data loading failed:', error);
       this.handleLoadError();
     }
   }
@@ -90,6 +104,8 @@ class DashboardPage {
   }
   
   handleLoadError() {
+    console.error('Handle load error called');
+    
     // Show error message in stats container
     const statsContainer = document.getElementById('stats-container');
     if (statsContainer) {
@@ -97,8 +113,32 @@ class DashboardPage {
         <div class="alert alert-warning" role="alert">
           <h4 class="alert-heading">Unable to load dashboard data</h4>
           <p>Please try refreshing the page. If the problem persists, please contact support.</p>
+          <div class="mt-3">
+            <button class="btn btn-primary me-2" onclick="location.reload()">Refresh Page</button>
+            <button class="btn btn-secondary" id="retry-load-btn">Retry Loading Data</button>
+          </div>
+          <details class="mt-3">
+            <summary>Debugging Information</summary>
+            <div class="mt-2">
+              <p><strong>User logged in:</strong> ${UserService.isLoggedIn()}</p>
+              <p><strong>Auth header available:</strong> ${!!UserService.getAuthHeader()}</p>
+              <p><strong>API Base URL:</strong> ${ApiService.getBaseUrl()}</p>
+              <p><strong>Current time:</strong> ${new Date().toISOString()}</p>
+            </div>
+          </details>
         </div>
       `;
+      
+      // Add retry button functionality
+      const retryBtn = document.getElementById('retry-load-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+          console.log('Retrying dashboard data load...');
+          this.loadDashboardData();
+        });
+      }
+    } else {
+      console.error('Stats container not found');
     }
   }
   

@@ -267,7 +267,21 @@ class UserService {
    * }
    */
   static isLoggedIn() {
-    return this.username !== null && this.password !== null;
+    const hasMemoryCredentials = this.username !== null && this.password !== null;
+    
+    // Also check sessionStorage as backup
+    if (!hasMemoryCredentials) {
+      const storedUsername = sessionStorage.getItem('username');
+      const storedPassword = sessionStorage.getItem('password');
+      
+      if (storedUsername && storedPassword) {
+        console.log('Restoring credentials from sessionStorage');
+        this.setCredentials(storedUsername, storedPassword);
+        return true;
+      }
+    }
+    
+    return hasMemoryCredentials;
   }
 
   /* ======= LIFECYCLE ======= */

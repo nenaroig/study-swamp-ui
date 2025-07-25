@@ -3,6 +3,8 @@
 import ApiService from './ApiService.js';
 import UserService from './UserService.js';
 import BaseService from './BaseService.js';
+import PageController from '../controllers/PageController.js';
+import { createGroupUrl } from '../controllers/StudyGroupDetailPage.js';
 
 class StudyGroupsService extends BaseService {
   
@@ -41,9 +43,9 @@ class StudyGroupsService extends BaseService {
     const clone = this.createCardFromTemplate(templateId, cardData);
     
     // Add data-group-name attribute for URL generation
-    const card = clone.querySelector('.card');
-    if (card) {
-      card.dataset.groupName = title;
+    const container = clone.querySelector('div[data-group-name]');
+    if (container) {
+      container.dataset.groupName = title;
     }
     
     return clone;
@@ -154,15 +156,16 @@ class StudyGroupsService extends BaseService {
   static handleGroupAction(group) {
     console.log('Group action clicked:', group);
     
-    const groupName = group.attributes?.name || 'Untitled Group',
-    groupId = group.id;
+    const groupName = group.attributes?.name || 'Untitled Group';
+    const groupId = group.id;
     
-    // Example implementation possibilities:
-    // - Show group details modal: showGroupDetailsModal(group) - possibly
-    // - Navigate to group page: window.location.href = `/groups/${groupId}`
-    // - Join/leave group: toggleGroupMembership(groupId)
+    // Create URL for group detail page
+    const groupUrl = createGroupUrl(groupName);
     
-    console.log(`Action requested for group: ${groupName} (ID: ${groupId})`);
+    console.log(`Navigating to group: ${groupName} (ID: ${groupId}) at ${groupUrl}`);
+    
+    // Navigate to group detail page using window.location
+    window.location.href = groupUrl;
   }
 
   /* ======= CREATORS ======= */

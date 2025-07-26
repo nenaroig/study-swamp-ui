@@ -45,10 +45,8 @@ class UserService {
 
   // Sets user data and persists to localStorage
   static setCurrentUserData(userData) {
-    console.log('🔵 setCurrentUserData called with:', userData);
     this.currentUserData = userData;
     localStorage.setItem('currentUserData', JSON.stringify(userData));
-    console.log('🔵 Stored to localStorage successfully');
   }
 
   /* ======= AUTHENTICATION ======= */
@@ -74,10 +72,8 @@ class UserService {
 
   // Stores credentials in localStorage
   static storeCredentials(username, password) {
-    console.log('🔵 storeCredentials called:', username);
     localStorage.setItem('username', username);
     localStorage.setItem('password', password);
-    console.log('🔵 Credentials stored to localStorage');
   }
 
   // Loads stored user data from localStorage
@@ -98,7 +94,6 @@ class UserService {
 
   // Clears credentials from memory only
   static clearCredentials() {
-    console.log('🔴 clearCredentials called');
     this.username = null;
     this.password = null;
     this.currentUserData = null;
@@ -120,7 +115,6 @@ class UserService {
 
   // Removes all stored data from localStorage
   static clearStoredCredentials() {
-    console.log('🔴 clearStoredCredentials called - clearing localStorage');
     localStorage.removeItem('username');
     localStorage.removeItem('password');
     localStorage.removeItem('currentUserData');
@@ -128,16 +122,13 @@ class UserService {
 
   // Checks if user is logged in
   static isLoggedIn() {
-    console.log('🔍 isLoggedIn check - memory credentials:', this.username, this.password ? '***' : null);
     const hasMemoryCredentials = this.username !== null && this.password !== null;
 
     if (!hasMemoryCredentials) {
       const storedUsername = localStorage.getItem('username');
       const storedPassword = localStorage.getItem('password');
-      console.log('🔍 Checking localStorage:', storedUsername, storedPassword ? '***' : null);
 
       if (storedUsername && storedPassword) {
-        console.log('🟢 Restoring credentials from localStorage');
         this.setCredentials(storedUsername, storedPassword);
         return true;
       } else {
@@ -145,7 +136,6 @@ class UserService {
       }
     }
 
-    console.log('🔍 Final login status:', hasMemoryCredentials);
     return hasMemoryCredentials;
   }
 
@@ -153,9 +143,6 @@ class UserService {
 
   // Logs out user and clears all data
   static logout() {
-    console.log('🔴 LOGOUT CALLED - Stack trace:');
-    console.trace(); // This will show us exactly what called logout
-
     this.clearCredentials();
     this.clearStoredCredentials();
 

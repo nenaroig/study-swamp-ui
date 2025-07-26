@@ -23,7 +23,7 @@ class AppRouter {
       'signup': signUpContent,
       'forgot-password': forgotPasswordContent,
       'dashboard': dashboardContent,
-      'groups': groupsContent,
+      'study-groups': groupsContent,
       'group': groupContent,
       'meetings': meetingsContent,
       'awards': awardsContent,
@@ -31,7 +31,7 @@ class AppRouter {
     };
     
     // Pages that need navigation sidebar
-    this.pagesWithNav = ['dashboard', 'groups', 'group', 'meetings', 'awards', 'profile'];
+    this.pagesWithNav = ['dashboard', 'study-groups', 'group', 'meetings', 'awards', 'profile'];
     
     // Page titles for browser tab
     this.titles = {
@@ -39,7 +39,7 @@ class AppRouter {
       'signup': 'Study Swamp - Sign Up',
       'dashboard': 'Study Swamp',
       'forgot-password': 'Study Swamp - Forgot Password',
-      'groups': 'Study Swamp - My Study Groups',
+      'study-groups': 'Study Swamp - My Study Groups',
       'group': 'Study Swamp - Study Group',
       'meetings': 'Study Swamp - Meetings',
       'awards': 'Study Swamp - Awards',
@@ -62,7 +62,7 @@ class AppRouter {
       const basePage = segments[0];
       // Convert plural to singular for detail pages
       const singularMap = {
-        'groups': 'group',
+        'study-groups': 'group',
         'meetings': 'meeting', 
         'users': 'user',
         'awards': 'award'

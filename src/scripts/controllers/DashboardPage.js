@@ -34,37 +34,47 @@ class DashboardPage {
 
   async loadDashboardData() {
     try {
-      console.log('Loading dashboard data...');
-
-      // Test authentication first
       const authHeader = UserService.getAuthHeader();
 
       if (!authHeader) {
         throw new Error('No authentication header available');
       }
 
-      // Load meetings and groups in parallel
+      // Load meetings, groups, and members in parallel
       const [meetingsResponse, groupsResponse, membersResponse] = await Promise.all([
         MeetingService.getUpcomingMeetings(),
         StudyGroupsService.getMyStudyGroups(),
         UserService.makeAuthenticatedRequest('members/')
       ]);
 
-      // Extract data arrays
+      // Extract data arrays - fix the members data path
       this.meetings = meetingsResponse.meetingData?.data || [];
       this.groups = groupsResponse.studyGroupsData?.data || [];
-      this.members = membersResponse.groupMembersData?.data || [];
+      this.members = membersResponse.data || [];
 
-      // Filter groups to only show ones where current user is a member
-      const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
+      // Get current user ID (string to match API response)
+      const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
+
+      console.log('Current user ID:', currentUserId);
+      console.log('Members data:', this.members);
 
       // Find group IDs where current user is a member
       const userGroupIds = this.members
-        .filter(member => member.relationships.user.data.id === currentUserId)
+        .filter(member => {
+          const memberUserId = member.relationships.user.data.id;
+          console.log('Checking member user ID:', memberUserId, 'against current user:', currentUserId);
+          return memberUserId === currentUserId;
+        })
         .map(member => member.relationships.group.data.id);
 
+      console.log('User is member of group IDs:', userGroupIds);
+
       // Filter groups to only include user's groups
-      this.groups = this.groups.filter(group => userGroupIds.includes(group.id));
+      this.groups = this.groups.filter(group => {
+        const included = userGroupIds.includes(group.id);
+        console.log(`Group ${group.id} (${group.attributes?.name}) included:`, included);
+        return included;
+      });
 
       console.log(`Successfully loaded ${this.meetings.length} meetings and ${this.groups.length} groups for user ${currentUserId}`);
 
@@ -117,8 +127,6 @@ class DashboardPage {
   }
 
   handleLoadError() {
-    console.error('Handle load error called');
-
     // Show error message in stats container
     const statsContainer = document.getElementById('stats-container');
     if (statsContainer) {
@@ -126,26 +134,8 @@ class DashboardPage {
         <div class="alert alert-warning" role="alert">
           <h4 class="alert-heading">Unable to load dashboard data</h4>
           <p>Please try refreshing the page. If the problem persists, please contact support.</p>
-          <details class="mt-3 d-none">
-            <summary>Debugging Information</summary>
-            <div class="mt-2">
-              <p><strong>User logged in:</strong> ${UserService.isLoggedIn()}</p>
-              <p><strong>Auth header available:</strong> ${!!UserService.getAuthHeader()}</p>
-              <p><strong>API Base URL:</strong> ${ApiService.getBaseUrl()}</p>
-              <p><strong>Current time:</strong> ${new Date().toISOString()}</p>
-            </div>
-          </details>
         </div>
       `;
-
-      // Add retry button functionality
-      const retryBtn = document.getElementById('retry-load-btn');
-      if (retryBtn) {
-        retryBtn.addEventListener('click', () => {
-          console.log('Retrying dashboard data load...');
-          this.loadDashboardData();
-        });
-      }
     } else {
       console.error('Stats container not found');
     }

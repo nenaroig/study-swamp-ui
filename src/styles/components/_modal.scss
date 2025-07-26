@@ -1,0 +1,19 @@
+// Modal Component Styles
+
+// Remove borders from modal header and footer
+.modal-header {
+  border-bottom: none !important;
+}
+
+.modal-footer {
+  border-top: none !important;
+}
+
+// Optional: Add some padding to compensate for the removed borders
+.modal-header {
+  padding-bottom: 1rem;
+}
+
+.modal-footer {
+  padding-top: 1rem;
+}

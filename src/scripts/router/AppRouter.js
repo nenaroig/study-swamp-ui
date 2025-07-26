@@ -13,6 +13,7 @@ import groupContent from '../../templates/groups/group.html';
 import meetingsContent from '../../templates/meetings/meetings.html';
 import awardsContent from '../../templates/awards/awards.html';
 import profileContent from '../../templates/profile/profile.html';
+import UserService from '../api/UserService';
 
 class AppRouter {
   constructor() {
@@ -22,7 +23,7 @@ class AppRouter {
       'signup': signUpContent,
       'forgot-password': forgotPasswordContent,
       'dashboard': dashboardContent,
-      'groups': groupsContent,
+      'study-groups': groupsContent,
       'group': groupContent,
       'meetings': meetingsContent,
       'awards': awardsContent,
@@ -30,7 +31,7 @@ class AppRouter {
     };
     
     // Pages that need navigation sidebar
-    this.pagesWithNav = ['dashboard', 'groups', 'group', 'meetings', 'awards', 'profile'];
+    this.pagesWithNav = ['dashboard', 'study-groups', 'group', 'meetings', 'awards', 'profile'];
     
     // Page titles for browser tab
     this.titles = {
@@ -38,7 +39,7 @@ class AppRouter {
       'signup': 'Study Swamp - Sign Up',
       'dashboard': 'Study Swamp',
       'forgot-password': 'Study Swamp - Forgot Password',
-      'groups': 'Study Swamp - My Study Groups',
+      'study-groups': 'Study Swamp - My Study Groups',
       'group': 'Study Swamp - Study Group',
       'meetings': 'Study Swamp - Meetings',
       'awards': 'Study Swamp - Awards',
@@ -61,7 +62,7 @@ class AppRouter {
       const basePage = segments[0];
       // Convert plural to singular for detail pages
       const singularMap = {
-        'groups': 'group',
+        'study-groups': 'group',
         'meetings': 'meeting', 
         'users': 'user',
         'awards': 'award'
@@ -77,8 +78,8 @@ class AppRouter {
   handleInitialLoad() {
     const path = window.location.pathname;
     
-    // Only redirect to login if we're on root path during initial load
-    if (path === '/') {
+    // Only redirect to login if we're on root path during initial load and user is not logged in
+    if (path === '/' && !UserService.isLoggedIn()) {
       this.navigateToPage('login');
       return true;
     }

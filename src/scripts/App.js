@@ -10,6 +10,8 @@ class App {
     this.router = null;
     this.pageController = null;
     this.hmrManager = null;
+    this.inactivityTimer = null;
+    this.inactivityTimeout = 40 * 60 * 1000; // 40 minutes in milliseconds
   }
   
   init() {
@@ -35,6 +37,9 @@ class App {
     setTimeout(() => {
       LogoutManager.init();
     }, 100);
+
+    // Start inactivity timer if user is logged in
+    this.setupInactivityTimer();
     
     // Initialize HMR in development
     if (process.env.NODE_ENV === 'development') {
@@ -54,6 +59,52 @@ class App {
     window.addEventListener('appError', (e) => {
       console.error('App Error:', e.detail);
     });
+  }
+
+  // Sets up auto-logout timer that triggers after 40 minutes of user inactivity
+  setupInactivityTimer() {
+    // Only set up timer if user is logged in
+    if (!UserService.isLoggedIn()) return;
+    
+    // Events that indicate user activity
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    // Reset timer on any activity
+    const resetTimer = () => {
+      if (this.inactivityTimer) {
+        clearTimeout(this.inactivityTimer);
+      }
+      
+      // Only set timer if user is still logged in
+      if (UserService.isLoggedIn()) {
+        this.inactivityTimer = setTimeout(() => {
+          this.autoLogout();
+        }, this.inactivityTimeout);
+      }
+    };
+    
+    // Add event listeners for user activity
+    activityEvents.forEach(event => {
+      document.addEventListener(event, resetTimer, true);
+    });
+    
+    // Start the initial timer
+    resetTimer();
+    
+    // Listen for logout events to clear timer
+    window.addEventListener('userLoggedOut', () => {
+      if (this.inactivityTimer) {
+        clearTimeout(this.inactivityTimer);
+        this.inactivityTimer = null;
+      }
+    });
+  }
+  
+  // Logs out user automatically when inactivity timeout is reached
+  autoLogout() {
+    UserService.logout();
+    PageController.navigateTo('login');
+    PageController.showError('You have been logged out due to inactivity.');
   }
   
   // Public methods for external use

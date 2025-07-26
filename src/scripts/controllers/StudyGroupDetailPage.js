@@ -11,13 +11,13 @@ export function createGroupSlug(groupName) {
 // Create full URL
 export function createGroupUrl(groupName) {
   const slug = createGroupSlug(groupName);
-  return `/groups/${slug}`;
+  return `/study-groups/${slug}`;
 }
 
 // Extract group slug from current URL
 export function getGroupSlugFromUrl() {
   const path = window.location.pathname;
-  const matches = path.match(/^\/groups\/([^\/]+)$/);
+  const matches = path.match(/^\/study-groups\/([^\/]+)$/);
   return matches ? matches[1] : null;
 }
 

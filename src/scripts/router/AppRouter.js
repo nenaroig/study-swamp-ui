@@ -13,6 +13,7 @@ import groupContent from '../../templates/groups/group.html';
 import meetingsContent from '../../templates/meetings/meetings.html';
 import awardsContent from '../../templates/awards/awards.html';
 import profileContent from '../../templates/profile/profile.html';
+import UserService from '../api/UserService';
 
 class AppRouter {
   constructor() {
@@ -77,8 +78,8 @@ class AppRouter {
   handleInitialLoad() {
     const path = window.location.pathname;
     
-    // Only redirect to login if we're on root path during initial load
-    if (path === '/') {
+    // Only redirect to login if we're on root path during initial load and user is not logged in
+    if (path === '/' && !UserService.isLoggedIn()) {
       this.navigateToPage('login');
       return true;
     }

@@ -13,72 +13,85 @@ class DashboardPage {
     this.meetings = [];
     this.groups = [];
   }
-  
+
   async init() {
+
     if (this.isInitialized) return;
-    
+
     if (!UserService.isLoggedIn()) {
-      console.log('User not logged in, redirecting to home');
       PageController.navigateTo('/');
       return;
     }
-    
+
     this.currentUser = UserService.getCurrentUser();
     this.setupWelcomeMessage();
-    
+
     // Load all data and render dashboard
     await this.loadDashboardData();
-    
+
     this.isInitialized = true;
   }
-  
+
   async loadDashboardData() {
     try {
       console.log('Loading dashboard data...');
-      
+
       // Test authentication first
       const authHeader = UserService.getAuthHeader();
-      
+
       if (!authHeader) {
         throw new Error('No authentication header available');
       }
-      
+
       // Load meetings and groups in parallel
-      const [meetingsResponse, groupsResponse] = await Promise.all([
+      const [meetingsResponse, groupsResponse, membersResponse] = await Promise.all([
         MeetingService.getUpcomingMeetings(),
-        StudyGroupsService.getMyStudyGroups()
+        StudyGroupsService.getMyStudyGroups(),
+        UserService.makeAuthenticatedRequest('members/')
       ]);
-      
+
       // Extract data arrays
       this.meetings = meetingsResponse.meetingData?.data || [];
       this.groups = groupsResponse.studyGroupsData?.data || [];
-      
-      console.log(`Successfully loaded ${this.meetings.length} meetings and ${this.groups.length} groups`);
-      
+      this.members = membersResponse.groupMembersData?.data || [];
+
+      // Filter groups to only show ones where current user is a member
+      const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
+
+      // Find group IDs where current user is a member
+      const userGroupIds = this.members
+        .filter(member => member.relationships.user.data.id === currentUserId)
+        .map(member => member.relationships.group.data.id);
+
+      // Filter groups to only include user's groups
+      this.groups = this.groups.filter(group => userGroupIds.includes(group.id));
+
+      console.log(`Successfully loaded ${this.meetings.length} meetings and ${this.groups.length} groups for user ${currentUserId}`);
+
       // Render all dashboard sections
       this.renderDashboard();
-      
+
     } catch (error) {
       console.error('Dashboard data loading failed:', error);
       this.handleLoadError();
     }
   }
-  
+
   renderDashboard() {
     // Render Stats
     StatsService.renderStats(this.meetings, this.groups, 'stats-container');
-    
+
     // Render Meetings
     MeetingService.renderMeetings(this.meetings.slice(0, 3), 'meetings-container');
-    
+
     // Render Groups
     StudyGroupsService.renderStudyGroups(this.groups.slice(0, 3), 'groups-container');
   }
-  
+
   setupWelcomeMessage() {
     const currentHour = new Date().getHours();
     let greeting;
-    
+
     if (currentHour < 12) {
       greeting = 'Good morning';
     } else if (currentHour < 18) {
@@ -86,26 +99,26 @@ class DashboardPage {
     } else {
       greeting = 'Good evening';
     }
-    
+
     const h1 = document.getElementById('greeting');
     if (h1) {
       let name = 'Gator';
-      
+
       if (this.currentUser?.userData?.attributes?.first_name) {
         name = this.currentUser.userData.attributes.first_name;
       } else if (this.currentUser?.username) {
         name = this.currentUser.username;
       }
-      
+
       h1.textContent = `${greeting}, ${name}!`;
     }
-    
+
     return greeting;
   }
-  
+
   handleLoadError() {
     console.error('Handle load error called');
-    
+
     // Show error message in stats container
     const statsContainer = document.getElementById('stats-container');
     if (statsContainer) {
@@ -113,11 +126,7 @@ class DashboardPage {
         <div class="alert alert-warning" role="alert">
           <h4 class="alert-heading">Unable to load dashboard data</h4>
           <p>Please try refreshing the page. If the problem persists, please contact support.</p>
-          <div class="mt-3">
-            <button class="btn btn-primary me-2" onclick="location.reload()">Refresh Page</button>
-            <button class="btn btn-secondary" id="retry-load-btn">Retry Loading Data</button>
-          </div>
-          <details class="mt-3">
+          <details class="mt-3 d-none">
             <summary>Debugging Information</summary>
             <div class="mt-2">
               <p><strong>User logged in:</strong> ${UserService.isLoggedIn()}</p>
@@ -128,7 +137,7 @@ class DashboardPage {
           </details>
         </div>
       `;
-      
+
       // Add retry button functionality
       const retryBtn = document.getElementById('retry-load-btn');
       if (retryBtn) {
@@ -141,7 +150,7 @@ class DashboardPage {
       console.error('Stats container not found');
     }
   }
-  
+
   // Method to refresh dashboard data
   async refreshDashboard() {
     await this.loadDashboardData();

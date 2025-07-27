@@ -30,7 +30,7 @@ class PageController {
         this.currentPage = new DashboardPage();
         this.currentPage.init();
         break;
-      case 'groups':
+      case 'study-groups':
         this.currentPage = new StudyGroupsPage();
         this.currentPage.init();
         break;

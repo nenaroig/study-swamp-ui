@@ -55,9 +55,6 @@ class DashboardPage {
       // Get current user ID (string to match API response)
       const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
 
-      console.log('Current user ID:', currentUserId);
-      console.log('Members data:', this.members);
-
       // Find group IDs where current user is a member
       const userGroupIds = this.members
         .filter(member => {
@@ -95,7 +92,7 @@ class DashboardPage {
     MeetingService.renderMeetings(this.meetings.slice(0, 3), 'meetings-container');
 
     // Render Groups
-    StudyGroupsService.renderStudyGroups(this.groups.slice(0, 3), 'groups-container');
+    StudyGroupsService.renderStudyGroups(this.groups.slice(0, 3), 'groups-container', this.members);
   }
 
   setupWelcomeMessage() {

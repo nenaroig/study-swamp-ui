@@ -42,9 +42,34 @@ class StudyGroupsPage {
   
   async loadStudyGroups() {
     try {
-      const groupsResponse = await StudyGroupsService.getMyStudyGroups();
-      this.groups = groupsResponse.studyGroupsData?.data || [];
-      StudyGroupsService.renderDashboardGroups(this.groups, 'dashboard-groups-container');
+      const authHeader = UserService.getAuthHeader();
+      
+      // Load both groups and members data
+      const [groupsResponse, membersResponse] = await Promise.all([
+        StudyGroupsService.getMyStudyGroups(),
+        UserService.makeAuthenticatedRequest('members/')
+      ]);
+      
+      const allGroups = groupsResponse.studyGroupsData?.data || [];
+      const members = membersResponse.data || [];
+      
+      // Get current user ID
+      const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
+      
+      // Find group IDs where current user is a member
+      const userGroupIds = members
+      .filter(member => {
+        const memberUserId = member.relationships.user.data.id;
+        return memberUserId === currentUserId;
+      })
+      .map(member => member.relationships.group.data.id);
+      
+      // Filter groups to only include user's groups
+      this.groups = allGroups.filter(group => userGroupIds.includes(group.id));
+      
+      console.log(`User ${currentUserId} is member of ${this.groups.length} groups`);
+      
+      StudyGroupsService.renderStudyGroups(this.groups, 'study-groups-container', members);
     } catch (error) {
       console.error('Failed to load study groups:', error);
       PageController.showError('Unable to load study groups. Please try refreshing the page.');
@@ -53,6 +78,7 @@ class StudyGroupsPage {
   
   async refreshGroups() {
     await this.loadStudyGroups();
+    updateGroupLinks();
   }
   
   setupFormHandling() {

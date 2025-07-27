@@ -46,7 +46,7 @@ export default class BaseService {
     const emptyDiv = document.createElement('div');
     emptyDiv.className = 'd-flex align-items-center justify-content-between mt-4';
     emptyDiv.innerHTML = `
-      <div class="text-center text-muted">
+      <div class="text-muted">
         <h3 class="h5">${config.title}</h3>
         <p class="text-muted mb-0">${config.message}</p>
       </div>

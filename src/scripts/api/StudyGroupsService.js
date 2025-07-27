@@ -231,19 +231,19 @@ class StudyGroupsService extends BaseService {
       const authHeader = UserService.getAuthHeader();
       const currentUser = UserService.getCurrentUser();
       const currentUserId = currentUser?.userData?.id || currentUser?.id;
-
-      const groupResponse = await ApiService.postData('groups/', {
+      
+      const payload = {
         name: groupData.name,
-        course_code: `${groupData.department} ${groupData.courseNumber}`,
-        description: groupData.description,
         department: groupData.department,
-        class_number: groupData.courseNumber
-      }, authHeader);
-
+        class_number: parseInt(groupData.courseNumber)
+      };
+      
+      const groupResponse = await ApiService.postData('groups/', payload, authHeader);
+      
       // If group creation successful, add current user as member
-      if (groupResponse && groupResponse.data) {
+      if (groupResponse && groupResponse.data && groupResponse.data.id) {
         const groupId = groupResponse.data.id;
-
+        
         // Create member relationship
         const memberData = {
           user: parseInt(currentUserId),
@@ -252,10 +252,10 @@ class StudyGroupsService extends BaseService {
         };
         
         const memberResponse = await ApiService.postData('members/', memberData, authHeader);
-      
+        
         if (!memberResponse || !memberResponse.data) {
           throw new Error('Failed to add user as group member');
-        }      
+        }
       } else {
         throw new Error('Group creation failed - no response data');
       }
@@ -265,6 +265,7 @@ class StudyGroupsService extends BaseService {
         data: groupResponse
       };
     } catch (error) {
+      console.error('Failed to create study group:', error);
       return {
         success: false,
         message: error.message || 'Failed to create study group'

@@ -78,7 +78,7 @@ class StatsService {
         {
           title: 'My Groups',
           value: stats.myGroups,
-          subtitle: stats.myGroups === 1 ? 'group joined' : 'groups joined',
+          subtitle: 'joined',
           iconClass: 'fa-solid fa-user-group'
         },
         {

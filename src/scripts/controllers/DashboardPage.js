@@ -2,20 +2,21 @@ import UserService from '../api/UserService.js';
 import MeetingService from '../api/MeetingService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
 import StatsService from '../api/StatsService.js';
-import ApiService from '../api/ApiService.js';
 import PageController from './PageController.js';
 
 class DashboardPage {
   constructor() {
     this.isInitialized = false;
-    this.userData = null;
     this.currentUser = null;
     this.meetings = [];
     this.groups = [];
+    this.allGroups = [];
+    this.allMeetings = [];
+    this.members = [];
   }
 
+  // Initialize dashboard - check auth and load data
   async init() {
-
     if (this.isInitialized) return;
 
     if (!UserService.isLoggedIn()) {
@@ -25,57 +26,48 @@ class DashboardPage {
 
     this.currentUser = UserService.getCurrentUser();
     this.setupWelcomeMessage();
-
-    // Load all data and render dashboard
     await this.loadDashboardData();
-
+    
     this.isInitialized = true;
   }
 
+  // Load and filter all dashboard data
   async loadDashboardData() {
     try {
       const authHeader = UserService.getAuthHeader();
-
       if (!authHeader) {
         throw new Error('No authentication header available');
       }
 
-      // Load meetings, groups, and members in parallel
+      // Load all data in parallel
       const [meetingsResponse, groupsResponse, membersResponse] = await Promise.all([
         MeetingService.getUpcomingMeetings(),
         StudyGroupsService.getMyStudyGroups(),
         UserService.makeAuthenticatedRequest('members/')
       ]);
 
-      // Extract data arrays - fix the members data path
-      this.meetings = meetingsResponse.meetingData?.data || [];
-      this.groups = groupsResponse.studyGroupsData?.data || [];
+      // Store all data
+      this.allMeetings = meetingsResponse.meetingData?.data || [];
+      this.allGroups = groupsResponse.studyGroupsData?.data || [];
       this.members = membersResponse.data || [];
 
-      // Get current user ID (string to match API response)
+      // Get current user ID for filtering
       const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
 
-      // Find group IDs where current user is a member
+      // Find groups where user is a member
       const userGroupIds = this.members
-        .filter(member => {
-          const memberUserId = member.relationships.user.data.id;
-          console.log('Checking member user ID:', memberUserId, 'against current user:', currentUserId);
-          return memberUserId === currentUserId;
-        })
+        .filter(member => member.relationships.user.data.id === currentUserId)
         .map(member => member.relationships.group.data.id);
 
-      console.log('User is member of group IDs:', userGroupIds);
-
-      // Filter groups to only include user's groups
-      this.groups = this.groups.filter(group => {
-        const included = userGroupIds.includes(group.id);
-        console.log(`Group ${group.id} (${group.attributes?.name}) included:`, included);
-        return included;
+      // Filter to user's groups and meetings only
+      this.groups = this.allGroups.filter(group => userGroupIds.includes(group.id));
+      this.meetings = this.allMeetings.filter(meeting => {
+        const meetingGroupId = meeting.relationships?.group?.data?.id;
+        return userGroupIds.includes(meetingGroupId);
       });
 
-      console.log(`Successfully loaded ${this.meetings.length} meetings and ${this.groups.length} groups for user ${currentUserId}`);
-
-      // Render all dashboard sections
+      console.log(`Loaded ${this.meetings.length} meetings and ${this.groups.length} groups for user ${currentUserId}`);
+      
       this.renderDashboard();
 
     } catch (error) {
@@ -84,17 +76,23 @@ class DashboardPage {
     }
   }
 
+  // Render all dashboard components
   renderDashboard() {
-    // Render Stats
-    StatsService.renderStats(this.meetings, this.groups, 'stats-container');
+    // Render stats cards (4 cards in dashboard layout)
+    StatsService.renderStats(this.allGroups, {
+      userGroups: this.groups,
+      meetings: this.meetings,
+      layout: 'dashboard',
+      containerId: 'stats-container',
+      cardClass: 'col-md-3'
+    });
 
-    // Render Meetings
+    // Render recent meetings and groups
     MeetingService.renderMeetings(this.meetings.slice(0, 3), 'meetings-container');
-
-    // Render Groups
     StudyGroupsService.renderStudyGroups(this.groups.slice(0, 3), 'groups-container', this.members);
   }
 
+  // Set personalized greeting based on time of day
   setupWelcomeMessage() {
     const currentHour = new Date().getHours();
     let greeting;
@@ -119,12 +117,10 @@ class DashboardPage {
 
       h1.textContent = `${greeting}, ${name}!`;
     }
-
-    return greeting;
   }
 
+  // Display error message when data loading fails
   handleLoadError() {
-    // Show error message in stats container
     const statsContainer = document.getElementById('stats-container');
     if (statsContainer) {
       statsContainer.innerHTML = `
@@ -138,7 +134,7 @@ class DashboardPage {
     }
   }
 
-  // Method to refresh dashboard data
+  // Refresh all dashboard data
   async refreshDashboard() {
     await this.loadDashboardData();
   }

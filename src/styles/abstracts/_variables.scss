@@ -7,13 +7,35 @@ $fa-font: 'Font Awesome 6 Free';
 $theme-colors: (
   'sand': #f5f5f5,
   'silver': #dedede,
-  'teal': #00bcd4,
+  'teal': #1565C0,
+  // 'teal': #00bcd4,
   'purple': #9c27b0,
-  'violet': #673ab7,
+  'violet': #FF8A65,
+  // 'violet': #673ab7,
   'dark-gray': #333,
   'white': #fff,
-  'black': #000
+  'black': #000,
+  'uf-orange-light': #FF7043, // Softer than official
+  'uf-blue-light': #1565C0,   // More app-friendly than official
+  'gator-accent': #FF8A65     // Warm accent
 );
+
+
+// Light UF Blue (#E8F0FF, #C5D9FF, #B3C7F7, #9BB5F0) - Various light blue tints
+// Light UF Orange (#FFE5DD, #FFCAB8, #FFC8B3, #FFB59A) - Various light orange tints
+// UF Blue (#0021A5) - Primary blue
+// UF Secondary Blue (#003594) - Darker blue variant
+// UF Orange (#FA4616) - Primary orange
+// UF Light Orange (#FF6A3A) - Lighter orange variant
+// Slightly Lighter Variations:
+
+// Lighter UF Blue: #1A3BB5 (added some brightness while keeping the deep blue tone)
+// Lighter UF Orange: #FF5A2A (brightened the orange while maintaining its vibrancy)
+
+// Alternative Lighter Variations:
+
+// Even Lighter UF Blue: #2D4DC5 (a bit more lightened)
+// Even Lighter UF Orange: #FF6D3E (softer orange with more warmth)
 
 @function theme-color($key) {
 	@return map-get($theme-colors, $key);

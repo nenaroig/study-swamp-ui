@@ -6,17 +6,21 @@ $fa-font: 'Font Awesome 6 Free';
 // Theme Colors Map
 $theme-colors: (
   'sand': #f5f5f5,
-  'silver': #dedede,
   'teal': #00bcd4,
   'purple': #9c27b0,
-  'violet': #673ab7,
+  'gator-accent': #ff8a65,
   'dark-gray': #333,
-  'white': #fff,
-  'black': #000
+  'darker-gray': #4a5568,
+  'blue-light': #1565C0,
 );
 
 @function theme-color($key) {
 	@return map-get($theme-colors, $key);
+}
+
+:root {
+  --teal: #{theme-color('teal')};
+  --purple: #{theme-color('purple')};
 }
 
 $spacer: 1rem !default;

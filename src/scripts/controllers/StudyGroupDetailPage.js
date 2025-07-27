@@ -71,12 +71,10 @@ class StudyGroupDetailPage {
       ]);
       
       // Filter data for this specific group
-      const groupId = this.currentGroup.id?.toString(); // Convert to string
-      console.log('Filtering for group ID (as string):', groupId);
+      const groupId = this.currentGroup.id?.toString();
 
       this.groupMembers = membersResponse.data?.filter(member => {
         const memberGroupId = member.relationships?.group?.data?.id?.toString();
-        console.log(`Comparing: "${memberGroupId}" === "${groupId}"`);
         return memberGroupId === groupId;
       }) || [];
       
@@ -473,12 +471,7 @@ setupMeetingModal() {
 
 async showMeetingModal() {
   try {
-    console.log('Loading meeting modal...');
-    
-    // Load available locations
-    console.log('Loading locations...');
     await this.loadLocations();
-    console.log('Locations loaded successfully');
     
     // Set default date to tomorrow
     const tomorrow = new Date();
@@ -505,7 +498,6 @@ async showMeetingModal() {
     
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
-    console.log('Modal shown successfully');
     
   } catch (error) {
     console.error('Error showing meeting modal:', error);
@@ -516,14 +508,10 @@ async showMeetingModal() {
 
 async loadLocations() {
   try {
-    console.log('Starting to load locations...');
     const authHeader = UserService.getAuthHeader();
-    console.log('Auth header:', authHeader);
-    
     const locations = await ApiService.getData('locations/', authHeader);
-    console.log('Locations response:', locations);
-    
     const locationSelect = document.getElementById('meeting-location');
+
     if (!locationSelect) {
       console.error('Location select element not found');
       return;
@@ -538,8 +526,6 @@ async loadLocations() {
         option.textContent = `${location.attributes.building} - Room ${location.attributes.room}`;
         locationSelect.appendChild(option);
       });
-      
-      console.log(`Loaded ${locations.data.length} locations`);
     } else {
       console.error('No locations data found:', locations);
     }

@@ -2,6 +2,7 @@ import LoginPage from './LoginPage.js';
 import DashboardPage from './DashboardPage.js';
 import StudyGroupsPage from './StudyGroupsPage.js';
 import StudyGroupDetailPage from './StudyGroupDetailPage.js';
+import MeetingsPage from './MeetingsPage.js';
 
 class PageController {
   constructor() {
@@ -39,6 +40,10 @@ class PageController {
         const groupSlug = this.extractSlugFromPath('groups');
         this.currentPage = new StudyGroupDetailPage();
         this.currentPage.init(groupSlug);
+        break;
+      case 'meetings':
+        this.currentPage = new MeetingsPage();
+        this.currentPage.init();
         break;
       default:
         console.warn(`No page class found for: ${page}`);

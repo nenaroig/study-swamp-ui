@@ -2,37 +2,17 @@
   <div class="mx-auto mw-md-730p">
     <div class="bg-white opacity-75 p-5 text-center rounded-4">
       <h1>Study Groups</h1>
-      <p class="mt-4 fw-500 fs-18p">Connect with classmates, share knowledge, and excel together in your academic journey. Join study groups to collaborate on assignments, prepare for exams, and build lasting friendships.</p>
+      <p class="mt-4 fw-500 fs-18p text-lighter-gray">Connect with classmates, share knowledge, and excel together in your academic journey. Join study groups to collaborate on assignments, prepare for exams, and build lasting friendships.</p>
       
       <div class="d-flex justify-content-center gap-3 mt-4">
-        <!-- Don't worry about this for now. We need to implement functionality -->
-        <button class="btn btn-gator-accent" data-bs-toggle="modal" data-bs-target="#addGroupModal">
+        <button class="btn" data-bs-toggle="modal" data-bs-target="#addGroupModal">
           <span class="fa-solid fa-user-plus me-3"></span>Create New Group
         </button>
       </div>
     </div>
     
-    <!-- Stats Row -->
-    <div class="row">
-      <div class="col-md-4 mt-4">
-        <div class="bg-white rounded-4 p-4 h-100 text-center">
-          <h2 class="text-teal" id="member-count">3</h2> <!-- Update to pull dynamically -->
-          <div class="text-muted">My Groups</div>
-        </div>
-      </div>
-      <div class="col-md-4 mt-4">
-        <div class="bg-white rounded-4 p-4 h-100 text-center">
-          <h2 class="text-teal" id="meeting-count">4</h2> <!-- Update to pull dynamically -->
-          <div class="text-muted">Meetings</div>
-        </div>
-      </div>
-      <div class="col-md-4 mt-4">
-        <div class="bg-white rounded-4 p-4 h-100 text-center">
-          <h2 class="text-teal" id="comment-count">6</h2> <!-- Update to pull dynamically -->
-          <div class="text-muted">Available Groups</div>
-        </div>
-      </div>
-    </div>
+    <!-- Stats Container - StatsService will populate this -->
+    <div id="stats-container"></div>
     
     <div id="study-groups-container" class="row">
       <!-- Study group cards will be inserted here -->
@@ -42,8 +22,8 @@
     <div class="bg-white text-center p-5 rounded-4 w-xs-500p mx-auto mt-4 flex-column d-none" id="empty-state-card">
       <span class="fa-solid fa-users fa-2x text-teal"></span>
       <h2 class="mt-4">No Study Groups Yet</h2>
-      <p class="mt-4">You haven't joined any study groups yet. Start collaborating with your classmates by joining or creating a study group. It's a great way to enhance your learning experience and build connections!</p>
-      <a href="" class="btn btn-gator-accent mt-4">
+      <p class="mt-4 text-lighter-gray">You haven't joined any study groups yet. Start collaborating with your classmates by joining or creating a study group. It's a great way to enhance your learning experience and build connections!</p>
+      <a href="" class="btn btn-gator-accent text-white mt-4">
         <span class="fas fa-plus me-2"></span>
         Find Study Groups
       </a>

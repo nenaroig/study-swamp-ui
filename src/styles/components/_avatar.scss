@@ -1,5 +1,5 @@
 .member-avatar {
-  background-color: var(--bs-purple);
+  background-color: var(--purple);
   width: 40px;
   height: 40px;
   font-weight: 500;
@@ -8,7 +8,7 @@
   justify-content: center;
   border: 2px solid var(--bs-white);
   &:not(:first-child) {
-    margin-left: -12px; // Overlap by 12px
+    margin-left: -12px;
   }
   &-s {
     .member-avatar {

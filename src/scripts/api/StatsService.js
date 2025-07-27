@@ -81,9 +81,9 @@ class StatsService {
         iconClass: 'fa-regular fa-clock'
       },
       {
-        title: 'Department',
-        value: stats.departments === 1 ? Object.keys(stats.departmentCounts)[0] : `${stats.departments} Departments`,
-        subtitle: stats.departments === 1 ? `${stats.totalGroups} ${stats.totalGroups === 1 ? 'group' : 'groups'}` : this.formatDepartmentBreakdown(stats.departmentCounts),
+        title: `${stats.departments === 1 ? 'Department' : 'Departments'}`,
+        value: stats.departments === 1 ? Object.keys(stats.departmentCounts)[0] : `${stats.departments}`,
+        subtitle: this.formatDepartmentBreakdown(stats.departmentCounts),
         iconClass: 'fa-solid fa-building-user'
       }
     ];
@@ -104,6 +104,7 @@ class StatsService {
     container.appendChild(row);
   }
   
+  // @todo: Need to format this to better...
   // Formats department breakdown for display
   static formatDepartmentBreakdown(departmentCounts) {
     const entries = Object.entries(departmentCounts);

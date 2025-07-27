@@ -1,4 +1,206 @@
 <div class="inner-wrapper">
-  <h1>Meetings</h1>
-  <p>Content coming soon...</p>
+  <div class="mx-auto mw-md-730p">
+    <div class="bg-white opacity-75 p-5 text-center rounded-4">
+      <h1>Meetings</h1>
+      <p class="mt-4 fw-500 fs-18p">Schedule and manage your study sessions with classmates. Coordinate group meetings, track upcoming sessions, and collaborate effectively to achieve your academic goals together.</p>
+      
+      <div class="d-flex justify-content-center gap-3 mt-4">
+        <button class="btn btn-violet" data-bs-toggle="modal" data-bs-target="#scheduleMeetingModal">
+          <span class="fa-regular fa-calendar-check me-3"></span>Schedule New Meeting
+        </button>
+      </div>
+    </div>
+    
+    <!-- Meeting Stats Row -->
+    <div class="row">
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <span class="fa-solid fa-calendar-check text-teal fa-2x"></span>
+          <h2 class="text-teal mt-3" id="upcoming-meetings-count">2</h2>
+          <div class="text-muted">Upcoming</div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <span class="fa-solid fa-clock text-teal fa-2x"></span>
+          <h2 class="text-teal mt-3" id="today-meetings-count">1</h2>
+          <div class="text-muted">Today</div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-4">
+        <div class="bg-white rounded-4 p-4 h-100 text-center">
+          <span class="fa-solid fa-history text-teal fa-2x"></span>
+          <h2 class="text-teal mt-3" id="past-meetings-count">8</h2>
+          <div class="text-muted">Completed</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Filter/Sort Controls -->
+    <div class="bg-white rounded-4 p-4 mt-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-violet filter-btn active" data-filter="all">All Meetings</button>
+            <button class="btn btn-sm btn-outline-violet filter-btn" data-filter="upcoming">Upcoming</button>
+            <button class="btn btn-sm btn-outline-violet filter-btn" data-filter="today">Today</button>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex gap-2 justify-content-md-end">
+            <select class="form-select form-select-sm form-control" id="sort-meetings">
+              <option value="date-asc">Date (Earliest First)</option>
+              <option value="date-desc">Date (Latest First)</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="group">Group</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Meetings Container -->
+    <div id="meetings-container" class="row">
+      <!-- Meeting cards will be inserted here -->
+    </div>
+    
+    <!-- Empty State Card -->
+    <div class="bg-white text-center p-5 rounded-4 w-xs-500p mx-auto mt-5 d-none" id="empty-state-card">
+      <span class="fa-solid fa-calendar-xmark fa-2x text-teal"></span>
+      <h2 class="mt-4">No Meetings Found</h2>
+      <p class="mt-4">You don't have any meetings scheduled yet. Create your first meeting to start collaborating with your study groups!</p>
+    </div>
+    
+    <!-- Meeting Card Template -->
+    <div id="meeting-card-template" class="row row-cols-1 row-cols-md-2 g-4">
+      <div class="col mt-5 meeting-card" data-meeting-id="" data-filter-status="">
+        <div class="bg-white p-4 rounded-4 h-100">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="meeting-status-badge badge bg-info">Upcoming</div>
+            <div class="dropdown">
+              <span class="fa-solid fa-ellipsis-vertical dropdown-toggle pointer" data-bs-toggle="dropdown"></span>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item edit-meeting" href="#"><span class="fa-solid fa-edit me-2"></span>Edit</a></li>
+                <li><a class="dropdown-item cancel-meeting" href="#"><span class="fa-solid fa-times me-2"></span>Cancel</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <h3 class="h5 meeting-name mb-2">Meeting name</h3>
+          <p class="meeting-description text-muted small mb-3">Meeting description</p>
+          
+          <div class="meeting-details">
+            <div class="d-flex align-items-center mb-2">
+              <span class="fa-regular fa-fw fa-calendar text-teal me-2"></span>
+              <span class="meeting-date small">Aug 7, 2025</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <span class="fa-regular fa-fw fa-clock text-teal me-2"></span>
+              <span class="meeting-time small">5:00pm</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+              <span class="fa-solid fa-fw fa-map-marker-alt text-teal me-2"></span>
+              <span class="meeting-location small">Online</span>
+            </div>
+            <div class="d-flex align-items-center mb-3">
+              <span class="fa-solid fa-fw fa-users text-teal me-2"></span>
+              <span class="meeting-group small">Study Group</span>
+            </div>
+          </div>
+          
+          <!-- Don't worry about this for now. We need to implement functionality -->
+          <div class="d-flex gap-2 mt-auto">
+            <button class="btn btn-sm btn-violet join-meeting flex-fill">
+              <span class="fa-solid fa-video me-2"></span>Join
+            </button>
+            <button class="btn btn-sm btn-outline-violet share-meeting">
+              <span class="fa-solid fa-share me-2"></span>Share
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Actions Sidebar (Might remove) -->
+    <div class="position-fixed bottom-0 end-0 p-3 z-1">
+      <div class="bg-white rounded-4 p-3 shadow">
+        <h6 class="mb-3">Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <button class="btn btn-sm btn-violet" data-bs-toggle="modal" data-bs-target="#scheduleMeetingModal">
+            <span class="fa-solid fa-plus me-2"></span>New Meeting
+          </button>
+          <button class="btn btn-sm btn-outline-violet" id="join-next-meeting">
+            <span class="fa-solid fa-play me-2"></span>Join Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Meeting Modal -->
+ <div class="modal fade" id="scheduleMeetingModal" tabindex="-1" aria-labelledby="scheduleMeetingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 p-3">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="h4" id="scheduleMeetingModalLabel">
+          <span class="fa-solid fa-users text-teal me-3"></span>Schedule New Meeting
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body pt-3">
+        <form id="meeting-form">
+          <div class="mb-3">
+            <label for="meeting-name" class="form-label">Meeting Name</label>
+            <input type="text" class="form-control" id="meeting-name" placeholder="Weekly Study Session" required>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="meeting-date" class="form-label">Date</label>
+              <input type="date" class="form-control" id="meeting-date" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="meeting-start-time" class="form-label">Start Time</label>
+              <input type="time" class="form-control" id="meeting-start-time" required>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="meeting-duration" class="form-label">Duration (hours)</label>
+              <select class="form-control" id="meeting-duration" required>
+                <option value="1">1 hour</option>
+                <option value="1.5">1.5 hours</option>
+                <option value="2" selected>2 hours</option>
+                <option value="2.5">2.5 hours</option>
+                <option value="3">3 hours</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="meeting-location" class="form-label">Location</label>
+              <select class="form-control" id="meeting-location" required>
+                <option value="">Select location...</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="meeting-description" class="form-label">Description (Optional)</label>
+            <textarea class="form-control" id="meeting-description" rows="3" placeholder="Additional details about the meeting..."></textarea>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
+          <span class="fa-solid fa-times me-2"></span>Cancel
+        </button>
+        <button type="submit" form="addGroupForm" class="btn btn-sm btn-teal btn-lg px-4">
+          <span class="fa-solid fa-plus me-2"></span>Create Group
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

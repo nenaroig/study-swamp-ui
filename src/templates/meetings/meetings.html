@@ -72,7 +72,7 @@
     </div>
     
     <!-- Meeting Card Template -->
-    <div id="meeting-card-template" class="row row-cols-1 row-cols-md-2 g-4">
+    <template id="meeting-card-template">
       <div class="col mt-5 meeting-card" data-meeting-id="" data-filter-status="">
         <div class="bg-white p-4 rounded-4 h-100">
           <div class="d-flex justify-content-between align-items-start mb-3">
@@ -119,7 +119,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </template>
     
     <!-- Quick Actions Sidebar (Might remove) -->
     <div class="position-fixed bottom-0 end-0 p-3 z-1">
@@ -187,18 +187,36 @@
           </div>
           
           <div class="mb-3">
+            <label for="meeting-group" class="form-label">Study Group</label>
+            <select class="form-control" id="meeting-group" required>
+              <option value="">Select study group...</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
             <label for="meeting-description" class="form-label">Description (Optional)</label>
             <textarea class="form-control" id="meeting-description" rows="3" placeholder="Additional details about the meeting..."></textarea>
           </div>
         </form>
+        
+        <!-- Error and Success Messages -->
+        <div id="modalErrorMessage" class="alert alert-danger d-none" role="alert">
+          <span class="fa-solid fa-exclamation-triangle me-2"></span>
+          <span id="errorText"></span>
+        </div>
+        
+        <div id="modalSuccessMessage" class="alert alert-success d-none" role="alert">
+          <span class="fa-solid fa-check-circle me-2"></span>
+          <span id="successText"></span>
+        </div>
       </div>
       
       <div class="modal-footer border-0 pt-0">
         <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
           <span class="fa-solid fa-times me-2"></span>Cancel
         </button>
-        <button type="submit" form="addGroupForm" class="btn btn-sm btn-teal btn-lg px-4">
-          <span class="fa-solid fa-plus me-2"></span>Create Group
+        <button type="submit" form="meeting-form" class="btn btn-sm btn-gator-accent btn-lg px-4" id="schedule-meeting-btn">
+          <span class="fa-solid fa-calendar-check me-2"></span>Schedule Meeting
         </button>
       </div>
     </div>

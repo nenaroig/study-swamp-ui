@@ -117,8 +117,8 @@ $sizesXL: map-merge($sizes, $sizesXL);
     &:active,
     &.active {
       color: #fff;
-      background-color: darken($color-value, 10%);
-      border-color: darken($color-value, 12.5%);
+      background-color: #{$color-value};
+      border-color: #{$color-value};
     }
     
     &:disabled,

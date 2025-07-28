@@ -173,6 +173,140 @@ class ApiService {
     }
   }
 
+  /* ======= PUT REQUESTS ======= */
+  
+  /**
+   * Makes a PUT request to the specified API endpoint
+   * 
+   * @param {string} endpoint - API endpoint (with or without leading slash)
+   * @param {Object} data - Data to send in the request body
+   * @param {string|null} authHeader - Authorization header value (optional)
+   * @returns {Promise<Object>} Parsed JSON response from the API
+   * @throws {Error} If request fails, response is not OK, or response is not JSON
+   * 
+   * @example
+   * // Update user data with authentication
+   * const updatedUser = await ApiService.putData('users/123', userData, 'Bearer token123');
+   */
+  static async putData(endpoint, data, authHeader = null) {
+    try {
+      // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
+      const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`;
+      
+      // Set up request headers with JSON:API content type for PUT requests
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.api+json',
+      };
+      
+      // Add authorization header if provided
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      
+      // Make the HTTP PUT request
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+      
+      const contentType = response.headers.get('content-type');
+      
+      // Handle non-200 responses
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch (e) {
+          // Ignore if we can't read the error
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Validate response has JSON content type before parsing (accept both JSON and JSON:API)
+      if (!contentType || (!contentType.includes('application/json') && !contentType.includes('application/vnd.api+json'))) {
+        throw new Error(`Expected JSON response but got ${contentType}`);
+      }
+      
+      // Parse and return JSON response
+      return await response.json();
+      
+    } catch (error) {
+      // Log error for debugging and re-throw for caller to handle
+      console.error('Error putting data to', endpoint, ':', error);
+      throw error;
+    }
+  }
+
+  /* ======= DELETE REQUESTS ======= */
+  
+  /**
+   * Makes a DELETE request to the specified API endpoint
+   * 
+   * @param {string} endpoint - API endpoint (with or without leading slash)
+   * @param {string|null} authHeader - Authorization header value (optional)
+   * @returns {Promise<Object>} Parsed JSON response from the API
+   * @throws {Error} If request fails, response is not OK, or response is not JSON
+   * 
+   * @example
+   * // Delete user data with authentication
+   * await ApiService.deleteData('users/123', 'Bearer token123');
+   */
+  static async deleteData(endpoint, authHeader = null) {
+    try {
+      // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
+      const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`;
+      
+      // Set up request headers with JSON:API accept header
+      const headers = {
+        'Accept': 'application/vnd.api+json',
+      };
+      
+      // Add authorization header if provided
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      
+      // Make the HTTP DELETE request
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers,
+      });
+      
+      // Handle non-200 responses
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch (e) {
+          // Ignore if we can't read the error
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // For DELETE requests, response might be empty (204 No Content)
+      const contentType = response.headers.get('content-type');
+      if (response.status === 204 || !contentType || (!contentType.includes('application/json') && !contentType.includes('application/vnd.api+json'))) {
+        return { success: true };
+      }
+      
+      // Parse and return JSON response if present
+      return await response.json();
+      
+    } catch (error) {
+      // Log error for debugging and re-throw for caller to handle
+      console.error('Error deleting data from', endpoint, ':', error);
+      throw error;
+    }
+  }
+
   /* ======= UTILITIES ======= */
 
   /**

@@ -1,42 +1,14 @@
-/**
- * ApiService - HTTP client for API communication
- * 
- * Provides standardized methods for making HTTP requests to the backend API.
- * Handles JSON:API format, authentication headers, and error responses.
- * 
- * Features:
- * - Automatic URL construction and endpoint normalization
- * - JSON:API content type handling
- * - Authentication header management
- * - Comprehensive error handling with detailed error messages
- * - Response validation and parsing
- * 
- * @static
- */
+// ApiService - Centralized HTTP client for backend API communication
+// Handles GET, POST, PUT, DELETE requests with JSON:API support and authentication
 
 // Base URL for all API requests - points to local development server
 const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
 
 class ApiService {
 
-  /* ======= GET REQUESTS ======= */
+  /* ======= REQUESTS ======= */
   
-  /**
-   * Makes a GET request to the specified API endpoint
-   * 
-   * @param {string} endpoint - API endpoint (with or without leading slash)
-   * @param {string|null} authHeader - Authorization header value (optional)
-   * @returns {Promise<Object>} Parsed JSON response from the API
-   * @throws {Error} If request fails, response is not OK, or response is not JSON
-   * 
-   * @example
-   * // Get user data with authentication
-   * const userData = await ApiService.getData('users/123', 'Bearer token123');
-   * 
-   * @example
-   * // Get public data without authentication
-   * const publicData = await ApiService.getData('public/announcements');
-   */
+  // GET request to API endpoint
   static async getData(endpoint, authHeader = null) {
     try {
       // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
@@ -90,30 +62,7 @@ class ApiService {
     }
   }
   
-  /* ======= POST REQUESTS ======= */
-
-  /**
-   * Makes a POST request to the specified API endpoint with JSON data
-   * 
-   * @param {string} endpoint - API endpoint (with or without leading slash)
-   * @param {Object} data - Data to send in request body (will be JSON.stringify'd)
-   * @param {string|null} authHeader - Authorization header value (optional)
-   * @returns {Promise<Object>} Parsed JSON response from the API
-   * @throws {Error} If request fails, response is not OK, or response is not JSON
-   * 
-   * @example
-   * // Create a new meeting
-   * const meetingData = {
-   *   name: 'Team Standup',
-   *   start_time: '2025-07-06T09:00:00Z'
-   * };
-   * const result = await ApiService.postData('meetings/', meetingData, authHeader);
-   * 
-   * @example
-   * // Submit form data
-   * const formData = { username: 'john', email: 'john@example.com' };
-   * const response = await ApiService.postData('users/', formData);
-   */
+  // POST request with JSON data  
   static async postData(endpoint, data, authHeader = null) {
     try {
       // Construct full URL, removing any leading slashes from endpoint
@@ -173,18 +122,124 @@ class ApiService {
     }
   }
 
+  // PUT request to update resource
+  static async putData(endpoint, data, authHeader = null) {
+    try {
+      // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
+      const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`;
+      
+      // Set up request headers with JSON:API content type for PUT requests
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.api+json',
+      };
+      
+      // Add authorization header if provided
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      
+      // Make the HTTP PUT request
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(data),
+      });
+      
+      const contentType = response.headers.get('content-type');
+      
+      // Handle non-200 responses
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch (e) {
+          // Ignore if we can't read the error
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Validate response has JSON content type before parsing (accept both JSON and JSON:API)
+      if (!contentType || (!contentType.includes('application/json') && !contentType.includes('application/vnd.api+json'))) {
+        throw new Error(`Expected JSON response but got ${contentType}`);
+      }
+      
+      // Parse and return JSON response
+      return await response.json();
+      
+    } catch (error) {
+      // Log error for debugging and re-throw for caller to handle
+      console.error('Error putting data to', endpoint, ':', error);
+      throw error;
+    }
+  }
+
+  // DELETE request to remove resource
+  static async deleteData(endpoint, authHeader = null) {
+    try {
+      // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
+      const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`;
+      
+      // Set up request headers with JSON:API accept header
+      const headers = {
+        'Accept': 'application/vnd.api+json',
+      };
+      
+      // Add authorization header if provided
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      
+      // Make the HTTP DELETE request
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers,
+      });
+      
+      // Handle non-200 responses
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch (e) {
+          // Ignore if we can't read the error
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // For DELETE requests, response might be empty (204 No Content)
+      // Handle successful DELETE responses - both empty and with content
+      const contentType = response.headers.get('content-type');
+
+      // Return success for standard "no content" responses
+      if (response.status === 204 || response.status === 202) {
+        return { success: true };
+      }
+
+      // If no content-type or not JSON, assume successful deletion
+      if (!contentType || !contentType.includes('application/json')) {
+        return { success: true };
+      }
+      
+      // Parse and return JSON response if present
+      return await response.json();
+      
+    } catch (error) {
+      // Log error for debugging and re-throw for caller to handle
+      console.error('Error deleting data from', endpoint, ':', error);
+      throw error;
+    }
+  }
+
   /* ======= UTILITIES ======= */
 
-  /**
-   * Returns the base URL used for all API requests
-   * Useful for constructing URLs outside of this service or debugging
-   * 
-   * @returns {string} The base API URL
-   * 
-   * @example
-   * const baseUrl = ApiService.getBaseUrl();
-   * console.log('API base URL:', baseUrl); // "http://127.0.0.1:8000/api/v1"
-   */
+  // Get the base API URL
   static getBaseUrl() {
     return API_BASE_URL;
   }

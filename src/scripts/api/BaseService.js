@@ -62,9 +62,26 @@ export default class BaseService {
       return null;
     }
     
-    const clone = template.content.cloneNode(true);
-    this.populateCardData(clone, data);
-    return clone;
+    // Check if it's actually a template element
+    if (template.tagName !== 'TEMPLATE') {
+      console.error(`Element with id "${templateId}" is not a template element (found: ${template.tagName})`);
+      return null;
+    }
+    
+    // Check if content exists
+    if (!template.content) {
+      console.error(`Template with id "${templateId}" has no content property`);
+      return null;
+    }
+    
+    try {
+      const clone = template.content.cloneNode(true);
+      this.populateCardData(clone, data);
+      return clone;
+    } catch (error) {
+      console.error(`Error cloning template "${templateId}":`, error);
+      return null;
+    }
   }
   
   // Populates cloned template with data

@@ -1,42 +1,14 @@
-/**
- * ApiService - HTTP client for API communication
- * 
- * Provides standardized methods for making HTTP requests to the backend API.
- * Handles JSON:API format, authentication headers, and error responses.
- * 
- * Features:
- * - Automatic URL construction and endpoint normalization
- * - JSON:API content type handling
- * - Authentication header management
- * - Comprehensive error handling with detailed error messages
- * - Response validation and parsing
- * 
- * @static
- */
+// ApiService - Centralized HTTP client for backend API communication
+// Handles GET, POST, PUT, DELETE requests with JSON:API support and authentication
 
 // Base URL for all API requests - points to local development server
 const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
 
 class ApiService {
 
-  /* ======= GET REQUESTS ======= */
+  /* ======= REQUESTS ======= */
   
-  /**
-   * Makes a GET request to the specified API endpoint
-   * 
-   * @param {string} endpoint - API endpoint (with or without leading slash)
-   * @param {string|null} authHeader - Authorization header value (optional)
-   * @returns {Promise<Object>} Parsed JSON response from the API
-   * @throws {Error} If request fails, response is not OK, or response is not JSON
-   * 
-   * @example
-   * // Get user data with authentication
-   * const userData = await ApiService.getData('users/123', 'Bearer token123');
-   * 
-   * @example
-   * // Get public data without authentication
-   * const publicData = await ApiService.getData('public/announcements');
-   */
+  // GET request to API endpoint
   static async getData(endpoint, authHeader = null) {
     try {
       // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
@@ -90,30 +62,7 @@ class ApiService {
     }
   }
   
-  /* ======= POST REQUESTS ======= */
-
-  /**
-   * Makes a POST request to the specified API endpoint with JSON data
-   * 
-   * @param {string} endpoint - API endpoint (with or without leading slash)
-   * @param {Object} data - Data to send in request body (will be JSON.stringify'd)
-   * @param {string|null} authHeader - Authorization header value (optional)
-   * @returns {Promise<Object>} Parsed JSON response from the API
-   * @throws {Error} If request fails, response is not OK, or response is not JSON
-   * 
-   * @example
-   * // Create a new meeting
-   * const meetingData = {
-   *   name: 'Team Standup',
-   *   start_time: '2025-07-06T09:00:00Z'
-   * };
-   * const result = await ApiService.postData('meetings/', meetingData, authHeader);
-   * 
-   * @example
-   * // Submit form data
-   * const formData = { username: 'john', email: 'john@example.com' };
-   * const response = await ApiService.postData('users/', formData);
-   */
+  // POST request with JSON data  
   static async postData(endpoint, data, authHeader = null) {
     try {
       // Construct full URL, removing any leading slashes from endpoint
@@ -173,21 +122,7 @@ class ApiService {
     }
   }
 
-  /* ======= PUT REQUESTS ======= */
-  
-  /**
-   * Makes a PUT request to the specified API endpoint
-   * 
-   * @param {string} endpoint - API endpoint (with or without leading slash)
-   * @param {Object} data - Data to send in the request body
-   * @param {string|null} authHeader - Authorization header value (optional)
-   * @returns {Promise<Object>} Parsed JSON response from the API
-   * @throws {Error} If request fails, response is not OK, or response is not JSON
-   * 
-   * @example
-   * // Update user data with authentication
-   * const updatedUser = await ApiService.putData('users/123', userData, 'Bearer token123');
-   */
+  // PUT request to update resource
   static async putData(endpoint, data, authHeader = null) {
     try {
       // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
@@ -242,20 +177,7 @@ class ApiService {
     }
   }
 
-  /* ======= DELETE REQUESTS ======= */
-  
-  /**
-   * Makes a DELETE request to the specified API endpoint
-   * 
-   * @param {string} endpoint - API endpoint (with or without leading slash)
-   * @param {string|null} authHeader - Authorization header value (optional)
-   * @returns {Promise<Object>} Parsed JSON response from the API
-   * @throws {Error} If request fails, response is not OK, or response is not JSON
-   * 
-   * @example
-   * // Delete user data with authentication
-   * await ApiService.deleteData('users/123', 'Bearer token123');
-   */
+  // DELETE request to remove resource
   static async deleteData(endpoint, authHeader = null) {
     try {
       // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
@@ -292,8 +214,16 @@ class ApiService {
       }
       
       // For DELETE requests, response might be empty (204 No Content)
+      // Handle successful DELETE responses - both empty and with content
       const contentType = response.headers.get('content-type');
-      if (response.status === 204 || !contentType || (!contentType.includes('application/json') && !contentType.includes('application/vnd.api+json'))) {
+
+      // Return success for standard "no content" responses
+      if (response.status === 204 || response.status === 202) {
+        return { success: true };
+      }
+
+      // If no content-type or not JSON, assume successful deletion
+      if (!contentType || !contentType.includes('application/json')) {
         return { success: true };
       }
       
@@ -309,16 +239,7 @@ class ApiService {
 
   /* ======= UTILITIES ======= */
 
-  /**
-   * Returns the base URL used for all API requests
-   * Useful for constructing URLs outside of this service or debugging
-   * 
-   * @returns {string} The base API URL
-   * 
-   * @example
-   * const baseUrl = ApiService.getBaseUrl();
-   * console.log('API base URL:', baseUrl); // "http://127.0.0.1:8000/api/v1"
-   */
+  // Get the base API URL
   static getBaseUrl() {
     return API_BASE_URL;
   }

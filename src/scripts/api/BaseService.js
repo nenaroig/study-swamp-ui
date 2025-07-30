@@ -1,8 +1,7 @@
-/**
- * BaseService - Abstract base class for service modules
- * Provides shared rendering functionality for lists of items
- * Child classes must implement: createCard(item, index) and getEmptyStateConfig()
- */
+// BaseService - Abstract base class for service modules
+// Provides shared rendering functionality for lists of items
+// Child classes must implement: createCard(item, index) and getEmptyStateConfig()
+
 export default class BaseService {
   
   // Abstract method - must be implemented by child classes
@@ -62,13 +61,11 @@ export default class BaseService {
       return null;
     }
     
-    // Check if it's actually a template element
     if (template.tagName !== 'TEMPLATE') {
       console.error(`Element with id "${templateId}" is not a template element (found: ${template.tagName})`);
       return null;
     }
     
-    // Check if content exists
     if (!template.content) {
       console.error(`Template with id "${templateId}" has no content property`);
       return null;

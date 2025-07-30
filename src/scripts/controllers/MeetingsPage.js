@@ -1,6 +1,6 @@
 import PageController from './PageController.js';
 import UserService from '../api/UserService.js';
-import MeetingService from '../api/MeetingService.js';
+import MeetingService from '../api/MeetingsService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
 import StatsService from '../api/StatsService.js';
 import { Modal } from 'bootstrap';

@@ -79,6 +79,9 @@ class DashboardPage {
 
   // Render all dashboard components
   renderDashboard() {
+
+    const self = this;
+
     // Render stats cards (4 cards in dashboard layout)
     StatsService.renderStats(this.allGroups, {
       userGroups: this.groups,
@@ -86,13 +89,16 @@ class DashboardPage {
       layout: 'dashboard',
       containerId: 'stats-container',
       cardClass: 'col-md-3',
-      clickableCards: ['studygroups', 'todaysmeetings'],
+      clickableCards: ['studygroups', 'todaysmeetings', 'availablegroups'],
       clickHandlers: {
       'studygroups': () => {
         PageController.navigateTo('study-groups');
       },
       'todaysmeetings': () => {
         PageController.navigateTo('meetings');
+      },
+      'availablegroups': () => {
+        self.openJoinGroupModal();
       }
     }
     });
@@ -139,7 +145,21 @@ class DashboardPage {
 
   // Opens modal and loads available groups
   openJoinGroupModal() {
+    // Load the groups first
     this.loadAvailableGroups();
+    
+    // Then trigger the modal using data attributes
+    const modal = document.getElementById('listGroupModal');
+    if (modal) {
+      // Create and click a hidden button with Bootstrap attributes
+      const btn = document.createElement('button');
+      btn.setAttribute('data-bs-toggle', 'modal');
+      btn.setAttribute('data-bs-target', '#listGroupModal');
+      btn.style.display = 'none';
+      document.body.appendChild(btn);
+      btn.click();
+      document.body.removeChild(btn);
+    }
   }
 
   // Loads and displays available groups in the modal

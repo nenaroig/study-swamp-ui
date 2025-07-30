@@ -113,11 +113,17 @@ class StatsService {
           subtitle: stats.todaysMeetings === 1 ? 'meeting scheduled' : 'meetings scheduled',
           iconClass: 'fa-regular fa-calendar-check'
         },
+        // {
+        //   title: 'Upcoming Meetings',
+        //   value: stats.upcomingMeetings,
+        //   subtitle: 'total scheduled',
+        //   iconClass: 'fa-regular fa-clock'
+        // },
         {
-          title: 'Upcoming Meetings',
-          value: stats.upcomingMeetings,
-          subtitle: 'total scheduled',
-          iconClass: 'fa-regular fa-clock'
+          title: 'Points Earned',
+          value: 0, // @todo update with awards
+          subtitle: 'gator gold',
+          iconClass: 'fa-solid fa-star'
         },
         {
           title: 'Available Groups',

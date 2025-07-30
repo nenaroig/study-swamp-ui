@@ -85,13 +85,23 @@ class DashboardPage {
       meetings: this.meetings,
       layout: 'dashboard',
       containerId: 'stats-container',
-      cardClass: 'col-md-3'
+      cardClass: 'col-md-3',
+      clickableCards: ['studygroups', 'todaysmeetings'],
+      clickHandlers: {
+      'studygroups': () => {
+        PageController.navigateTo('study-groups');
+      },
+      'todaysmeetings': () => {
+        PageController.navigateTo('meetings');
+      }
+    }
     });
 
     // Render recent meetings and groups
     MeetingService.renderMeetings(this.meetings.slice(0, 3), 'meetings-container', {
       userGroups: this.groups
     });
+
     StudyGroupsService.renderStudyGroups(
       this.groups.slice(0, 3),
       'groups-container',

@@ -17,40 +17,10 @@
     <div id="study-groups-container" class="row">
       <!-- Study group cards will be inserted here -->
     </div>
-    
-    <!-- Empty State Card (shown when no groups) -->
-    <div class="bg-white text-center p-5 rounded-4 w-xs-500p mx-auto mt-4 flex-column d-none" id="empty-state-card">
-      <span class="fa-solid fa-users fa-2x text-teal"></span>
-      <h2 class="mt-4">No Study Groups Yet</h2>
-      <p class="mt-4 text-lighter-gray">Ready to ace your classes? Join study groups to collaborate with classmates, boost your academic performance, and earn badges.</p>
-      <a href="" class="btn btn-gator-accent text-white mt-4">
-        <span class="fas fa-plus me-2"></span>
-        Find Groups
-      </a>
-    </div>
-    
-    <template id="study-groups-template">
-      <div class="col-md-4 col-sm-6 mt-4">
-        <div class="bg-white p-4 mb-3 h-100 rounded-4" data-group-name="">
-          <div class="text-start d-flex flex-column h-100">
-            <h3 class="h5 groups-title"></h3>
-            <p class="groups-description"></p>
-            <div class="d-flex align-items-center justify-content-between mb-3">
-              <div class="member-avatars d-flex">
-                <div class="member-avatar rounded-circle text-white">JV</div> <!-- Update to pull dynamically -->
-                <div class="member-avatar rounded-circle text-white">CB</div> <!-- Update to pull dynamically -->
-                <div class="member-avatar rounded-circle text-white">RF</div> <!-- Update to pull dynamically -->
-                <div class="member-avatar rounded-circle text-white">6+</div> <!-- Update to pull dynamically -->
-              </div>
-            </div>
-            <a href="" id="group-url" class="small mt-auto">VIEW GROUP</a>
-          </div>
-        </div>
-      </div>
-    </template>
   </div>
 </div>
 
+<!-- Add group modal -->
 <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 p-3">
@@ -76,13 +46,7 @@
             <div class="row">
               <div class="col-4">
                 <select class="form-select" id="department" name="department" required>
-                  <option value="">Dept</option>
-                  <option value="COP">COP</option>
-                  <option value="CEN">CEN</option>
-                  <option value="MAS">MAS</option>
-                  <option value="CHM">CHM</option>
-                  <option value="PHY">PHY</option>
-                  <option value="BIO">BIO</option>
+                  <option value="">Loading departments...</option>
                 </select>
               </div>
               <div class="col-8">
@@ -120,6 +84,73 @@
         </button>
         <button type="submit" form="addGroupForm" class="btn btn-sm btn-teal btn-lg px-4">
           <span class="fa-solid fa-plus me-2"></span>Create Group
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- List groups modal -->
+<div class="modal fade" id="listGroupModal" tabindex="-1" aria-labelledby="listGroupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-md-down modal-dialog-scrollable modal-xl">
+    <div class="modal-content rounded-4 p-3">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="h4" id="listGroupModalLabel">
+          <span class="fa-solid fa-users text-teal me-3"></span>Available Study Groups
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body pt-3" style="max-height: 70vh; overflow-y: auto;">
+        <!-- Search/Filter Section -->
+        <div class="mb-4 sticky-top bg-white pb-3">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <span class="fa-solid fa-search"></span>
+            </span>
+            <input type="text" class="form-control" id="groupSearch" placeholder="Search groups by name or course...">
+          </div>
+        </div>
+
+        <!-- Groups List Container -->
+        <div id="availableGroupsList" class="mb-3">
+          <!-- Groups will be populated here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="noGroupsMessage" class="text-center text-muted py-4 d-none">
+          <span class="fa-solid fa-users fa-3x mb-3 d-block text-muted"></span>
+          <p>No study groups available to join</p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingGroups" class="text-center py-4">
+          <div class="spinner-border text-teal" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading available groups...</p>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div id="modalErrorMessage" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+          <span class="fa-solid fa-exclamation-triangle me-2"></span>
+          <span id="errorText"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div id="modalSuccessMessage" class="alert alert-success alert-dismissible fade d-none" role="alert">
+          <span class="fa-solid fa-check-circle me-2"></span>
+          <span id="successText"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      </div>
+      
+      <div class="modal-footer border-0 pt-0 sticky-bottom bg-white">
+        <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
+          <span class="fa-solid fa-times me-2"></span>Close
+        </button>
+        <button type="button" class="btn btn-sm btn-teal btn-lg px-4" id="createNewGroupBtn">
+          <span class="fa-solid fa-plus me-2"></span>Create New Group
         </button>
       </div>
     </div>

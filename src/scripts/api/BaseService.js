@@ -1,6 +1,5 @@
 // BaseService - Abstract base class for service modules
 // Provides shared rendering functionality for lists of items
-// Child classes must implement: createCard(item, index) and getEmptyStateConfig()
 
 export default class BaseService {
   
@@ -8,7 +7,7 @@ export default class BaseService {
   static createCard(item, index = 0) {
     throw new Error('createCard method must be implemented by child class');
   }
-
+  
   // Abstract method - must be implemented by child classes  
   static getEmptyStateConfig() {
     throw new Error('getEmptyStateConfig method must be implemented by child class');
@@ -37,7 +36,7 @@ export default class BaseService {
       }
     });
   }
-
+  
   // Renders empty state message
   static renderEmptyState(container) {
     const config = this.getEmptyStateConfig();
@@ -131,19 +130,19 @@ export default class BaseService {
       
       if (isToday) {
         return config.showTime ? 
-          `Today at ${date.toLocaleTimeString([], config.timeFormat)}` :
-          'Today';
+        `Today at ${date.toLocaleTimeString([], config.timeFormat)}` :
+        'Today';
       } else if (isTomorrow) {
         return config.showTime ? 
-          `Tomorrow at ${date.toLocaleTimeString([], config.timeFormat)}` :
-          'Tomorrow';
+        `Tomorrow at ${date.toLocaleTimeString([], config.timeFormat)}` :
+        'Tomorrow';
       }
     }
     
     const dateStr = date.toLocaleDateString([], config.dateFormat);
     return config.showTime ? 
-      `${dateStr} at ${date.toLocaleTimeString([], config.timeFormat)}` :
-      dateStr;
+    `${dateStr} at ${date.toLocaleTimeString([], config.timeFormat)}` :
+    dateStr;
   }
   
   // Formats time range from start and end times
@@ -153,7 +152,7 @@ export default class BaseService {
     const startDate = new Date(startTime);
     const endDate = endTime ? new Date(endTime) : null;
     const timeStr = this.formatDate(startTime, options);
-
+    
     if (endDate) {
       const endTimeStr = endDate.toLocaleTimeString([], options.timeFormat || { hour: '2-digit', minute: '2-digit' });
       return timeStr.replace(/at \d{2}:\d{2}/, `${startDate.toLocaleTimeString([], options.timeFormat || { hour: '2-digit', minute: '2-digit' })} - ${endTimeStr}`);

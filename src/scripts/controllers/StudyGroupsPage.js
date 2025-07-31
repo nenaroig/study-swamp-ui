@@ -3,6 +3,7 @@ import UserService from '../api/UserService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
 import { createGroupUrl } from './StudyGroupDetailPage.js';
 import StatsService from '../api/StatsService.js';
+import { ModalUtility } from '../utils/ModalUtility.js';
 
 // Update href attributes for group view links
 export function updateGroupLinks() {
@@ -58,8 +59,8 @@ class StudyGroupsPage {
       
       // Filter to user's groups only
       const userGroupIds = members
-        .filter(member => member.relationships.user.data.id === currentUserId)
-        .map(member => member.relationships.group.data.id);
+      .filter(member => member.relationships.user.data.id === currentUserId)
+      .map(member => member.relationships.group.data.id);
       
       this.groups = allGroups.filter(group => userGroupIds.includes(group.id));
       
@@ -67,8 +68,18 @@ class StudyGroupsPage {
       StudyGroupsService.renderStudyGroups(this.groups, 'study-groups-container', members);
       StatsService.renderStats(allGroups, {
         userGroups: this.groups,
-        layout: 'studyGroups'
+        layout: 'studyGroups',
+        clickableCards: ['studygroups', 'meetings', 'availablegroups'],
+        clickHandlers: {
+          'meetings': () => {
+            PageController.navigateTo('meetings');
+          },
+          'availablegroups': () => {
+            ModalUtility.openJoinGroupModal();
+          }
+        }
       });
+      
       this.updateCreateButtonStyle();
       
     } catch (error) {
@@ -82,7 +93,7 @@ class StudyGroupsPage {
     await this.loadStudyGroups();
     updateGroupLinks();
   }
-
+  
   // Change create button color based on group membership
   updateCreateButtonStyle() {
     const createButton = document.querySelector('[data-bs-target="#addGroupModal"]');
@@ -96,7 +107,7 @@ class StudyGroupsPage {
       createButton.className = 'btn btn-teal'; // Teal when no groups
     }
   }
-
+  
   /* ====== FORM MANAGEMENT ====== */
   // Setup form submission handler (prevent duplicates)
   setupFormHandling() {
@@ -107,6 +118,14 @@ class StudyGroupsPage {
           await this.handleCreateGroup(e);
         }
       });
+      
+      // Load departments when modal is shown
+      document.addEventListener('show.bs.modal', async (e) => {
+        if (e.target && e.target.id === 'addGroupModal') {
+          await ModalUtility.loadDepartments();
+        }
+      });
+      
       window.studyGroupsListenerAdded = true;
     }
   }
@@ -170,7 +189,7 @@ class StudyGroupsPage {
       }
     }
   }
-
+  
   /* ====== MODAL MESSAGE MANAGEMENT ====== */
   showModalError(message) {
     const errorDiv = document.getElementById('modalErrorMessage');

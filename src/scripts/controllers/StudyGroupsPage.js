@@ -8,7 +8,7 @@ import { ModalUtility } from '../utils/ModalUtility.js';
 // Update href attributes for group view links
 export function updateGroupLinks() {
   const groupLinks = document.querySelectorAll('a#group-url');
-
+  
   groupLinks.forEach(link => {
     const groupCard = link.closest('[data-group-name]');
     if (groupCard) {
@@ -25,25 +25,25 @@ class StudyGroupsPage {
     this.isInitialized = false;
     this.groups = [];
   }
-
+  
   // Initialize page - check auth, load data, setup handlers
   async init() {
     if (this.isInitialized) return;
-
+    
     if (!UserService.isLoggedIn()) {
       PageController.navigateTo('login');
       return;
     }
-
+    
     this.currentUser = UserService.getCurrentUser();
-
+    
     await this.loadStudyGroups();
     updateGroupLinks();
     this.setupFormHandling();
-
+    
     this.isInitialized = true;
   }
-
+  
   // Load and render groups, stats, and UI updates
   async loadStudyGroups() {
     try {
@@ -52,18 +52,18 @@ class StudyGroupsPage {
         StudyGroupsService.getMyStudyGroups(),
         UserService.makeAuthenticatedRequest('members/')
       ]);
-
+      
       const allGroups = groupsResponse.studyGroupsData?.data || [];
       const members = membersResponse.data || [];
       const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
-
+      
       // Filter to user's groups only
       const userGroupIds = members
-        .filter(member => member.relationships.user.data.id === currentUserId)
-        .map(member => member.relationships.group.data.id);
-
+      .filter(member => member.relationships.user.data.id === currentUserId)
+      .map(member => member.relationships.group.data.id);
+      
       this.groups = allGroups.filter(group => userGroupIds.includes(group.id));
-
+      
       // Render components
       StudyGroupsService.renderStudyGroups(this.groups, 'study-groups-container', members);
       StatsService.renderStats(allGroups, {
@@ -71,43 +71,43 @@ class StudyGroupsPage {
         layout: 'studyGroups',
         clickableCards: ['studygroups', 'meetings', 'availablegroups'],
         clickHandlers: {
-            'meetings': () => {
-              PageController.navigateTo('meetings');
-            },
-            'availablegroups': () => {
-              ModalUtility.openJoinGroupModal();
-            }
+          'meetings': () => {
+            PageController.navigateTo('meetings');
+          },
+          'availablegroups': () => {
+            ModalUtility.openJoinGroupModal();
           }
-        });
-
+        }
+      });
+      
       this.updateCreateButtonStyle();
-
+      
     } catch (error) {
       console.error('Failed to load study groups:', error);
       PageController.showError('Unable to load study groups. Please try refreshing the page.');
     }
   }
-
+  
   // Refresh all group data and UI
   async refreshGroups() {
     await this.loadStudyGroups();
     updateGroupLinks();
   }
-
+  
   // Change create button color based on group membership
   updateCreateButtonStyle() {
     const createButton = document.querySelector('[data-bs-target="#addGroupModal"]');
     if (!createButton) return;
-
+    
     const hasGroups = this.groups && this.groups.length > 0;
-
+    
     if (hasGroups) {
       createButton.className = 'btn btn-gator-accent'; // Orange when user has groups
     } else {
       createButton.className = 'btn btn-teal'; // Teal when no groups
     }
   }
-
+  
   /* ====== FORM MANAGEMENT ====== */
   // Setup form submission handler (prevent duplicates)
   setupFormHandling() {
@@ -118,28 +118,36 @@ class StudyGroupsPage {
           await this.handleCreateGroup(e);
         }
       });
+      
+      // Load departments when modal is shown
+      document.addEventListener('show.bs.modal', async (e) => {
+        if (e.target && e.target.id === 'addGroupModal') {
+          await ModalUtility.loadDepartments();
+        }
+      });
+      
       window.studyGroupsListenerAdded = true;
     }
   }
-
+  
   // Handle new group creation form submission
   async handleCreateGroup(event) {
     const form = event.target;
     const formData = new FormData(form);
-
+    
     const groupData = {
       name: formData.get('groupName'),
       department: formData.get('department'),
       courseNumber: formData.get('courseNumber'),
       description: formData.get('groupDescription') || ''
     };
-
+    
     // Validate required fields
     if (!groupData.name || !groupData.department || !groupData.courseNumber) {
       this.showModalError('Please fill in all required fields.');
       return;
     }
-
+    
     try {
       // Update submit button state
       const submitBtn = form.querySelector('button[type="submit"]');
@@ -147,13 +155,13 @@ class StudyGroupsPage {
         submitBtn.textContent = 'Creating...';
         submitBtn.disabled = true;
       }
-
+      
       const response = await StudyGroupsService.createStudyGroup(groupData);
-
+      
       if (response.success) {
         this.showModalSuccess('Study group created successfully!');
         form.reset();
-
+        
         // Auto-close modal after success
         setTimeout(() => {
           const modal = document.getElementById('addGroupModal');
@@ -163,7 +171,7 @@ class StudyGroupsPage {
           }
           this.clearModalMessages();
         }, 1500);
-
+        
         await this.refreshGroups();
         updateGroupLinks();
       } else {
@@ -181,12 +189,12 @@ class StudyGroupsPage {
       }
     }
   }
-
+  
   /* ====== MODAL MESSAGE MANAGEMENT ====== */
   showModalError(message) {
     const errorDiv = document.getElementById('modalErrorMessage');
     const errorText = document.getElementById('errorText');
-
+    
     if (errorDiv && errorText) {
       errorText.textContent = message;
       errorDiv.classList.remove('d-none');
@@ -196,11 +204,11 @@ class StudyGroupsPage {
       alert(message);
     }
   }
-
+  
   showModalSuccess(message) {
     const successDiv = document.getElementById('modalSuccessMessage');
     const successText = document.getElementById('successText');
-
+    
     if (successDiv && successText) {
       successText.textContent = message;
       successDiv.classList.remove('d-none');
@@ -210,7 +218,7 @@ class StudyGroupsPage {
       alert(message);
     }
   }
-
+  
   hideErrorMessage() {
     const errorDiv = document.getElementById('modalErrorMessage');
     if (errorDiv) {
@@ -218,7 +226,7 @@ class StudyGroupsPage {
       errorDiv.classList.remove('show');
     }
   }
-
+  
   hideSuccessMessage() {
     const successDiv = document.getElementById('modalSuccessMessage');
     if (successDiv) {
@@ -226,7 +234,7 @@ class StudyGroupsPage {
       successDiv.classList.remove('show');
     }
   }
-
+  
   clearModalMessages() {
     this.hideErrorMessage();
     this.hideSuccessMessage();

@@ -20,6 +20,7 @@
   </div>
 </div>
 
+<!-- Add group modal -->
 <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-4 p-3">
@@ -89,6 +90,73 @@
         </button>
         <button type="submit" form="addGroupForm" class="btn btn-sm btn-teal btn-lg px-4">
           <span class="fa-solid fa-plus me-2"></span>Create Group
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- List groups modal -->
+<div class="modal fade" id="listGroupModal" tabindex="-1" aria-labelledby="listGroupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-md-down modal-dialog-scrollable modal-xl">
+    <div class="modal-content rounded-4 p-3">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="h4" id="listGroupModalLabel">
+          <span class="fa-solid fa-users text-teal me-3"></span>Available Study Groups
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body pt-3" style="max-height: 70vh; overflow-y: auto;">
+        <!-- Search/Filter Section -->
+        <div class="mb-4 sticky-top bg-white pb-3">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <span class="fa-solid fa-search"></span>
+            </span>
+            <input type="text" class="form-control" id="groupSearch" placeholder="Search groups by name or course...">
+          </div>
+        </div>
+
+        <!-- Groups List Container -->
+        <div id="availableGroupsList" class="mb-3">
+          <!-- Groups will be populated here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="noGroupsMessage" class="text-center text-muted py-4 d-none">
+          <span class="fa-solid fa-users fa-3x mb-3 d-block text-muted"></span>
+          <p>No study groups available to join</p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingGroups" class="text-center py-4">
+          <div class="spinner-border text-teal" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading available groups...</p>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div id="modalErrorMessage" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+          <span class="fa-solid fa-exclamation-triangle me-2"></span>
+          <span id="errorText"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div id="modalSuccessMessage" class="alert alert-success alert-dismissible fade d-none" role="alert">
+          <span class="fa-solid fa-check-circle me-2"></span>
+          <span id="successText"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      </div>
+      
+      <div class="modal-footer border-0 pt-0 sticky-bottom bg-white">
+        <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
+          <span class="fa-solid fa-times me-2"></span>Close
+        </button>
+        <button type="button" class="btn btn-sm btn-teal btn-lg px-4" id="createNewGroupBtn">
+          <span class="fa-solid fa-plus me-2"></span>Create New Group
         </button>
       </div>
     </div>

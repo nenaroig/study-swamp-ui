@@ -23,10 +23,10 @@ class StudyGroupDetailService extends BaseService {
   // Convert group name to slug (shared utility)
   static createGroupSlug(groupName) {
     return groupName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .replace(/-+/g, '-');
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-');
   }
   
   /* ======= GETTERS ======= */
@@ -51,6 +51,58 @@ class StudyGroupDetailService extends BaseService {
       console.error('Failed to get study group by slug:', error);
       throw error;
     }
+  }
+  
+  /* ======= GROUP MANAGEMENT ======= */
+  
+  // Leave a group (remove membership)
+  static async leaveGroup(groupId, userId) {
+    try {
+      const authHeader = UserService.getAuthHeader();
+      
+      // First, find the membership record
+      const membersResponse = await ApiService.getData('members/', authHeader);
+      const membership = membersResponse.data.find(member => 
+        member.relationships.user.data.id.toString() === userId.toString() &&
+        member.relationships.group.data.id.toString() === groupId.toString()
+      );
+      
+      if (!membership) {
+        throw new Error('Membership not found');
+      }
+      
+      // Delete the membership
+      await ApiService.deleteData(`members/${membership.id}`, authHeader);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to leave group:', error);
+      throw error;
+    }
+  }
+  
+  // Delete a group (only for creators)
+  static async deleteGroup(groupId) {
+    try {
+      const authHeader = UserService.getAuthHeader();
+      
+      // Delete the group
+      await ApiService.deleteData(`groups/${groupId}`, authHeader);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to delete group:', error);
+      throw error;
+    }
+  }
+  
+  // Check if user is the creator of a group
+  static isGroupCreator(groupMembers, userId) {
+    const userMembership = groupMembers.find(member => 
+      member.relationships.user.data.id.toString() === userId.toString()
+    );
+    
+    return userMembership?.attributes?.creator === true;
   }
 }
 

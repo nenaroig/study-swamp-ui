@@ -4,25 +4,24 @@ import UserService from '../api/UserService.js';
 import PageController from './PageController.js';
 
 class LogoutManager {
-  static init() {
+  static initialized = false;
 
-    const logoutBtn = document.querySelector('.logout-btn');
-    if (logoutBtn) {
-      this.logoutBtn = logoutBtn;
-      this.setupLogoutButtons();
-    }
+  static init() {
+    // Prevent multiple initializations
+    if (this.initialized) return;
     
-  }
-  
-  static setupLogoutButtons() {
-    this.logoutBtn.addEventListener('click', (e) => {
-      console.log(e.target);
-        
-      e.preventDefault();
-      this.performLogout();
+    // Use event delegation to handle logout button clicks
+    // This works regardless of when the button is added to the DOM
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.logout-btn')) {
+        console.log('Logout button clicked:', e.target);
+        e.preventDefault();
+        this.performLogout();
+      }
     });
+    
+    this.initialized = true;
   }
-  
   static performLogout() {
     const confirmed = confirm('Are you sure you want to logout?');
     if (confirmed) {

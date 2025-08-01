@@ -1,4 +1,5 @@
 import LoginPage from './LoginPage.js';
+import SignUpPage from './SignUpPage.js';
 import DashboardPage from './DashboardPage.js';
 import StudyGroupsPage from './StudyGroupsPage.js';
 import StudyGroupDetailPage from './StudyGroupDetailPage.js';
@@ -25,6 +26,10 @@ class PageController {
     switch(page) {
       case 'login':
         this.currentPage = new LoginPage();
+        this.currentPage.init();
+        break;
+      case 'signup':
+        this.currentPage = new SignUpPage();
         this.currentPage.init();
         break;
       case 'dashboard':

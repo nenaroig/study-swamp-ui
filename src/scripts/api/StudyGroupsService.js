@@ -331,15 +331,25 @@ class StudyGroupsService extends BaseService {
     try {
       const authHeader = UserService.getAuthHeader();
       const currentUser = UserService.getCurrentUser();
-      const currentUserId = currentUser?.userData?.id || currentUser?.id;
+      console.log('Creating group with user:', currentUser);
+      
+      // Try different ways to get the user ID
+      let currentUserId = currentUser?.userData?.id;
+      if (!currentUserId && currentUser?.userData?.data) {
+        currentUserId = currentUser.userData.data.id;
+      }
+      
+      console.log('Current user ID for group creation:', currentUserId);
       
       const payload = {
         name: groupData.name,
         department: groupData.department,
-        class_number: parseInt(groupData.courseNumber)
+        class_number: parseInt(groupData.courseNumber, 10) || 0
       };
       
+      console.log('Creating group with payload:', payload);
       const groupResponse = await ApiService.postData('groups/', payload, authHeader);
+      console.log('Group creation response:', groupResponse);
       
       // If group creation successful, add current user as member
       if (groupResponse && groupResponse.data && groupResponse.data.id) {
@@ -347,15 +357,19 @@ class StudyGroupsService extends BaseService {
         
         // Create member relationship
         const memberData = {
-          user: parseInt(currentUserId),
-          group: parseInt(groupId),
-          creator: true
+          user: parseInt(currentUserId, 10) || currentUserId,
+          group: parseInt(groupId, 10) || groupId,
+          creator: true, // Setting this may not work depending on backend permissions
+          editor: true   // Add editor flag as well
         };
         
+        console.log('Creating member with data:', memberData);
         const memberResponse = await ApiService.postData('members/', memberData, authHeader);
+        console.log('Member creation response:', memberResponse);
         
         if (!memberResponse || !memberResponse.data) {
-          throw new Error('Failed to add user as group member');
+          console.error('Failed to add user as group member');
+          // Don't throw error here, as the group was already created
         }
       } else {
         throw new Error('Group creation failed - no response data');

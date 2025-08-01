@@ -8,6 +8,9 @@
         <button class="btn btn-gator-accent">
           <span class="fa-solid fa-user-minus me-3"></span>Leave Group
         </button>
+        <button class="btn btn-outline-teal d-none" id="edit-group-btn" data-bs-toggle="modal" data-bs-target="#editGroupModal">
+          <span class="fa-solid fa-edit me-3"></span>Edit Group
+        </button>
       </div>
     </div>
     
@@ -191,8 +194,78 @@
         <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
           <span class="fa-solid fa-times me-2"></span>Cancel
         </button>
-        <button type="submit" form="addGroupForm" class="btn btn-sm btn-teal btn-lg px-4">
-          <span class="fa-solid fa-plus me-2"></span>Create Group
+        <button type="submit" form="meeting-form" class="btn btn-sm btn-teal btn-lg px-4">
+          <span class="fa-solid fa-calendar-plus me-2"></span>Schedule Meeting
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Group Modal -->
+<div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 p-3">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="h4" id="editGroupModalLabel">
+          <span class="fa-solid fa-edit text-teal me-3"></span>Edit Study Group
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body pt-3">
+        <form id="editGroupForm">
+          <!-- Group Name -->
+          <div class="mb-4">
+            <label for="editGroupName" class="form-label fw-semibold">Group Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-lg" id="editGroupName" name="groupName" placeholder="e.g., Data Structures Study Group" required>
+            <div class="invalid-feedback">Please enter a group name.</div>
+          </div>
+
+          <!-- Course/Subject -->
+          <div class="mb-4">
+            <label for="editCourseCode" class="form-label fw-semibold">Course Code <span class="text-danger">*</span></label>
+            <div class="row">
+              <div class="col-4">
+                <select class="form-select" id="editDepartment" name="department" required>
+                  <option value="">Loading departments...</option>
+                </select>
+              </div>
+              <div class="col-8">
+                <input type="text" class="form-control" id="editCourseNumber" name="courseNumber" placeholder="3530" required>
+              </div>
+            </div>
+            <div class="invalid-feedback">Please select a department and enter course number.</div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <label for="editGroupDescription" class="form-label fw-semibold">Description</label>
+            <textarea class="form-control h-xs-100p" id="editGroupDescription" name="groupDescription" placeholder="Tell others what this group is about, what topics you'll cover, or your study goals..."></textarea>
+            <div class="form-text">Help others understand what your group focuses on</div>
+          </div>
+
+          <!-- Error/Success Messages -->
+          <div id="editModalErrorMessage" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+            <span class="fa-solid fa-exclamation-triangle me-2"></span>
+            <span id="editErrorText"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          
+          <div id="editModalSuccessMessage" class="alert alert-success alert-dismissible fade d-none" role="alert">
+            <span class="fa-solid fa-check-circle me-2"></span>
+            <span id="editSuccessText"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
+          <span class="fa-solid fa-times me-2"></span>Cancel
+        </button>
+        <button type="submit" form="editGroupForm" class="btn btn-sm btn-teal btn-lg px-4" id="edit-group-submit-btn">
+          <span class="fa-solid fa-save me-2"></span>Save Changes
         </button>
       </div>
     </div>

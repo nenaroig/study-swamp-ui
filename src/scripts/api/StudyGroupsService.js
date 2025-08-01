@@ -351,25 +351,37 @@ class StudyGroupsService extends BaseService {
       const groupResponse = await ApiService.postData('groups/', payload, authHeader);
       console.log('Group creation response:', groupResponse);
       
-      // If group creation successful, add current user as member
+      // If group creation successful, check if user is already a member, then add if not
       if (groupResponse && groupResponse.data && groupResponse.data.id) {
         const groupId = groupResponse.data.id;
         
-        // Create member relationship
-        const memberData = {
-          user: parseInt(currentUserId, 10) || currentUserId,
-          group: parseInt(groupId, 10) || groupId,
-          creator: true, // Setting this may not work depending on backend permissions
-          editor: true   // Add editor flag as well
-        };
+        // Check if user is already a member of this group
+        console.log('Checking existing memberships for group:', groupId);
+        const membersResponse = await ApiService.getData('members/', authHeader);
+        const existingMembership = membersResponse.data?.find(member => 
+          member.relationships?.user?.data?.id == currentUserId && 
+          member.relationships?.group?.data?.id == groupId
+        );
         
-        console.log('Creating member with data:', memberData);
-        const memberResponse = await ApiService.postData('members/', memberData, authHeader);
-        console.log('Member creation response:', memberResponse);
-        
-        if (!memberResponse || !memberResponse.data) {
-          console.error('Failed to add user as group member');
-          // Don't throw error here, as the group was already created
+        if (existingMembership) {
+          console.log('User is already a member of this group:', existingMembership);
+        } else {
+          // Create member relationship only if one doesn't exist
+          const memberData = {
+            user: parseInt(currentUserId, 10) || currentUserId,
+            group: parseInt(groupId, 10) || groupId,
+            creator: true,
+            editor: true
+          };
+          
+          console.log('Creating member with data:', memberData);
+          const memberResponse = await ApiService.postData('members/', memberData, authHeader);
+          console.log('Member creation response:', memberResponse);
+          
+          if (!memberResponse || !memberResponse.data) {
+            console.error('Failed to add user as group member');
+            // Don't throw error here, as the group was already created
+          }
         }
       } else {
         throw new Error('Group creation failed - no response data');

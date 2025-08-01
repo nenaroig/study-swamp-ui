@@ -2,6 +2,7 @@ import PageController from './PageController.js';
 import UserService from '../api/UserService.js';
 import StudyGroupDetailService from '../api/StudyGroupDetailService.js';
 import ApiService from '../api/ApiService.js';
+import ModalUtility from '../utils/ModalUtility.js';
 
 // Convert group name to URL-friendly slug
 export function createGroupSlug(groupName) {
@@ -805,14 +806,7 @@ async handleEditGroupSubmit(e) {
       
       // Close modal after a short delay and redirect if name changed
       setTimeout(() => {
-        const modal = document.getElementById('editGroupModal');
-        const closeButton = modal?.querySelector('[data-bs-dismiss="modal"]');
-        
-        if (closeButton) {
-          // Trigger the close button click to properly close the modal
-          closeButton.click();
-        }
-        
+        ModalUtility.closeModalById('editGroupModal');
         // Check if the group name changed and redirect if needed
         const newGroupName = document.getElementById('editGroupName').value.trim();
         const currentGroupName = this.currentGroup?.attributes?.name;

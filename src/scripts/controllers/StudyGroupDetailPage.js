@@ -112,7 +112,7 @@ class StudyGroupDetailPage {
     const description = this.currentGroup.attributes?.description || '';
     const deptCode = this.currentGroup.attributes?.department || '';
     const classNum = this.currentGroup.attributes?.class_number || '';
-    
+
     department.textContent = `${deptCode} ${classNum}`;
     if (description) descriptionContainer.textContent = `${description}`;
   }
@@ -124,32 +124,22 @@ class StudyGroupDetailPage {
       return;
     }
     
-    console.log('Rendering members...');
-    console.log('Group members:', this.groupMembers);
-    console.log('All users:', this.allUsers);
-    
     membersList.innerHTML = '';
     
     this.groupMembers.forEach((member, index) => {
-      console.log(`Processing member ${index}:`, member);
       
       // Find the user data for this member
       const userId = member.relationships?.user?.data?.id;
-      console.log('Looking for user ID:', userId);
       
       const user = this.allUsers.find(user => user.id === userId);
-      console.log('Found user:', user);
       
       if (user) {
         const memberCard = this.createMemberCard(member, user);
         membersList.appendChild(memberCard);
-        console.log('Added member card for:', user.attributes?.first_name, user.attributes?.last_name);
       } else {
         console.error('User not found for member:', member);
       }
     });
-    
-    console.log('Members rendering complete. Total cards added:', membersList.children.length);
   }
   
   createMemberCard(member, user) {
@@ -410,8 +400,6 @@ async postComment(commentForm) {
     const authHeader = UserService.getAuthHeader();
     const response = await ApiService.postData('group_comments/', commentData, authHeader);
     
-    console.log('Comment posted successfully:', response);
-    
     // Clear the form
     commentForm.value = '';
     
@@ -608,15 +596,15 @@ async handleMeetingSubmit(e) {
     createBtn.textContent = originalText;
   }
 }
-// Add this method after renderGroupDetails()
 renderGroupActions() {
   const actionsContainer = document.getElementById('group-actions');
   if (!actionsContainer) return;
   
   const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
   const isCreator = StudyGroupDetailService.isGroupCreator(this.groupMembers, currentUserId);
+  const isAdmin = this.currentUser?.userData.attributes.is_superuser;
   
-  if (isCreator) {
+  if (isCreator || isAdmin) {
     actionsContainer.innerHTML = `
         <button class="btn btn-gator-accent" id="delete-group-btn">
           <span class="fa-solid fa-user-minus me-3"></span>Delete Group

@@ -3,9 +3,10 @@
 
 // Base URL for all API requests - points to local development server
 const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+const API_ENUM_URL = 'http://127.0.0.1:8000/api';
 
 class ApiService {
-
+  
   /* ======= REQUESTS ======= */
   
   // GET request to API endpoint
@@ -58,6 +59,51 @@ class ApiService {
     } catch (error) {
       // Log error for debugging and re-throw for caller to handle
       console.error('Error fetching data from', endpoint, ':', error);
+      throw error;
+    }
+  }
+  
+  static async getEnumData(endpoint, authHeader = null) {
+    try {
+      // Use the enum-specific base URL
+      const url = `${API_ENUM_URL}/${endpoint.replace(/^\/+/, '')}`;
+      
+      const headers = {
+        'Accept': 'application/json',
+      };
+      
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      
+      const response = await fetch(url, { headers }),
+      contentType = response.headers.get('content-type');
+      
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch (e) {
+          // Ignore if we can't read the error
+        }
+        throw new Error(errorMessage);
+      }
+      
+      if (
+        contentType &&
+        (contentType.includes('application/json') ||
+        contentType.includes('application/vnd.api+json'))
+      ) {
+        return await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error('Expected JSON, got: ' + text.slice(0, 200));
+      }
+    } catch (error) {
+      console.error('Error fetching enum data from', endpoint, ':', error);
       throw error;
     }
   }
@@ -121,7 +167,7 @@ class ApiService {
       throw error;
     }
   }
-
+  
   // PUT request to update resource
   static async putData(endpoint, data, authHeader = null) {
     try {
@@ -176,7 +222,7 @@ class ApiService {
       throw error;
     }
   }
-
+  
   // DELETE request to remove resource
   static async deleteData(endpoint, authHeader = null) {
     try {
@@ -216,12 +262,12 @@ class ApiService {
       // For DELETE requests, response might be empty (204 No Content)
       // Handle successful DELETE responses - both empty and with content
       const contentType = response.headers.get('content-type');
-
+      
       // Return success for standard "no content" responses
       if (response.status === 204 || response.status === 202) {
         return { success: true };
       }
-
+      
       // If no content-type or not JSON, assume successful deletion
       if (!contentType || !contentType.includes('application/json')) {
         return { success: true };
@@ -236,9 +282,9 @@ class ApiService {
       throw error;
     }
   }
-
+  
   /* ======= UTILITIES ======= */
-
+  
   // Get the base API URL
   static getBaseUrl() {
     return API_BASE_URL;

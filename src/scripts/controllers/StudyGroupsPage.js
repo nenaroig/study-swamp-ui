@@ -57,12 +57,23 @@ class StudyGroupsPage {
       const members = membersResponse.data || [];
       const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
       
-      // Filter to user's groups only
-      const userGroupIds = members
-      .filter(member => member.relationships.user.data.id === currentUserId)
-      .map(member => member.relationships.group.data.id);
+      // Check if current user is admin
+      const isAdmin = this.currentUser?.username?.includes('admin') || false;
       
-      this.groups = allGroups.filter(group => userGroupIds.includes(group.id));
+      if (isAdmin) {
+        // Admin users see all groups
+        this.groups = allGroups;
+      } else {
+        // Regular users see only their joined groups
+        const userGroupIds = members
+        .filter(member => {
+          const memberUserId = member.relationships.user.data.id;
+          return memberUserId.toString() === currentUserId.toString();
+        })
+        .map(member => member.relationships.group.data.id.toString());
+        
+        this.groups = allGroups.filter(group => userGroupIds.includes(group.id.toString()));
+      }
       
       // Render components
       StudyGroupsService.renderStudyGroups(this.groups, 'study-groups-container', members);

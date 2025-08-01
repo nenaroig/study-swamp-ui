@@ -41,6 +41,7 @@ class StudyGroupDetailPage {
     
     // Load and render study group
     await this.loadStudyGroup();
+    this.renderGroupActions();
     
     this.isInitialized = true;
   }
@@ -72,13 +73,13 @@ class StudyGroupDetailPage {
       
       // Filter data for this specific group
       const groupId = this.currentGroup.id?.toString();
-
+      
       this.groupMembers = membersResponse.data?.filter(member => {
         const memberGroupId = member.relationships?.group?.data?.id?.toString();
         return memberGroupId === groupId;
       }) || [];
       
-      this.groupMeetings = meetingsResponse.data?.filter(meeting => 
+      this.groupMeetings = meetingsResponse.data?.filter(meeting =>
         meeting.relationships?.group?.data?.id === groupId
       ) || [];
       
@@ -90,7 +91,6 @@ class StudyGroupDetailPage {
       
       // Render all the group information
       this.renderGroupDetails();
-      this.renderGroupStats();
       this.renderMembers();
       this.renderMeetings();
       this.renderComments();
@@ -106,42 +106,38 @@ class StudyGroupDetailPage {
   renderGroupDetails() {
     const title = document.getElementById('group-title');
     title.textContent = this.currentGroup.attributes?.name || '';
-
+    
     const department = document.getElementById('group-department');
+    const descriptionContainer = document.getElementById('group-description');
+    const description = this.currentGroup.attributes?.description || '';
     const deptCode = this.currentGroup.attributes?.department || '';
     const classNum = this.currentGroup.attributes?.class_number || '';
 
     department.textContent = `${deptCode} ${classNum}`;
-  }
-  
-  renderGroupStats() {
-    // Update member count
-    const memberCount = document.getElementById('member-count');
-    memberCount.textContent = this.groupMembers.length;
-    
-    // Update meeting count
-    const meetingCount = document.getElementById('meeting-count');
-    meetingCount.textContent = this.groupMeetings.length;
-    
-    // Update comment count
-    const commentCount = document.getElementById('comment-count');
-    commentCount.textContent = this.groupComments.length;
+    if (description) descriptionContainer.textContent = `${description}`;
   }
   
   renderMembers() {
     const membersList = document.getElementById('members-list');
-    if (!membersList) return;
+    if (!membersList) {
+      console.error('members-list element not found');
+      return;
+    }
     
     membersList.innerHTML = '';
     
-    this.groupMembers.forEach(member => {
+    this.groupMembers.forEach((member, index) => {
+      
       // Find the user data for this member
       const userId = member.relationships?.user?.data?.id;
+      
       const user = this.allUsers.find(user => user.id === userId);
       
       if (user) {
         const memberCard = this.createMemberCard(member, user);
         membersList.appendChild(memberCard);
+      } else {
+        console.error('User not found for member:', member);
       }
     });
   }
@@ -269,7 +265,7 @@ class StudyGroupDetailPage {
     }
     
     // Sort comments by creation date (newest first)
-    const sortedComments = [...this.groupComments].sort((a, b) => 
+    const sortedComments = [...this.groupComments].sort((a, b) =>
       new Date(b.attributes?.created_at) - new Date(a.attributes?.created_at)
   );
   
@@ -404,8 +400,6 @@ async postComment(commentForm) {
     const authHeader = UserService.getAuthHeader();
     const response = await ApiService.postData('group_comments/', commentData, authHeader);
     
-    console.log('Comment posted successfully:', response);
-    
     // Clear the form
     commentForm.value = '';
     
@@ -441,7 +435,6 @@ async refreshComments() {
     
     // Re-render comments and update stats
     this.renderComments();
-    this.renderGroupStats();
     
   } catch (error) {
     console.error('Failed to refresh comments:', error);
@@ -511,7 +504,7 @@ async loadLocations() {
     const authHeader = UserService.getAuthHeader();
     const locations = await ApiService.getData('locations/', authHeader);
     const locationSelect = document.getElementById('meeting-location');
-
+    
     if (!locationSelect) {
       console.error('Location select element not found');
       return;
@@ -601,6 +594,75 @@ async handleMeetingSubmit(e) {
   } finally {
     createBtn.disabled = false;
     createBtn.textContent = originalText;
+  }
+}
+renderGroupActions() {
+  const actionsContainer = document.getElementById('group-actions');
+  if (!actionsContainer) return;
+  
+  const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
+  const isCreator = StudyGroupDetailService.isGroupCreator(this.groupMembers, currentUserId);
+  const isAdmin = this.currentUser?.userData.attributes.is_superuser;
+  
+  if (isCreator || isAdmin) {
+    actionsContainer.innerHTML = `
+        <button class="btn btn-gator-accent" id="delete-group-btn">
+          <span class="fa-solid fa-user-minus me-3"></span>Delete Group
+        </button>
+    `;
+    
+    // Add event listener for delete
+    document.getElementById('delete-group-btn').addEventListener('click', () => {
+      this.handleDeleteGroup();
+    });
+  } else {
+    actionsContainer.innerHTML = `
+        <button class="btn btn-gator-accent" id="leave-group-btn">
+          <span class="fa-solid fa-user-minus me-3"></span>Leave Group
+        </button>
+      `;
+    
+    // Add event listener for leave
+    document.getElementById('leave-group-btn').addEventListener('click', () => {
+      this.handleLeaveGroup();
+    });
+  }
+}
+
+// Handle leaving a group
+async handleLeaveGroup() {
+  if (!confirm('Are you sure you want to leave this group?')) {
+    return;
+  }
+  
+  try {
+    const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
+    await StudyGroupDetailService.leaveGroup(this.currentGroup.id, currentUserId);
+    
+    alert('You have successfully left the group.');
+    PageController.navigateTo('study-groups');
+    
+  } catch (error) {
+    console.error('Error leaving group:', error);
+    alert('Failed to leave group. Please try again.');
+  }
+}
+
+// Handle deleting a group
+async handleDeleteGroup() {
+  if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    await StudyGroupDetailService.deleteGroup(this.currentGroup.id);
+    
+    alert('Group has been successfully deleted.');
+    PageController.navigateTo('study-groups');
+    
+  } catch (error) {
+    console.error('Error deleting group:', error);
+    alert('Failed to delete group. Please try again.');
   }
 }
 }

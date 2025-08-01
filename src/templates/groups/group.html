@@ -3,16 +3,17 @@
     <div class="bg-white opacity-75 p-5 text-center rounded-4">
       <h1 id="group-title"></h1>
       <p id="group-department" class="h4 mt-3"></p>
+      <p id="group-description" class="mt-3"></p>
       <div class="d-flex justify-content-center gap-3 mt-4">
-        <!-- Don't worry about this for now. We need to implement functionality -->
-        <button class="btn btn-gator-accent">
-          <span class="fa-solid fa-user-minus me-3"></span>Leave Group
-        </button>
+        <div id="group-actions" class="mt-3">
+          <!-- Leave/Delete button will be inserted here -->
+        </div>
       </div>
     </div>
     
-    <!-- Stats Row -->
-    <div class="row">
+    <!-- Stats Container - StatsService will populate this -->
+    <div id="stats-container"></div>
+    <!-- <div class="row">
       <div class="col-md-4 mt-4">
         <div class="bg-white rounded-4 p-4 h-100 text-center">
           <h2 class="text-teal" id="member-count"></h2>
@@ -31,12 +32,12 @@
           <div class="text-muted">Comments</div>
         </div>
       </div>
-    </div>
+    </div> -->
     
     <!-- Members Section -->
     <div class="bg-white rounded-4 p-4 mt-4">
       <h3><span class="fa-solid fa-users text-teal me-3"></span>Members</h3>
-
+      
       <div id="members-list"></div>
     </div>
     
@@ -84,13 +85,13 @@
       <h3><span class="fa-solid fa-comments text-teal me-3"></span>Group Discussion</h3>
       <div id="comments-list">
         <!-- You will only need 1 card. Look at groups for reference. -->
-         <div class="d-flex mt-4">
+        <div class="d-flex mt-4">
           <div class="member-avatar rounded-circle text-white me-3">JV</div><!-- Update to pull dynamically -->
           <div class="flex-grow-1">
             <p class="fw-500 mb-2">Josie Vincent</p><!-- Update to pull dynamically -->
             <div class="comment-bubble">
-            <p class="mt-4 fw-500 mb-1">Just a FYSA. I am making a weekly study session.</p> <!-- Update to pull dynamically -->
-            <p class="smaller text-muted">2 hours ago</p> <!-- Update to pull dynamically -->
+              <p class="mt-4 fw-500 mb-1">Just a FYSA. I am making a weekly study session.</p> <!-- Update to pull dynamically -->
+              <p class="smaller text-muted">2 hours ago</p> <!-- Update to pull dynamically -->
             </div>
           </div>
         </div>
@@ -110,8 +111,8 @@
           <div class="flex-grow-1">
             <p class="fw-500 mb-2">Micah Rivas</p>
             <div class="comment-bubble">
-            <p class="mt-4 fw-500 mb-1">Doh! Can't make the first meeting see you all next week!</p>
-            <p class="smaller text-muted">45 minutes ago</p>
+              <p class="mt-4 fw-500 mb-1">Doh! Can't make the first meeting see you all next week!</p>
+              <p class="smaller text-muted">45 minutes ago</p>
             </div>
           </div>
         </div>
@@ -132,6 +133,7 @@
   </div>
 </div>
 
+<!-- Schedule Meeting Modal -->
 <!-- Schedule Meeting Modal -->
  <div class="modal fade" id="scheduleMeetingModal" tabindex="-1" aria-labelledby="scheduleMeetingModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -185,14 +187,25 @@
             <textarea class="form-control" id="meeting-description" rows="3" placeholder="Additional details about the meeting..."></textarea>
           </div>
         </form>
+        
+        <!-- Error and Success Messages -->
+        <div id="modalErrorMessage" class="alert alert-danger d-none" role="alert">
+          <span class="fa-solid fa-exclamation-triangle me-2"></span>
+          <span id="errorText"></span>
+        </div>
+        
+        <div id="modalSuccessMessage" class="alert alert-success d-none" role="alert">
+          <span class="fa-solid fa-check-circle me-2"></span>
+          <span id="successText"></span>
+        </div>
       </div>
       
       <div class="modal-footer border-0 pt-0">
         <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
           <span class="fa-solid fa-times me-2"></span>Cancel
         </button>
-        <button type="submit" form="addGroupForm" class="btn btn-sm btn-teal btn-lg px-4">
-          <span class="fa-solid fa-plus me-2"></span>Create Group
+        <button type="submit" form="meeting-form" class="btn btn-sm btn-gator-accent btn-lg px-4" id="schedule-meeting-btn">
+          <span class="fa-solid fa-calendar-check me-2"></span>Schedule Meeting
         </button>
       </div>
     </div>

@@ -113,12 +113,6 @@ class StatsService {
           subtitle: stats.todaysMeetings === 1 ? 'meeting scheduled' : 'meetings scheduled',
           iconClass: 'fa-regular fa-calendar-check'
         },
-        // {
-        //   title: 'Upcoming Meetings',
-        //   value: stats.upcomingMeetings,
-        //   subtitle: 'total scheduled',
-        //   iconClass: 'fa-regular fa-clock'
-        // },
         {
           title: 'Points Earned',
           value: 0, // @todo update with awards
@@ -152,8 +146,30 @@ class StatsService {
           subtitle: 'with meetings',
           iconClass: 'fa-solid fa-user-group'
         }
+      ],
+
+      studyGroup: (stats) => [
+        {
+          title: 'Members',
+          value: stats.myGroups,
+          subtitle: 'joined',
+          iconClass: 'fa-solid fa-user-group'
+        },
+        {
+          title: 'Meetings',
+          value: stats.todaysMeetings,
+          subtitle: 'today',
+          iconClass: 'fa-regular fa-calendar-check'
+        },
+        {
+          title: 'Comments',
+          value: stats.totalAvailableGroups,
+          subtitle: 'to join',
+          iconClass: 'fa-solid fa-users'
+        }
       ]
     };
+    
   }
 
   // Simple render method - handles everything automatically

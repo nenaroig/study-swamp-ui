@@ -333,7 +333,6 @@ class StudyGroupsService extends BaseService {
       const currentUser = UserService.getCurrentUser();
       console.log('Creating group with user:', currentUser);
       
-      // Try different ways to get the user ID
       let currentUserId = currentUser?.userData?.id;
       if (!currentUserId && currentUser?.userData?.data) {
         currentUserId = currentUser.userData.data.id;
@@ -351,11 +350,10 @@ class StudyGroupsService extends BaseService {
       const groupResponse = await ApiService.postData('groups/', payload, authHeader);
       console.log('Group creation response:', groupResponse);
       
-      // If group creation successful, check if user is already a member, then add if not
       if (groupResponse && groupResponse.data && groupResponse.data.id) {
         const groupId = groupResponse.data.id;
         
-        // Check if user is already a member of this group
+        // Check existing memberships
         console.log('Checking existing memberships for group:', groupId);
         const membersResponse = await ApiService.getData('members/', authHeader);
         const existingMembership = membersResponse.data?.find(member => 
@@ -363,26 +361,90 @@ class StudyGroupsService extends BaseService {
           member.relationships?.group?.data?.id == groupId
         );
         
-        if (existingMembership) {
-          console.log('User is already a member of this group:', existingMembership);
-        } else {
-          // Create member relationship only if one doesn't exist
-          const memberData = {
-            user: parseInt(currentUserId, 10) || currentUserId,
-            group: parseInt(groupId, 10) || groupId,
-            creator: true,
-            editor: true
-          };
-          
-          console.log('Creating member with data:', memberData);
-          const memberResponse = await ApiService.postData('members/', memberData, authHeader);
-          console.log('Member creation response:', memberResponse);
-          
-          if (!memberResponse || !memberResponse.data) {
-            console.error('Failed to add user as group member');
-            // Don't throw error here, as the group was already created
+if (existingMembership) {
+  console.log('User is already a member of this group:', existingMembership);
+  console.log('Current member attributes:', existingMembership.attributes);
+  
+  if (!existingMembership.attributes?.creator) {
+    console.log('Updating existing member to creator status...');
+    
+    // Use JSON:API format that matches your API structure
+    const updateData = {
+      data: {
+        type: "Member",
+        id: existingMembership.id,
+        attributes: {
+          creator: true,
+          editor: true
+        },
+        relationships: {
+          user: {
+            data: {
+              type: "User",
+              id: currentUserId.toString()
+            }
+          },
+          group: {
+            data: {
+              type: "Group", 
+              id: groupId.toString()
+            }
           }
         }
+      }
+    };
+    
+    try {
+      const memberId = existingMembership.id;
+      console.log('BEFORE UPDATE - Current attributes:', existingMembership.attributes);
+      console.log('Updating member with JSON:API format:', updateData);
+      
+      const updateResponse = await ApiService.patchData(`members/${memberId}/`, updateData, authHeader);
+      console.log('PATCH response:', updateResponse);
+      
+      if (updateResponse && updateResponse.data) {
+        console.log('✅ Member updated successfully:', {
+          memberId: updateResponse.data.id,
+          creator: updateResponse.data.attributes?.creator,
+          editor: updateResponse.data.attributes?.editor
+        });
+        
+        // Verify the update worked
+        console.log('Fetching member again to verify...');
+        const verifyResponse = await ApiService.getData(`members/${memberId}/`, authHeader);
+        console.log('Verification - member attributes:', verifyResponse.data?.attributes);
+      }
+      
+    } catch (updateError) {
+      console.error('❌ PATCH failed:', updateError);
+      
+      // If PATCH fails, try the simpler PUT format as fallback
+      console.log('Trying PUT with simple format as fallback...');
+      const simpleUpdateData = {
+        creator: true,
+        editor: true,
+        user: parseInt(currentUserId, 10),
+        group: parseInt(groupId, 10)
+      };
+      console.log('User creating group:', {
+  username: currentUser?.username,
+  userId: currentUserId,
+  isAdmin: currentUser?.userData?.attributes?.is_superuser,
+  userAttributes: currentUser?.userData?.attributes
+});
+      
+      try {
+        console.log('PUT fallback data:', simpleUpdateData);
+        const putResponse = await ApiService.putData(`members/${memberId}/`, simpleUpdateData, authHeader);
+        console.log('PUT fallback response:', putResponse);
+      } catch (putError) {
+        console.error('❌ PUT fallback also failed:', putError);
+      }
+    }
+  } else {
+    console.log('Member already has creator status');
+  }
+}
       } else {
         throw new Error('Group creation failed - no response data');
       }

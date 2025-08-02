@@ -6,20 +6,38 @@ export class ModalUtility {
   
   // Opens the join groups modal and loads available groups
   static openJoinGroupModal() {
-    // Load available groups data first
-    this.loadAvailableGroups();
-    
-    // Trigger modal using Bootstrap data attributes (avoids bootstrap dependency)
     const modal = document.getElementById('listGroupModal');
-    if (modal) {
-      const btn = document.createElement('button');
-      btn.setAttribute('data-bs-toggle', 'modal');
-      btn.setAttribute('data-bs-target', '#listGroupModal');
-      btn.style.display = 'none';
-      document.body.appendChild(btn);
-      btn.click();
-      document.body.removeChild(btn);
+    if (!modal) {
+      console.error('Join group modal not found');
+      return;
     }
+
+    // Clear any previous modal state
+    this.clearModalState();
+
+    // Trigger modal
+    const triggerButton = document.createElement('button');
+    triggerButton.setAttribute('data-bs-toggle', 'modal');
+    triggerButton.setAttribute('data-bs-target', '#listGroupModal');
+    triggerButton.style.display = 'none';
+    document.body.appendChild(triggerButton);
+    
+    // Set up one-time event listener for when modal is shown
+    modal.addEventListener('shown.bs.modal', () => {
+      this.loadAvailableGroups().catch(error => {
+        console.error('Failed to load groups for modal:', error);
+        this.showModalError('Failed to load available groups');
+      });
+    }, { once: true });
+    
+    triggerButton.click();
+    
+    // Clean up the temporary button after a delay
+    setTimeout(() => {
+      if (document.body.contains(triggerButton)) {
+        document.body.removeChild(triggerButton);
+      }
+    }, 100);
   }
   
   // Fetches and renders available groups (excluding user's current groups)
@@ -30,9 +48,9 @@ export class ModalUtility {
     
     try {
       // Show loading spinner and clear previous content
-      loadingDiv.classList.remove('d-none');
-      container.innerHTML = '';
-      noGroupsDiv.classList.add('d-none');
+      if (loadingDiv) loadingDiv.classList.remove('d-none');
+      if (container) container.innerHTML = '';
+      if (noGroupsDiv) noGroupsDiv.classList.add('d-none');
       
       const authHeader = UserService.getAuthHeader();
       const currentUser = UserService.getCurrentUser();
@@ -56,27 +74,30 @@ export class ModalUtility {
       const availableGroups = allGroups.filter(group => !userGroupIds.includes(group.id));
       
       // Hide loading spinner
-      loadingDiv.classList.add('d-none');
+      if (loadingDiv) loadingDiv.classList.add('d-none');
       
       // Show empty state if no groups available to join
       if (availableGroups.length === 0) {
-        noGroupsDiv.classList.remove('d-none');
+        if (noGroupsDiv) noGroupsDiv.classList.remove('d-none');
         return;
       }
       
       // Create and display group cards
-      availableGroups.forEach(group => {
-        const groupCard = this.createAvailableGroupCard(group);
-        container.appendChild(groupCard);
-      });
+      if (container) {
+        availableGroups.forEach(group => {
+          const groupCard = this.createAvailableGroupCard(group);
+          container.appendChild(groupCard);
+        });
+      }
       
       // Enable search functionality after groups are rendered
       this.setupModalSearch();
       
     } catch (error) {
       console.error('Error loading available groups:', error);
-      loadingDiv.classList.add('d-none');
+      if (loadingDiv) loadingDiv.classList.add('d-none');
       this.showModalError('Failed to load available groups');
+      throw error; // Re-throw to handle in openJoinGroupModal
     }
   }
   
@@ -100,11 +121,11 @@ export class ModalUtility {
           <p class="text-muted mb-0">${description}</p>
         </div>
         ${isAdmin ? 
-        '<span class="badge bg-secondary">Admin View</span>' : 
-        `<button class="btn btn-outline-teal btn-sm join-group-btn" data-group-id="${group.id}">
+    '<span class="badge bg-secondary">Admin View</span>' : 
+    `<button class="btn btn-outline-teal btn-sm join-group-btn" data-group-id="${group.id}">
             <span class="fa-solid fa-plus me-1"></span>Join
           </button>`
-        }
+  }
       </div>
     `;
   
@@ -288,57 +309,57 @@ static async loadDepartments() {
   }
 }
 
-/**
- * Utility to close a Bootstrap modal by its DOM id.
- * Works with or without Bootstrap JS loaded.
- */
-static closeModalById(modalId) {
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-  // Try Bootstrap 5 API if available
-  if (window.bootstrap && window.bootstrap.Modal) {
-    const modalInstance = window.bootstrap.Modal.getInstance(modal) || new window.bootstrap.Modal(modal);
-    modalInstance.hide();
-    return;
+  // Utility to close a Bootstrap modal by its DOM id.
+  static closeModalById(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // Find and click the close button
+    const closeButton = modal.querySelector('[data-bs-dismiss="modal"]');
+    if (closeButton) {
+      closeButton.click();
+    }
   }
-  // Fallback: click the close button if present
-  const closeButton = modal.querySelector('[data-bs-dismiss="modal"]');
-  if (closeButton) {
-    closeButton.click();
-    return;
-  }
-  // Fallback: hide via classes
-  modal.classList.remove('show');
-  modal.style.display = 'none';
-  modal.setAttribute('aria-hidden', 'true');
-  // Remove backdrop if present
-  const backdrop = document.querySelector('.modal-backdrop');
-  if (backdrop) backdrop.remove();
-  document.body.classList.remove('modal-open');
-  document.body.style.overflow = '';
-  document.body.style.paddingRight = '';
-}
 
-/**
- * Utility to show a Bootstrap modal by its DOM id.
- */
-static showModalById(modalId) {
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-  if (window.bootstrap && window.bootstrap.Modal) {
-    const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modal);
-    modalInstance.show();
-    return;
+  // Utility to show a Bootstrap modal by its DOM id.
+  static showModalById(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // Use data attributes approach
+    const triggerButton = document.createElement('button');
+    triggerButton.setAttribute('data-bs-toggle', 'modal');
+    triggerButton.setAttribute('data-bs-target', `#${modalId}`);
+    triggerButton.style.display = 'none';
+    document.body.appendChild(triggerButton);
+    
+    triggerButton.click();
+    document.body.removeChild(triggerButton);
   }
-  // Fallback: trigger click on a button with data-bs-toggle
-  const btn = document.createElement('button');
-  btn.setAttribute('data-bs-toggle', 'modal');
-  btn.setAttribute('data-bs-target', `#${modalId}`);
-  btn.style.display = 'none';
-  document.body.appendChild(btn);
-  btn.click();
-  document.body.removeChild(btn);
-}
+
+  // Clear modal state and reset content
+  static clearModalState() {
+    const container = document.getElementById('availableGroupsList');
+    const loadingDiv = document.getElementById('loadingGroups');
+    const noGroupsDiv = document.getElementById('noGroupsMessage');
+    const searchInput = document.getElementById('groupSearch');
+    const errorDiv = document.getElementById('modalErrorMessage');
+    const successDiv = document.getElementById('modalSuccessMessage');
+
+    // Clear content and reset states
+    if (container) container.innerHTML = '';
+    if (loadingDiv) loadingDiv.classList.add('d-none');
+    if (noGroupsDiv) noGroupsDiv.classList.add('d-none');
+    if (searchInput) searchInput.value = '';
+    if (errorDiv) {
+      errorDiv.classList.add('d-none');
+      errorDiv.classList.remove('show');
+    }
+    if (successDiv) {
+      successDiv.classList.add('d-none');
+      successDiv.classList.remove('show');
+    }
+  }
 }
 
 export default ModalUtility;

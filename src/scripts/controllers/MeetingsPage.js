@@ -97,33 +97,31 @@ class MeetingsPage {
   // Filter meetings and groups for the current user
   filterMeetingsForCurrentUser() {
     const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
-    console.log('Filtering meetings for user:', currentUserId);
     
-    // Find groups where user is a member
-    const userGroupIds = this.members
-      .filter(member => member.relationships.user.data.id === currentUserId)
-      .map(member => member.relationships.group.data.id);
-      
-    console.log('User is member of groups:', userGroupIds);
-    console.log('Total meetings before filtering:', this.allMeetings.length);
-    console.log('All meetings:', this.allMeetings.map(m => `"${m.attributes?.name}" (group: ${m.relationships?.group?.data?.id})`));
-
-    // Filter to user's groups only
-    this.groups = this.allGroups.filter(group => userGroupIds.includes(group.id));
-
-    // Filter to user's meetings only
-    this.meetings = this.allMeetings.filter(meeting => {
-      const meetingGroupId = meeting.relationships?.group?.data?.id;
-      const isIncluded = userGroupIds.includes(meetingGroupId);
-      if (!isIncluded) {
-        console.log(`Meeting "${meeting.attributes.name}" in group ${meetingGroupId} excluded (user not in group)`);
-      } else {
-        console.log(`Meeting "${meeting.attributes.name}" in group ${meetingGroupId} included`);
-      }
-      return isIncluded;
-    });
+    // Check if current user is admin
+    const isAdmin = this.currentUser?.username?.includes('admin') || false;
     
-    console.log('Total meetings after filtering:', this.meetings.length);
+    if (isAdmin) {
+      // Admin users see all groups and meetings
+      this.groups = this.allGroups;
+      this.meetings = this.allMeetings;
+    } else {
+      // Find groups where user is a member
+      const userGroupIds = this.members
+        .filter(member => member.relationships.user.data.id === currentUserId)
+        .map(member => member.relationships.group.data.id);
+        
+      // Filter to user's groups only
+      this.groups = this.allGroups.filter(group => userGroupIds.includes(group.id));
+
+      // Filter to user's meetings only
+      this.meetings = this.allMeetings.filter(meeting => {
+        const meetingGroupId = meeting.relationships?.group?.data?.id;
+        const isIncluded = userGroupIds.includes(meetingGroupId);
+
+        return isIncluded;
+      });
+    }
   }
   
   // Render all meetings page components

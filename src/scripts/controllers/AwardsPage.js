@@ -1,7 +1,6 @@
 import UserService from '../api/UserService.js';
 import StatsService from '../api/StatsService.js';
 import ApiService from '../api/ApiService.js';
-import ModalUtility from '../utils/ModalUtility.js';
 
 class AwardsPage {
   constructor() {
@@ -12,6 +11,7 @@ class AwardsPage {
     this.badgeTypeEnums = [];
   }
   
+  // ===== INITIALIZATION =====
   init() {
     if (this.isInitialized) return;
     
@@ -25,7 +25,9 @@ class AwardsPage {
     await this.loadEnumsAndAwards();
     this.isInitialized = true;
   }
-  
+
+  // ===== DATA LOADING =====
+
   // Load enums and awards data
   async loadEnumsAndAwards() {
     try {
@@ -42,7 +44,6 @@ class AwardsPage {
       // Load user awards
       await this.loadUserAwards();
 
-      ModalUtility.openJoinGroupModal();
     } catch (error) {
       console.error('❌ Failed to load enums and awards:', error);
       this.renderError();
@@ -108,11 +109,6 @@ class AwardsPage {
     });
   }
   
-  // Get all awards as array for display
-  getAllAwardsArray() {
-    return Object.values(this.allAwards);
-  }
-  
   // Load user's earned awards from API or calculate based on user data
   async loadUserAwards() {
     try {
@@ -156,6 +152,8 @@ class AwardsPage {
     }
   }
 
+  // ===== RENDERING =====
+
   // Render the awards page
   renderAwards() {
     const container = document.getElementById('awards-stats-container');
@@ -170,81 +168,88 @@ class AwardsPage {
     
       <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3">
         ${allAwardsArray.map(award => {
-    const isEarned = earnedAwardIds.includes(award.id);
-    const userAward = this.userAwards.find(ua => ua.id === award.id);
+      const isEarned = earnedAwardIds.includes(award.id);
+      const userAward = this.userAwards.find(ua => ua.id === award.id);
+      
+      return `
+        <div class="col mb-4">
+          <div class="card h-100 ${isEarned ? 'earned' : 'locked'} ${award.rarity} rounded-4">
+            <div class="card-body d-flex flex-column text-center">
+              <div class="mb-3">
+                <span class="${isEarned ? '' : 'grayscale'} ${award.icon} fa-2x"></span>
+              </div>
+              <h2 class="h4 fw-600 ${isEarned ? '' : 'text-muted'}">${award.name}</h2>
+              <p class="card-text ${isEarned ? '' : 'text-muted'}">${award.description}</p>
+              <div>
+                <small class="text-muted">${award.criteria}</small>
+              </div>
+              ${isEarned ? `
+                <div class="mt-3">
+                  <span class="badge bg-success">EARNED</span>
+                  <div class="text-muted small mt-1">
+                    ${new Date(userAward.earnedDate).toLocaleDateString()}
+                  </div>
+                  <div class="text-gator-accent small fw-500">
+                    +${award.points} points
+                  </div>
+                </div>
+              ` : `
+                <div class="mt-auto pt-3">
+                  <span class="badge bg-lighter-gray">Locked</span>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('')}
+        </div>
+        <div class="mt-2">
+          <h3 class="h4">Progress Overview</h3>
+          <div class="progress mb-2">
+            <div class="progress-bar bg-teal" role="progressbar" 
+                style="width: ${(this.userAwards.length / allAwardsArray.length) * 100}%" 
+                aria-valuenow="${this.userAwards.length}" 
+                aria-valuemin="0" 
+                aria-valuemax="${allAwardsArray.length}">
+              ${Math.round((this.userAwards.length / allAwardsArray.length) * 100)}%
+            </div>
+          </div>
+          <p class="text-muted">Keep participating in study groups and attending meetings to unlock more awards!</p>
+        </div>
+      `;
     
-    return `
-      <div class="col mb-4">
-        <div class="card h-100 ${isEarned ? 'earned' : 'locked'} ${award.rarity} rounded-4">
-          <div class="card-body d-flex flex-column text-center">
-            <div class="mb-3">
-              <span class="${isEarned ? '' : 'grayscale'} ${award.icon} fa-2x"></span>
-            </div>
-            <h2 class="h4 fw-600 ${isEarned ? '' : 'text-muted'}">${award.name}</h2>
-            <p class="card-text ${isEarned ? '' : 'text-muted'}">${award.description}</p>
-            <div>
-              <small class="text-muted">${award.criteria}</small>
-            </div>
-            ${isEarned ? `
-              <div class="mt-3">
-                <span class="badge bg-success">EARNED</span>
-                <div class="text-muted small mt-1">
-                  ${new Date(userAward.earnedDate).toLocaleDateString()}
-                </div>
-                <div class="text-gator-accent small fw-500">
-                  +${award.points} points
-                </div>
-              </div>
-            ` : `
-              <div class="mt-auto pt-3">
-                <span class="badge bg-lighter-gray">Locked</span>
-              </div>
-            `}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('')}
-      </div>
-      <div class="mt-2">
-        <h3 class="h4">Progress Overview</h3>
-        <div class="progress mb-2">
-          <div class="progress-bar bg-teal" role="progressbar" 
-              style="width: ${(this.userAwards.length / allAwardsArray.length) * 100}%" 
-              aria-valuenow="${this.userAwards.length}" 
-              aria-valuemin="0" 
-              aria-valuemax="${allAwardsArray.length}">
-            ${Math.round((this.userAwards.length / allAwardsArray.length) * 100)}%
-          </div>
-        </div>
-        <p class="text-muted">Keep participating in study groups and attending meetings to unlock more awards!</p>
-      </div>
-    `;
-  
-  // Render the stats cards using StatsService
-  StatsService.renderAwardsStats('awards-stats-cards', this.userAwards, allAwardsArray, {
-    cardClass: 'col-md-4'
-  });
-}
+    // Render the stats cards using StatsService
+    StatsService.renderAwardsStats('awards-stats-cards', this.userAwards, allAwardsArray, {
+      cardClass: 'col-md-4'
+    });
+  }
 
-// Handle errors
-renderError() {
-  const container = document.getElementById('awards-stats-container');
-  if (!container) return;
-  
-  container.innerHTML = `
-      <div class="alert alert-warning text-center">
-        <h4>Unable to load awards</h4>
-        <p>Please try refreshing the page. If the problem persists, contact support.</p>
-        <button class="btn btn-primary" onclick="location.reload()">Retry</button>
-      </div>
-    `;
-}
+  // Handle errors
+  renderError() {
+    const container = document.getElementById('awards-stats-container');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="alert alert-warning text-center">
+          <h4>Unable to load awards</h4>
+          <p>Please try refreshing the page. If the problem persists, contact support.</p>
+          <button class="btn btn-primary" onclick="location.reload()">Retry</button>
+        </div>
+      `;
+  }
 
-// Public method to refresh awards (useful after user completes an action)
-async refresh() {
-  await this.loadUserAwards();
-}
+  // ===== UTILITY =====
+  
+  // Get all awards as array for display
+  getAllAwardsArray() {
+    return Object.values(this.allAwards);
+  }
+
+  // Public method to refresh awards (useful after user completes an action)
+  async refresh() {
+    await this.loadUserAwards();
+  }
 }
 
 export default AwardsPage;

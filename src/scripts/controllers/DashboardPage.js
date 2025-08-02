@@ -53,11 +53,12 @@ class DashboardPage {
       this.allGroups = groupsResponse.studyGroupsData?.data || [];
       this.members = membersResponse.data || [];
       
-      // Get current user ID for filtering
+      // Get current user ID for filtering - handle both data structures
       const currentUserData = UserService.getCurrentUserData();
-      const currentUserId = currentUserData?.data?.id?.toString();
+      const currentUserId = currentUserData?.data?.id?.toString() || currentUserData?.id?.toString();
       
       if (!currentUserId) {
+        console.error('❌ Dashboard - No user ID found in:', currentUserData);
         throw new Error('Unable to determine current user ID. Please try logging in again.');
       }
       
@@ -71,11 +72,11 @@ class DashboardPage {
       } else {
         // Regular users see only their joined groups and related meetings
         const userGroupIds = this.members
-          .filter(member => {
-            const memberUserId = member.relationships?.user?.data?.id?.toString();
-            return memberUserId === currentUserId;
-          })
-          .map(member => member.relationships.group.data.id.toString());
+        .filter(member => {
+          const memberUserId = member.relationships?.user?.data?.id?.toString();
+          return memberUserId === currentUserId;
+        })
+        .map(member => member.relationships.group.data.id.toString());
         
         this.groups = this.allGroups.filter(group => userGroupIds.includes(group.id.toString()));
         this.meetings = this.allMeetings.filter(meeting => {
@@ -145,10 +146,12 @@ class DashboardPage {
     if (h1) {
       let name = 'Gator';
       
-      // Get current user data properly
+      // Get current user data properly - handle both structures
       const currentUserData = UserService.getCurrentUserData();
-
-      if (currentUserData?.attributes?.first_name) {
+      
+      if (currentUserData?.data?.attributes?.first_name) {
+        name = currentUserData.data.attributes.first_name;
+      } else if (currentUserData?.attributes?.first_name) {
         name = currentUserData.attributes.first_name;
       } else if (this.currentUser?.username) {
         name = this.currentUser.username;

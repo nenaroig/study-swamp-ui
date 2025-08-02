@@ -129,6 +129,9 @@ $sizesXL: map-merge($sizes, $sizesXL);
       opacity: 0.65;
     }
   }
+  .bg-#{$color-name} {
+    background-color: #{$color-value};
+  }
   .btn-outline-#{$color-name} {
     color: #{$color-value};
     background-color: transparent;

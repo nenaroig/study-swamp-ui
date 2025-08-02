@@ -1,3 +1,6 @@
+import ApiService from './ApiService.js';
+import UserService from './UserService.js';
+
 class StatsService {
   
   // Calculates statistics from all groups and user's groups
@@ -280,30 +283,99 @@ class StatsService {
     });
   }
   
-  // Specialized method for rendering awards stats
-  static renderAwardsStats(containerId, userAwards = [], allAwards = [], options = {}) {
-    const totalPoints = userAwards.reduce((sum, award) => sum + (award.points || 0), 0);
-    const totalPossiblePoints = allAwards.reduce((sum, award) => sum + (award.points || 0), 0);
-    const completionRate = allAwards.length > 0 ? Math.round((userAwards.length / allAwards.length) * 100) : 0;
-    const nextMilestone = this.getNextMilestone(userAwards, allAwards);
-    
-    const customStats = {
-      earnedAwards: userAwards.length,
-      totalAwards: allAwards.length,
-      awardPoints: totalPoints,
-      totalPossiblePoints: totalPossiblePoints,
-      completionRate: completionRate,
-      nextMilestone: nextMilestone
-    };
-    
-    this.renderStats([], {
-      containerId,
-      layout: 'awards',
-      cardClass: options.cardClass || 'col-md-4',
-      customStats,
-      clickHandlers: options.clickHandlers || {},
-      clickableCards: options.clickableCards || []
-    });
+  // Load awards data from API enums and awards endpoint
+  static async renderAwardsStats(containerId, options = {}) {
+    try {
+      const authHeader = UserService.getAuthHeader();
+      if (!authHeader) {
+        console.error('No auth header available for awards stats');
+        return;
+      }
+
+      // Load both enums and awards data from API
+      const [enumsResponse, awardsResponse] = await Promise.all([
+        ApiService.getEnumData('enums/', authHeader),
+        UserService.makeAuthenticatedRequest('awards/')
+      ]);
+
+      // Get badge types from enums
+      const badgeTypeEnums = enumsResponse.data?.enums?.badge_types || [];
+      
+      // Build award definitions from enums (same logic as AwardsPage)
+      const awardDetails = {
+        0: { points: 50 },
+        1: { points: 100 },
+        2: { points: 150 },
+        3: { points: 200 },
+        4: { points: 500 },
+        5: { points: 1000 }
+      };
+
+      const allAwards = badgeTypeEnums.map(enumItem => ({
+        id: enumItem.label.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        name: enumItem.label,
+        badgeType: enumItem.value,
+        points: awardDetails[enumItem.value]?.points || 0
+      }));
+
+      // Get current user's awards
+      const currentUserData = UserService.getCurrentUserData();
+      const userId = currentUserData?.data?.id || currentUserData?.id;
+      
+      const userAwards = (awardsResponse.data || [])
+        .filter(award => award.relationships.user.data.id === userId)
+        .map(award => {
+          const badgeType = award.attributes.badge_type;
+          const awardDef = allAwards.find(a => a.badgeType === badgeType);
+          return awardDef ? {
+            ...awardDef,
+            earnedDate: award.attributes.created_at,
+            apiId: award.id
+          } : null;
+        })
+        .filter(award => award !== null);
+
+      // Calculate stats and render
+      const totalPoints = userAwards.reduce((sum, award) => sum + award.points, 0);
+      const totalPossiblePoints = allAwards.reduce((sum, award) => sum + award.points, 0);
+      const completionRate = allAwards.length > 0 ? Math.round((userAwards.length / allAwards.length) * 100) : 0;
+      const nextMilestone = this.getNextMilestone(userAwards, allAwards);
+
+      const customStats = {
+        earnedAwards: userAwards.length,
+        totalAwards: allAwards.length,
+        awardPoints: totalPoints,
+        totalPossiblePoints: totalPossiblePoints,
+        completionRate: completionRate,
+        nextMilestone: nextMilestone
+      };
+
+      this.renderStats([], {
+        containerId,
+        layout: 'awards',
+        cardClass: options.cardClass || 'col-md-4',
+        customStats,
+        clickHandlers: options.clickHandlers || {},
+        clickableCards: options.clickableCards || []
+      });
+
+    } catch (error) {
+      console.error('Failed to load awards stats from API:', error);
+      // Fallback to empty stats
+      this.renderStats([], {
+        containerId,
+        layout: 'awards',
+        cardClass: options.cardClass || 'col-md-4',
+        customStats: {
+          earnedAwards: 0,
+          totalAwards: 0,
+          awardPoints: 0,
+          totalPossiblePoints: 0,
+          completionRate: 0,
+          nextMilestone: 'Loading...'
+        }
+      });
+    }
   }
   
   // Update specific card values without re-rendering

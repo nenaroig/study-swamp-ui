@@ -14,6 +14,7 @@ $theme-colors: (
   'dark-gray': #333,
   'lighter-gray': #4a5568,
   'blue-light': #1565C0,
+  'bronze': #cd7f32,
 );
 
 @function theme-color($key) {

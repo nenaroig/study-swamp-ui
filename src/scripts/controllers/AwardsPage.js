@@ -1,6 +1,7 @@
 import UserService from '../api/UserService.js';
 import StatsService from '../api/StatsService.js';
 import ApiService from '../api/ApiService.js';
+import ModalUtility from '../utils/ModalUtility.js';
 
 class AwardsPage {
   constructor() {
@@ -40,6 +41,8 @@ class AwardsPage {
       
       // Load user awards
       await this.loadUserAwards();
+
+      ModalUtility.openJoinGroupModal();
     } catch (error) {
       console.error('❌ Failed to load enums and awards:', error);
       this.renderError();

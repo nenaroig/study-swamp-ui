@@ -1,4 +1,51 @@
 <div class="inner-wrapper">
-  <h1>Profile</h1>
-  <p>Content coming soon...</p>
+  <div class="mx-auto mw-md-730p">
+    <div class="bg-white opacity-75 p-5 rounded-4">
+      <div class="text-center">
+        <h1>Profile</h1>
+        <p class="mt-4 fw-500 fs-18p text-lighter-gray">Manage your academic profile and connect with your study community. Update your information, track your progress, and showcase your achievements as you navigate your journey at the University of Florida.</p>
+      </div>
+      
+      <form id="profileForm" class="mt-4">
+        <div class="mb-4">
+          <label for="firstName" class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-lg" id="firstName" name="firstName" placeholder="Albert" required>
+          <div class="invalid-feedback">Please enter a first name.</div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="lastName" class="form-label fw-semibold">Last Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-lg" id="lastName" name="lastName" placeholder="Gator" required>
+          <div class="invalid-feedback">Please enter a last name.</div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="username" class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="AlGator" required>
+          <div class="invalid-feedback">Please enter a username.</div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+          <input type="text" class="form-control form-control-lg" id="email" name="email" placeholder="gator@uf.edu" required>
+          <div class="invalid-feedback">Please enter a valid email.</div>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div id="errorMessage" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+          <span class="fa-solid fa-exclamation-triangle me-2"></span>
+          <span id="errorText"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div id="successMessage" class="alert alert-success alert-dismissible fade d-none" role="alert">
+          <span class="fa-solid fa-check-circle me-2"></span>
+          <span id="successText"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <button type="submit" class="btn btn-gator-accent d-block mx-auto">Update</button>
+      </form>
+    </div>
+  </div>
 </div>

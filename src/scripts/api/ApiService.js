@@ -222,6 +222,53 @@ class ApiService {
       throw error;
     }
   }
+
+  // Patch request to update resource
+  static async patchData(endpoint, data, authHeader = null) {
+    try {
+      const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`;
+      
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.api+json',
+      };
+      
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+      
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(data),
+      });
+      
+      const contentType = response.headers.get('content-type');
+      
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            errorMessage += ` - ${errorText}`;
+          }
+        } catch (e) {
+          // Ignore if we can't read the error
+        }
+        throw new Error(errorMessage);
+      }
+      
+      if (!contentType || (!contentType.includes('application/json') && !contentType.includes('application/vnd.api+json'))) {
+        throw new Error(`Expected JSON response but got ${contentType}`);
+      }
+      
+      return await response.json();
+      
+    } catch (error) {
+      console.error('Error patching data to', endpoint, ':', error);
+      throw error;
+    }
+  }
   
   // DELETE request to remove resource
   static async deleteData(endpoint, authHeader = null) {

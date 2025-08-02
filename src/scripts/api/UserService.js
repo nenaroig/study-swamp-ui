@@ -170,6 +170,24 @@ class UserService {
     }
     return await ApiService.postData(endpoint, data, authHeader);
   }
+
+  // Makes authenticated PUT request
+  static async makeAuthenticatedPutRequest(endpoint, data) {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      throw new Error('No authentication credentials available');
+    }
+    return await ApiService.putData(endpoint, data, authHeader);
+  }
+
+  // Makes authenticated Patch request
+  static async makeAuthenticatedPatchRequest(endpoint, data) {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      throw new Error('No authentication credentials available');
+    }
+    return await ApiService.patchData(endpoint, data, authHeader);
+  }
 }
 
 export default UserService;

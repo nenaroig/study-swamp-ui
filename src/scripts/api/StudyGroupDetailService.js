@@ -81,15 +81,15 @@ class StudyGroupDetailService extends BaseService {
     }
   }
   
-  // Delete a group (only for creators)
+  // Delete a group (only for admins)
   static async deleteGroup(groupId) {
     try {
       const authHeader = UserService.getAuthHeader();
       
-      // Delete the group
       await ApiService.deleteData(`groups/${groupId}`, authHeader);
       
       return { success: true };
+      
     } catch (error) {
       console.error('Failed to delete group:', error);
       throw error;

@@ -273,59 +273,53 @@ class ApiService {
   // DELETE request to remove resource
   static async deleteData(endpoint, authHeader = null) {
     try {
-      // Construct full URL, removing any leading slashes from endpoint to prevent double slashes
-      const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`;
+      // Ensure trailing slash for Django
+      const cleanEndpoint = endpoint.replace(/^\/+/, '').replace(/\/+$/, '') + '/';
+      const url = `${API_BASE_URL}/${cleanEndpoint}`;
       
-      // Set up request headers with JSON:API accept header
       const headers = {
+        'Content-Type': 'application/json',
         'Accept': 'application/vnd.api+json',
       };
       
-      // Add authorization header if provided
       if (authHeader) {
-        headers['Authorization'] = authHeader;
+        if (typeof authHeader === 'string') {
+          headers['Authorization'] = authHeader;
+        } else if (typeof authHeader === 'object') {
+          Object.assign(headers, authHeader);
+        }
       }
-      
-      // Make the HTTP DELETE request
+
       const response = await fetch(url, {
         method: 'DELETE',
-        headers,
+        headers: headers
       });
-      
-      // Handle non-200 responses
+
       if (!response.ok) {
-        let errorMessage = `HTTP error! status: ${response.status}`;
+        let errorDetails = `HTTP ${response.status}: ${response.statusText}`;
+        
         try {
-          const errorText = await response.text();
-          if (errorText) {
-            errorMessage += ` - ${errorText}`;
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorDetails += ` - ${JSON.stringify(errorData)}`;
+          } else {
+            const errorText = await response.text();
+            if (errorText) {
+              errorDetails += ` - ${errorText}`;
+            }
           }
         } catch (e) {
-          // Ignore if we can't read the error
+          console.warn('Could not read error response body:', e);
         }
-        throw new Error(errorMessage);
+        
+        console.error(`Delete failed for ${cleanEndpoint}:`, errorDetails);
+        throw new Error(errorDetails);
       }
-      
-      // For DELETE requests, response might be empty (204 No Content)
-      // Handle successful DELETE responses - both empty and with content
-      const contentType = response.headers.get('content-type');
-      
-      // Return success for standard "no content" responses
-      if (response.status === 204 || response.status === 202) {
-        return { success: true };
-      }
-      
-      // If no content-type or not JSON, assume successful deletion
-      if (!contentType || !contentType.includes('application/json')) {
-        return { success: true };
-      }
-      
-      // Parse and return JSON response if present
-      return await response.json();
-      
+
+      return { success: true };
     } catch (error) {
-      // Log error for debugging and re-throw for caller to handle
-      console.error('Error deleting data from', endpoint, ':', error);
+      console.error(`Error deleting data from ${endpoint} :`, error);
       throw error;
     }
   }

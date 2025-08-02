@@ -28,7 +28,6 @@ class StudyGroupDetailPage {
   }
   
   async init() {
-    // Prevent multiple initializations
     if (this.isInitialized) return;
     
     // Redirect to login if user is not authenticated
@@ -42,11 +41,10 @@ class StudyGroupDetailPage {
     
     // Load and render study group
     await this.loadStudyGroup();
-    this.renderGroupActions();
     
     this.isInitialized = true;
   }
-  
+
   async loadStudyGroup() {
     try {
       // Get the group slug from URL
@@ -58,6 +56,8 @@ class StudyGroupDetailPage {
       // Fetch the specific group by slug
       const groupResponse = await StudyGroupDetailService.getGroupBySlug(groupSlug);
       this.currentGroup = groupResponse.studyGroupData || {};
+
+      console.log({currentGroup: this.currentGroup});
       
       if (!this.currentGroup.id) {
         throw new Error('Group not found');
@@ -65,11 +65,12 @@ class StudyGroupDetailPage {
       
       // Load related data in parallel
       const authHeader = UserService.getAuthHeader();
-      const [membersResponse, meetingsResponse, usersResponse, commentsResponse] = await Promise.all([
+      const [membersResponse, meetingsResponse, usersResponse, commentsResponse, locationsResponse] = await Promise.all([
         ApiService.getData('members/', authHeader),
         ApiService.getData('meetings/', authHeader),
         ApiService.getData('users/', authHeader),
-        ApiService.getData('group_comments/', authHeader)
+        ApiService.getData('group_comments/', authHeader),
+        ApiService.getData('locations/', authHeader)
       ]);
       
       // Filter data for this specific group
@@ -89,9 +90,11 @@ class StudyGroupDetailPage {
       ) || [];
       
       this.allUsers = usersResponse.data || [];
+      this.allLocations = locationsResponse.data || [];
       
       // Render all the group information
       this.renderGroupDetails();
+      this.renderGroupActions();
       this.renderMembers();
       this.renderMeetings();
       this.renderComments();
@@ -110,8 +113,6 @@ class StudyGroupDetailPage {
     title.textContent = this.currentGroup.attributes?.name || '';
     
     const department = document.getElementById('group-department');
-    const descriptionContainer = document.getElementById('group-description');
-    const description = this.currentGroup.attributes?.description || '';
     const deptCode = this.currentGroup.attributes?.department || '';
     const classNum = this.currentGroup.attributes?.class_number || '';
 
@@ -124,7 +125,8 @@ class StudyGroupDetailPage {
   updateEditButtonVisibility() {
     const editBtn = document.getElementById('edit-group-btn');
     if (!editBtn) {
-      console.error('Edit button not found in DOM');
+      // Edit button will be created in renderGroupActions() if needed
+      console.log('Edit button not found - will be created in renderGroupActions if user has permissions');
       return;
     }
     
@@ -138,27 +140,23 @@ class StudyGroupDetailPage {
       return;
     }
     
-    // TODO: this can be done with user attributes
-    // Find user's membership in the group - try multiple ways of matching
+    // Find user's membership in the group
     const userMembership = this.groupMembers.find(member => {
       const memberUserId = member.relationships?.user?.data?.id;
       return (
-        // Try to match by ID (string or number)
         (currentUserId && memberUserId == currentUserId) || 
-        // If that fails, check if current user is admin
         (currentUsername && currentUsername.includes('admin'))
       );
     });
     
-    // For admins, we show the button regardless
+    // For admins, show the button
     if (currentUsername && currentUsername.includes('admin')) {
       editBtn.classList.remove('d-none');
       return;
     }
     
-    // Log detailed info to help debug
+    // Show edit button if user is creator or editor
     if (userMembership) {
-      // Show edit button if user is creator or editor
       if (userMembership.attributes?.creator || userMembership.attributes?.editor) {
         console.log('User has edit permissions, showing edit button');
         editBtn.classList.remove('d-none');
@@ -195,6 +193,9 @@ class StudyGroupDetailPage {
     }
     
     membersList.innerHTML = '';
+    
+    // Add debugging to see all member data
+    console.log('All group members:', this.groupMembers);
     
     this.groupMembers.forEach((member, index) => {
       
@@ -269,7 +270,7 @@ class StudyGroupDetailPage {
       meetingsList.appendChild(meetingCard);
     });
   }
-  
+
   createMeetingCard(meeting) {
     const div = document.createElement('div');
     div.className = 'meeting-card';
@@ -277,6 +278,26 @@ class StudyGroupDetailPage {
     const name = meeting.attributes?.name || 'Untitled Meeting';
     const startTime = new Date(meeting.attributes?.start_time);
     const endTime = new Date(meeting.attributes?.end_time);
+    const locationId = meeting.relationships?.location?.data?.id;
+    
+    // Initialize locationText with default value
+    let locationText = 'Location TBD';
+    
+    if (locationId && this.allLocations) {
+      const locationData = this.allLocations.find(loc => loc.id === locationId);
+      if (locationData) {
+        const building = locationData.attributes?.building || '';
+        const room = locationData.attributes?.room || '';
+        locationText = `${building} - Room ${room}`;
+      }
+    }
+
+    console.log({
+      meetingName: name,
+      locationId: locationId,
+      locationText: locationText,
+      allLocationsCount: this.allLocations?.length || 0
+    });
     
     // Format time display
     const timeString = this.formatMeetingTime(startTime, endTime);
@@ -289,11 +310,52 @@ class StudyGroupDetailPage {
             <span class="fa-solid fa-clock me-2 fa-fw"></span>${timeString}
           </p>
           <p class="text-muted mb-0">
-            <span class="fa-solid fa-map-marker-alt me-2 fa-fw"></span>Location TBD
+            <span class="fa-solid fa-map-marker-alt me-2 fa-fw"></span>${locationText}
           </p>
         </div>
-        <button class="btn btn-sm btn-teal text-white">Join</button>
       </div>
+    `;
+    
+    return div;
+  }
+
+  createMemberCard(member, user) {
+    const div = document.createElement('div');
+    div.className = 'd-flex align-items-center justify-content-between mt-4';
+    
+    const firstName = user.attributes?.first_name || '';
+    const lastName = user.attributes?.last_name || '';
+    const email = user.attributes?.email || '';
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    
+    // Add debugging to see what's in the member attributes
+    console.log('Member data:', {
+      memberAttributes: member.attributes,
+      creator: member.attributes?.creator,
+      editor: member.attributes?.editor,
+      userName: `${firstName} ${lastName}`
+    });
+    
+    let roleHtml = '';
+    if (member.attributes?.creator) {
+      roleHtml += '<span class="badge rounded-pill text-bg-info text-white">Creator</span>';
+    }
+    if (member.attributes?.editor) {
+      roleHtml += '<span class="badge rounded-pill bg-success ms-1">Editor</span>';
+    }
+    if (!member.attributes?.creator && !member.attributes?.editor) {
+      roleHtml = '<span class="badge rounded-pill bg-secondary">Member</span>';
+    }
+    
+    div.innerHTML = `
+      <div class="d-flex align-items-center mt-3">
+        <div class="member-avatar rounded-circle text-white me-3">${initials}</div>
+        <div>
+          <h4 class="h5 fw-500">${firstName} ${lastName}</h4>
+          <p class="smaller text-muted mb-0">${email}</p>
+        </div>
+      </div>
+      <div>${roleHtml}</div>
     `;
     
     return div;
@@ -516,444 +578,440 @@ async refreshGroup() {
   await this.loadStudyGroup();
 }
 
-setupMeetingModal() {
-  const scheduleBtn = document.getElementById('schedule-meeting-btn');
-  const createBtn = document.getElementById('create-meeting-btn');
-  const modal = document.getElementById('scheduleMeetingModal');
-  
-  if (scheduleBtn && modal) {
-    scheduleBtn.addEventListener('click', () => {
-      this.showMeetingModal();
-    });
-  }
-  
-  if (createBtn) {
-    createBtn.addEventListener('click', this.handleMeetingSubmit.bind(this));
-  }
-}
-
-async showMeetingModal() {
-  try {
-    await this.loadLocations();
+  setupMeetingModal() {
+    const modal = document.getElementById('scheduleMeetingModal');
+    const meetingForm = document.getElementById('meeting-form');
     
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateInput = document.getElementById('meeting-date');
-    if (dateInput) {
-      dateInput.value = tomorrow.toISOString().split('T')[0];
-    }
-    
-    // Check if Bootstrap modal is available
-    if (typeof bootstrap === 'undefined') {
-      console.error('Bootstrap is not loaded');
-      alert('Bootstrap modal library is not available. Please refresh the page.');
-      return;
-    }
-    
-    // Show the modal using Bootstrap
-    const modalElement = document.getElementById('scheduleMeetingModal');
-    if (!modalElement) {
-      console.error('Modal element not found');
-      alert('Modal element not found. Please refresh the page.');
-      return;
-    }
-    
-    const modal = new bootstrap.Modal(modalElement);
-    modal.show();
-    
-  } catch (error) {
-    console.error('Error showing meeting modal:', error);
-    console.error('Error details:', error.message, error.stack);
-    alert(`Error loading meeting form: ${error.message}`);
-  }
-}
-
-async loadLocations() {
-  try {
-    const authHeader = UserService.getAuthHeader();
-    const locations = await ApiService.getData('locations/', authHeader);
-    const locationSelect = document.getElementById('meeting-location');
-    
-    if (!locationSelect) {
-      console.error('Location select element not found');
-      return;
-    }
-    
-    if (locationSelect && locations.data) {
-      locationSelect.innerHTML = '<option value="">Select location...</option>';
-      
-      locations.data.forEach(location => {
-        const option = document.createElement('option');
-        option.value = location.id;
-        option.textContent = `${location.attributes.building} - Room ${location.attributes.room}`;
-        locationSelect.appendChild(option);
+    if (modal) {
+      modal.addEventListener('show.bs.modal', () => {
+        this.showMeetingModal();
       });
-    } else {
-      console.error('No locations data found:', locations);
     }
-  } catch (error) {
-    console.error('Error loading locations:', error);
-    console.error('Error details:', error.message, error.stack);
-    throw error; // Re-throw to be caught by showMeetingModal
+    
+    if (meetingForm) {
+      meetingForm.addEventListener('submit', this.handleMeetingSubmit.bind(this));
+    }
   }
-}
 
-async handleMeetingSubmit(e) {
-  e.preventDefault();
-  
-  const createBtn = document.getElementById('create-meeting-btn');
-  const originalText = createBtn.textContent;
-  
-  try {
-    createBtn.disabled = true;
-    createBtn.textContent = 'Creating...';
+  async showMeetingModal() {
+    console.log('showMeetingModal called');
     
-    // Get form data
-    const name = document.getElementById('meeting-name').value;
-    const date = document.getElementById('meeting-date').value;
-    const startTime = document.getElementById('meeting-start-time').value;
-    const duration = parseFloat(document.getElementById('meeting-duration').value);
-    const locationId = document.getElementById('meeting-location').value;
-    const description = document.getElementById('meeting-description').value;
+    try {
+      // Load locations first
+      await this.loadLocations();
+      
+      // Set default date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const dateInput = document.getElementById('meeting-date');
+      if (dateInput) {
+        dateInput.value = tomorrow.toISOString().split('T')[0];
+      }
+      
+    } catch (error) {
+      console.error('Error in showMeetingModal:', error);
+      alert(`Error loading meeting form: ${error.message}`);
+    }
+  }
+
+  async loadLocations() {
+    try {
+      const authHeader = UserService.getAuthHeader();
+      const locations = await ApiService.getData('locations/', authHeader);
+      const locationSelect = document.getElementById('meeting-location');
+      
+      if (!locationSelect) {
+        console.error('Location select element not found');
+        return;
+      }
+      
+      if (locationSelect && locations.data) {
+        locationSelect.innerHTML = '<option value="">Select location...</option>';
+        
+        locations.data.forEach(location => {
+          const option = document.createElement('option');
+          option.value = location.id;
+          option.textContent = `${location.attributes.building} - Room ${location.attributes.room}`;
+          locationSelect.appendChild(option);
+        });
+      } else {
+        console.error('No locations data found:', locations);
+      }
+    } catch (error) {
+      console.error('Error loading locations:', error);
+      console.error('Error details:', error.message, error.stack);
+      throw error; // Re-throw to be caught by showMeetingModal
+    }
+  }
+
+  async handleMeetingSubmit(e) {
+    e.preventDefault();
     
-    // Validate required fields
-    if (!name || !date || !startTime || !locationId) {
-      alert('Please fill in all required fields.');
+    // Use the correct button ID from your HTML
+    const submitBtn = document.getElementById('schedule-meeting-btn');
+    if (!submitBtn) {
+      console.error('Submit button not found');
       return;
     }
     
-    // Calculate start and end times
-    const startDateTime = new Date(`${date}T${startTime}`);
-    const endDateTime = new Date(startDateTime.getTime() + duration * 60 * 60 * 1000);
+    const originalText = submitBtn.textContent;
     
-    // Create meeting data
-    const meetingData = {
-      name: name,
-      start_time: startDateTime.toISOString(),
-      end_time: endDateTime.toISOString(),
-      group: this.currentGroup.id,
-      location: locationId
-    };
-    
-    if (description.trim()) {
-      meetingData.description = description;
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating...';
+      
+      // Get form data
+      const name = document.getElementById('meeting-name').value;
+      const date = document.getElementById('meeting-date').value;
+      const startTime = document.getElementById('meeting-start-time').value;
+      const duration = parseFloat(document.getElementById('meeting-duration').value);
+      const locationId = document.getElementById('meeting-location').value;
+      
+      // Validate required fields
+      if (!name || !date || !startTime || !locationId) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      // Calculate start and end times
+      const startDateTime = new Date(`${date}T${startTime}`);
+      const endDateTime = new Date(startDateTime.getTime() + duration * 60 * 60 * 1000);
+      
+      // Create meeting data
+      const meetingData = {
+        name: name,
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
+        group: this.currentGroup.id,
+        location: locationId
+      };
+      
+      // Submit the meeting
+      const authHeader = UserService.getAuthHeader();
+      const result = await ApiService.postData('meetings/', meetingData, authHeader);
+      
+      if (result) {
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleMeetingModal'));
+        modal.hide();
+        
+        // Clear form
+        document.getElementById('meeting-form').reset();
+        
+        // Reload meetings section
+        await this.loadStudyGroup();
+        
+        alert('Meeting scheduled successfully!');
+      }
+      
+    } catch (error) {
+      console.error('Error creating meeting:', error);
+      alert('Error scheduling meeting. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
     }
-    
-    // Submit the meeting
-    const authHeader = UserService.getAuthHeader();
-    const result = await ApiService.postData('meetings/', meetingData, authHeader);
-    
-    if (result) {
-      // Close modal
-      const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleMeetingModal'));
-      modal.hide();
-      
-      // Clear form
-      document.getElementById('meeting-form').reset();
-      
-      // Reload meetings section
-      await this.loadStudyGroup();
-      
-      alert('Meeting scheduled successfully!');
+  }
+
+  setupEditGroupModal() {
+    const editBtn = document.getElementById('edit-group-btn');
+    const editForm = document.getElementById('editGroupForm');
+    const modal = document.getElementById('editGroupModal');
+
+    // Set up modal shown event to populate form
+    if (modal) {
+      modal.addEventListener('show.bs.modal', this.showEditGroupModal.bind(this));
     }
+
+    // Set up form submit event
+    if (editForm) {
+      editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        console.log('Form submit event triggered');
+        this.handleEditGroupSubmit(e);
+      });
+    }
+  }
+
+  renderGroupActions() {
+    const actionsContainer = document.getElementById('group-actions');
+    if (!actionsContainer) return;
     
-  } catch (error) {
-    console.error('Error creating meeting:', error);
-    alert('Error scheduling meeting. Please try again.');
-  } finally {
-    createBtn.disabled = false;
-    createBtn.textContent = originalText;
-  }
-}
-
-setupEditGroupModal() {
-  const editBtn = document.getElementById('edit-group-btn');
-  const editForm = document.getElementById('editGroupForm');
-  const modal = document.getElementById('editGroupModal');
-
-  // Set up modal shown event to populate form
-  if (modal) {
-    modal.addEventListener('show.bs.modal', this.showEditGroupModal.bind(this));
-  }
-
-  // Set up form submit event
-  if (editForm) {
-    editForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      console.log('Form submit event triggered');
-      this.handleEditGroupSubmit(e);
-    });
-  }
-}
-
-renderGroupActions() {
-  const actionsContainer = document.getElementById('group-actions');
-  if (!actionsContainer) return;
-  
-  const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
-  const isCreator = StudyGroupDetailService.isGroupCreator(this.groupMembers, currentUserId);
-  const isAdmin = this.currentUser?.userData.attributes.is_superuser;
-  
-  if (isCreator || isAdmin) {
-    actionsContainer.innerHTML = `
-        <button class="btn btn-gator-accent" id="delete-group-btn">
-          <span class="fa-solid fa-user-minus me-3"></span>Delete Group
+    const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
+    const isAdmin = this.currentUser?.userData?.attributes?.is_superuser || 
+                    this.currentUser?.username?.toLowerCase().includes('admin');
+    
+    // For group management, admins have full control
+    // Regular users who created the group have limited control
+    const userIsGroupMember = this.groupMembers.some(member => 
+      member.relationships?.user?.data?.id?.toString() === currentUserId?.toString()
+    );
+    
+    if (isAdmin) {
+      // Admin view - full control
+      actionsContainer.innerHTML = `
+        <p><span class="badge bg-secondary">Admin View</span></p>
+        <button class="btn btn-outline-teal me-2" id="edit-group-btn" data-bs-toggle="modal" data-bs-target="#editGroupModal">
+          <span class="fa-solid fa-edit me-2"></span>Edit Group
         </button>
-    `;
-    
-    // Add event listener for delete
-    document.getElementById('delete-group-btn').addEventListener('click', () => {
-      this.handleDeleteGroup();
-    });
-  } else {
-    actionsContainer.innerHTML = `
-        <button class="btn btn-gator-accent" id="leave-group-btn">
-          <span class="fa-solid fa-user-minus me-3"></span>Leave Group
+        <button class="btn btn-gator-accent" id="delete-group-btn">
+          <span class="fa-solid fa-trash me-2"></span>Delete Group
         </button>
       `;
-    
-    // Add event listener for leave
-    document.getElementById('leave-group-btn').addEventListener('click', () => {
-      this.handleLeaveGroup();
-    });
-  }
-}
-
-async showEditGroupModal(event) {
-  try {
-    // Populate form with current group data
-    const groupNameInput = document.getElementById('editGroupName');
-    const departmentSelect = document.getElementById('editDepartment');
-    const courseNumberInput = document.getElementById('editCourseNumber');
-    const descriptionTextarea = document.getElementById('editGroupDescription');
-    
-    if (groupNameInput) groupNameInput.value = this.currentGroup.attributes?.name || '';
-    if (courseNumberInput) courseNumberInput.value = this.currentGroup.attributes?.class_number || '';
-    if (descriptionTextarea) descriptionTextarea.value = this.currentGroup.attributes?.description || '';
-    
-    // Load departments if not already loaded
-    await this.loadDepartmentsForEdit();
-    
-    // Set the current department
-    if (departmentSelect && this.currentGroup.attributes?.department) {
-      departmentSelect.value = this.currentGroup.attributes.department;
-    }
-    
-    // Clear any previous messages
-    this.clearEditModalMessages();
-    
-  } catch (error) {
-    console.error('Error showing edit group modal:', error);
-    alert(`Error loading group edit form: ${error.message}`);
-  }
-}
-
-async loadDepartmentsForEdit() {
-  try {
-    const departmentSelect = document.getElementById('editDepartment');
-    if (!departmentSelect) return;
-    
-    // Check if departments are already loaded
-    if (departmentSelect.children.length > 1) return;
-    
-    const authHeader = UserService.getAuthHeader();
-    const response = await ApiService.getData('groups/', authHeader);
-    
-    if (response && response.data) {
-      // Extract unique departments from existing groups
-      const departments = [...new Set(response.data.map(group => group.attributes?.department).filter(Boolean))];
       
-      // Clear loading option
-      departmentSelect.innerHTML = '<option value="">Select Department</option>';
+      document.getElementById('delete-group-btn').addEventListener('click', () => {
+        this.handleDeleteGroup();
+      });
+    } else if (userIsGroupMember) {
+      // Regular member view
+      actionsContainer.innerHTML = `
+        <button class="btn btn-gator-accent" id="leave-group-btn">
+          <span class="fa-solid fa-user-minus me-2"></span>Leave Group
+        </button>
+      `;
       
-      // Add department options
-      departments.forEach(dept => {
-        const option = document.createElement('option');
-        option.value = dept;
-        option.textContent = dept;
-        departmentSelect.appendChild(option);
+      document.getElementById('leave-group-btn').addEventListener('click', () => {
+        this.handleLeaveGroup();
       });
     }
-  } catch (error) {
-    console.error('Error loading departments:', error);
   }
-}
 
-async handleEditGroupSubmit(e) {
-  e.preventDefault();
-  console.log('Edit group form submitted');
-  
-  const submitBtn = document.getElementById('edit-group-submit-btn');
-  const originalText = submitBtn.textContent || 'Save Changes';
-  
-  try {
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
+  async showEditGroupModal(event) {
+    try {
+      // Populate form with current group data
+      const groupNameInput = document.getElementById('editGroupName');
+      const departmentSelect = document.getElementById('editDepartment');
+      const courseNumberInput = document.getElementById('editCourseNumber');
+      const descriptionTextarea = document.getElementById('editGroupDescription');
+      
+      if (groupNameInput) groupNameInput.value = this.currentGroup.attributes?.name || '';
+      if (courseNumberInput) courseNumberInput.value = this.currentGroup.attributes?.class_number || '';
+      if (descriptionTextarea) descriptionTextarea.value = this.currentGroup.attributes?.description || '';
+      
+      // Load departments if not already loaded
+      await this.loadDepartmentsForEdit();
+      
+      // Set the current department
+      if (departmentSelect && this.currentGroup.attributes?.department) {
+        departmentSelect.value = this.currentGroup.attributes.department;
+      }
+      
+      // Clear any previous messages
+      this.clearEditModalMessages();
+      
+    } catch (error) {
+      console.error('Error showing edit group modal:', error);
+      alert(`Error loading group edit form: ${error.message}`);
+    }
+  }
+
+  async loadDepartmentsForEdit() {
+    try {
+      const departmentSelect = document.getElementById('editDepartment');
+      if (!departmentSelect) return;
+      
+      // Check if departments are already loaded
+      if (departmentSelect.children.length > 1) return;
+      
+      const authHeader = UserService.getAuthHeader();
+      const response = await ApiService.getData('groups/', authHeader);
+      
+      if (response && response.data) {
+        // Extract unique departments from existing groups
+        const departments = [...new Set(response.data.map(group => group.attributes?.department).filter(Boolean))];
+        
+        // Clear loading option
+        departmentSelect.innerHTML = '<option value="">Select Department</option>';
+        
+        // Add department options
+        departments.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept;
+          option.textContent = dept;
+          departmentSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error('Error loading departments:', error);
+    }
+  }
+
+  async handleEditGroupSubmit(e) {
+    e.preventDefault();
+    console.log('Edit group form submitted');
     
-    // Get form data
-    const name = document.getElementById('editGroupName').value.trim();
-    const department = document.getElementById('editDepartment').value;
-    const courseNumber = document.getElementById('editCourseNumber').value.trim();
-    const description = document.getElementById('editGroupDescription').value.trim();
+    const submitBtn = document.getElementById('edit-group-submit-btn');
+    const originalText = submitBtn.textContent || 'Save Changes';
     
-    console.log('Form data:', { name, department, courseNumber, description });
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+      
+      // Get form data
+      const name = document.getElementById('editGroupName').value.trim();
+      const department = document.getElementById('editDepartment').value;
+      const courseNumber = document.getElementById('editCourseNumber').value.trim();
+      
+      // Validate required fields
+      if (!name || !department || !courseNumber) {
+        this.showEditModalError('Please fill in all required fields.');
+        return;
+      }
+      
+      // Prepare update data
+      const updateData = {
+        name: name,
+        department: department,
+        class_number: parseInt(courseNumber, 10) || 0,
+      };
+      
+      // Submit the update
+      const authHeader = UserService.getAuthHeader();
+      const result = await ApiService.putData(`groups/${this.currentGroup.id}/`, updateData, authHeader);
+      
+      if (result) {
+        // Show success message
+        this.showEditModalSuccess('Group updated successfully!');
+        
+        // Close modal after a short delay and redirect if name changed
+        setTimeout(() => {
+          ModalUtility.closeModalById('editGroupModal');
+          // Check if the group name changed and redirect if needed
+          const newGroupName = document.getElementById('editGroupName').value.trim();
+          const currentGroupName = this.currentGroup?.attributes?.name;
+          
+          if (newGroupName && newGroupName !== currentGroupName) {
+            // Convert the new name to URL-friendly format (lowercase, replace spaces with hyphens)
+            const newSlug = newGroupName.toLowerCase()
+              .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+              .replace(/\s+/g, '-') // Replace spaces with hyphens
+              .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+              .trim('-'); // Remove leading/trailing hyphens
+            
+            console.log('Redirecting to new group URL:', `/study-groups/${newSlug}`);
+            // Redirect to the new URL
+            window.location.href = `/study-groups/${newSlug}`;
+          } else {
+            // Just reload group data if name didn't change
+            this.loadStudyGroup();
+          }
+        }, 1500);
+      } else {
+        this.showEditModalError('Failed to update group. Please try again.');
+      }
+      
+    } catch (error) {
+      console.error('Error updating group:', error);
+      this.showEditModalError('Error updating group. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+  }
+
+  showEditModalError(message) {
+    const errorDiv = document.getElementById('editModalErrorMessage');
+    const errorText = document.getElementById('editErrorText');
     
-    // Validate required fields
-    if (!name || !department || !courseNumber) {
-      this.showEditModalError('Please fill in all required fields.');
+    if (errorDiv && errorText) {
+      errorText.textContent = message;
+      errorDiv.classList.remove('d-none');
+      errorDiv.classList.add('show');
+      this.hideEditSuccessMessage();
+    } else {
+      alert(message);
+    }
+  }
+
+  showEditModalSuccess(message) {
+    console.log('Success message:', message);
+    const successDiv = document.getElementById('editModalSuccessMessage');
+    const successText = document.getElementById('editSuccessText');
+    
+    if (successDiv && successText) {
+      console.log('Success elements found, showing message');
+      successText.textContent = message;
+      successDiv.classList.remove('d-none');
+      successDiv.classList.add('show');
+      this.hideEditErrorMessage();
+    } else {
+      console.warn('Success elements not found, using alert');
+      alert(message);
+    }
+  }
+
+  hideEditErrorMessage() {
+    const errorDiv = document.getElementById('editModalErrorMessage');
+    if (errorDiv) {
+      errorDiv.classList.add('d-none');
+      errorDiv.classList.remove('show');
+    }
+  }
+
+  hideEditSuccessMessage() {
+    const successDiv = document.getElementById('editModalSuccessMessage');
+    if (successDiv) {
+      successDiv.classList.add('d-none');
+      successDiv.classList.remove('show');
+    }
+  }
+
+  clearEditModalMessages() {
+    this.hideEditErrorMessage();
+    this.hideEditSuccessMessage();
+  }
+
+  // Handle leaving a group
+  async handleLeaveGroup() {
+    if (!confirm('Are you sure you want to leave this group?')) {
       return;
     }
     
-    // Prepare update data
-    const updateData = {
-      name: name,
-      department: department,
-      class_number: parseInt(courseNumber, 10) || 0,
-    };
-    
-    // Only include description if it exists
-    if (description) {
-      updateData.description = description;
-    }
-    
-    console.log('Update data:', updateData);
-    console.log('Group ID:', this.currentGroup.id);
-    
-    // Submit the update
-    const authHeader = UserService.getAuthHeader();
-    console.log('Auth header:', authHeader ? 'Present' : 'Missing');
-    const result = await ApiService.putData(`groups/${this.currentGroup.id}/`, updateData, authHeader);
-    
-    if (result) {
-      console.log('Group update successful:', result);
-      // Show success message
-      this.showEditModalSuccess('Group updated successfully!');
+    try {
+      const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
+      await StudyGroupDetailService.leaveGroup(this.currentGroup.id, currentUserId);
       
-      // Close modal after a short delay and redirect if name changed
-      setTimeout(() => {
-        ModalUtility.closeModalById('editGroupModal');
-        // Check if the group name changed and redirect if needed
-        const newGroupName = document.getElementById('editGroupName').value.trim();
-        const currentGroupName = this.currentGroup?.attributes?.name;
-        
-        if (newGroupName && newGroupName !== currentGroupName) {
-          // Convert the new name to URL-friendly format (lowercase, replace spaces with hyphens)
-          const newSlug = newGroupName.toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-            .replace(/\s+/g, '-') // Replace spaces with hyphens
-            .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-            .trim('-'); // Remove leading/trailing hyphens
-          
-          console.log('Redirecting to new group URL:', `/study-groups/${newSlug}`);
-          // Redirect to the new URL
-          window.location.href = `/study-groups/${newSlug}`;
-        } else {
-          // Just reload group data if name didn't change
-          this.loadStudyGroup();
-        }
-      }, 1500);
-    } else {
-      this.showEditModalError('Failed to update group. Please try again.');
+      alert('You have successfully left the group.');
+      PageController.navigateTo('study-groups');
+      
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      alert('Failed to leave group. Please try again.');
+    }
+  }
+
+  // Handle deleting a group
+  async handleDeleteGroup() {
+    const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
+    const isAdmin = this.currentUser?.userData?.attributes?.is_superuser || 
+                    this.currentUser?.username?.toLowerCase().includes('admin');
+    
+    if (!isAdmin) {
+      alert('Only administrators can delete groups.');
+      return;
     }
     
-  } catch (error) {
-    console.error('Error updating group:', error);
-    this.showEditModalError('Error updating group. Please try again.');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = originalText;
-  }
-}
-
-showEditModalError(message) {
-  const errorDiv = document.getElementById('editModalErrorMessage');
-  const errorText = document.getElementById('editErrorText');
-  
-  if (errorDiv && errorText) {
-    errorText.textContent = message;
-    errorDiv.classList.remove('d-none');
-    errorDiv.classList.add('show');
-    this.hideEditSuccessMessage();
-  } else {
-    alert(message);
-  }
-}
-
-showEditModalSuccess(message) {
-  console.log('Success message:', message);
-  const successDiv = document.getElementById('editModalSuccessMessage');
-  const successText = document.getElementById('editSuccessText');
-  
-  if (successDiv && successText) {
-    console.log('Success elements found, showing message');
-    successText.textContent = message;
-    successDiv.classList.remove('d-none');
-    successDiv.classList.add('show');
-    this.hideEditErrorMessage();
-  } else {
-    console.warn('Success elements not found, using alert');
-    alert(message);
-  }
-}
-
-hideEditErrorMessage() {
-  const errorDiv = document.getElementById('editModalErrorMessage');
-  if (errorDiv) {
-    errorDiv.classList.add('d-none');
-    errorDiv.classList.remove('show');
-  }
-}
-
-hideEditSuccessMessage() {
-  const successDiv = document.getElementById('editModalSuccessMessage');
-  if (successDiv) {
-    successDiv.classList.add('d-none');
-    successDiv.classList.remove('show');
-  }
-}
-
-clearEditModalMessages() {
-  this.hideEditErrorMessage();
-  this.hideEditSuccessMessage();
-}
-
-// Handle leaving a group
-async handleLeaveGroup() {
-  if (!confirm('Are you sure you want to leave this group?')) {
-    return;
-  }
-  
-  try {
-    const currentUserId = this.currentUser?.userData?.id || this.currentUser?.id;
-    await StudyGroupDetailService.leaveGroup(this.currentGroup.id, currentUserId);
+    if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+      return;
+    }
     
-    alert('You have successfully left the group.');
-    PageController.navigateTo('study-groups');
-    
-  } catch (error) {
-    console.error('Error leaving group:', error);
-    alert('Failed to leave group. Please try again.');
+    try {
+      await StudyGroupDetailService.deleteGroup(this.currentGroup.id);
+      
+      alert('Group has been successfully deleted.');
+      PageController.navigateTo('study-groups');
+      
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      
+      // Show specific error message based on the error
+      if (error.message.includes('500')) {
+        alert('Server Error: Group deletion is currently not available due to backend restrictions. Please contact the system administrator to manually delete this group from the database.');
+      } else {
+        alert('Failed to delete group. Please try again or contact support.');
+      }
+    }
   }
-}
-
-// Handle deleting a group
-async handleDeleteGroup() {
-  if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
-    return;
-  }
-  
-  try {
-    await StudyGroupDetailService.deleteGroup(this.currentGroup.id);
-    
-    alert('Group has been successfully deleted.');
-    PageController.navigateTo('study-groups');
-    
-  } catch (error) {
-    console.error('Error deleting group:', error);
-    alert('Failed to delete group. Please try again.');
-  }
-}
 }
 
 export default StudyGroupDetailPage;

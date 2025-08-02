@@ -124,7 +124,7 @@
         <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
           <span class="fa-solid fa-times me-2"></span>Close
         </button>
-        <button type="button" class="btn btn-sm btn-teal btn-lg px-4" id="createNewGroupBtn">
+        <button type="button" class="btn btn-sm btn-teal btn-lg px-4" id="addGroupModalLabel">
           <span class="fa-solid fa-plus me-2"></span>Create New Group
         </button>
       </div>
@@ -211,6 +211,76 @@
         </button>
         <button type="submit" form="meeting-form" class="btn btn-sm btn-gator-accent btn-lg px-4" id="schedule-meeting-btn">
           <span class="fa-solid fa-calendar-check me-2"></span>Schedule Meeting
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add group modal -->
+<div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 p-3">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="h4" id="addGroupModalLabel">
+          <span class="fa-solid fa-users text-teal me-3"></span>Create Study Group
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body pt-3">
+        <form id="addGroupForm">
+          <!-- Group Name -->
+          <div class="mb-4">
+            <label for="groupName" class="form-label fw-semibold">Group Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-lg" id="groupName" name="groupName" placeholder="e.g., Data Structures Study Group" required>
+            <div class="invalid-feedback">Please enter a group name.</div>
+          </div>
+
+          <!-- Course/Subject -->
+          <div class="mb-4">
+            <label for="courseCode" class="form-label fw-semibold">Course Code <span class="text-danger">*</span></label>
+            <div class="row">
+              <div class="col-4">
+                <select class="form-select" id="department" name="department" required>
+                  <option value="">Loading departments...</option>
+                </select>
+              </div>
+              <div class="col-8">
+                <input type="text" class="form-control" id="courseNumber" name="courseNumber" placeholder="3530" required>
+              </div>
+            </div>
+            <div class="invalid-feedback">Please select a department and enter course number.</div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <label for="groupDescription" class="form-label fw-semibold">Description</label>
+            <textarea class="form-control h-xs-100p" id="groupDescription" name="groupDescription" placeholder="Tell others what this group is about, what topics you'll cover, or your study goals..."></textarea>
+            <div class="form-text">Help others understand what your group focuses on</div>
+          </div>
+
+          <!-- Error/Success Messages -->
+          <div id="modalErrorMessage" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+            <span class="fa-solid fa-exclamation-triangle me-2"></span>
+            <span id="errorText"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          
+          <div id="modalSuccessMessage" class="alert alert-success alert-dismissible fade d-none" role="alert">
+            <span class="fa-solid fa-check-circle me-2"></span>
+            <span id="successText"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-sm btn-outline-dark-gray" data-bs-dismiss="modal">
+          <span class="fa-solid fa-times me-2"></span>Cancel
+        </button>
+        <button type="submit" form="addGroupForm" class="btn btn-sm btn-teal btn-lg px-4">
+          <span class="fa-solid fa-plus me-2"></span>Create Group
         </button>
       </div>
     </div>

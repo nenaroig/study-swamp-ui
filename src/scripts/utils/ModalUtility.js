@@ -92,6 +92,8 @@ export class ModalUtility {
       
       // Enable search functionality after groups are rendered
       this.setupModalSearch();
+
+      this.setupCreateGroupTrigger();
       
     } catch (error) {
       console.error('Error loading available groups:', error);
@@ -358,6 +360,30 @@ static async loadDepartments() {
     if (successDiv) {
       successDiv.classList.add('d-none');
       successDiv.classList.remove('show');
+    }
+  }
+
+  static openCreateGroupModal() {
+    // Close the list groups modal first
+    this.closeModalById('listGroupModal');
+    
+    // Wait a brief moment for the close animation, then open create modal
+    setTimeout(() => {
+      this.showModalById('addGroupModal');
+    }, 150);
+  }
+
+  static setupCreateGroupTrigger() {
+    // Setup the create group button in the list groups modal
+    const createGroupBtn = document.getElementById('addGroupModalLabel');
+    if (createGroupBtn) {
+      // Remove any existing listeners to prevent duplicates
+      createGroupBtn.replaceWith(createGroupBtn.cloneNode(true));
+      const newBtn = document.getElementById('addGroupModalLabel');
+      
+      newBtn.addEventListener('click', () => {
+        this.openCreateGroupModal();
+      });
     }
   }
 }

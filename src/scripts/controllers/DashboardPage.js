@@ -125,7 +125,7 @@ class DashboardPage {
       meetings: this.meetings,
       layout: 'dashboard',
       containerId: 'stats-container',
-      cardClass: 'col-md-3',
+      cardClass: 'col-sm-6 col-lg-3',
       clickableCards: ['studygroups', 'todaysmeetings', 'pointsearned', 'availablegroups'],
       clickHandlers: {
         'studygroups': () => PageController.navigateTo('study-groups'),

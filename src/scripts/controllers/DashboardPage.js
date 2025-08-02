@@ -54,7 +54,12 @@ class DashboardPage {
       this.members = membersResponse.data || [];
       
       // Get current user ID for filtering
-      const currentUserId = this.currentUser?.userData?.id?.toString() || this.currentUser?.id?.toString();
+      const currentUserData = UserService.getCurrentUserData();
+      const currentUserId = currentUserData?.data?.id?.toString();
+      
+      if (!currentUserId) {
+        throw new Error('Unable to determine current user ID. Please try logging in again.');
+      }
       
       // Check if current user is admin
       const isAdmin = this.currentUser?.username?.includes('admin') || false;
@@ -66,8 +71,11 @@ class DashboardPage {
       } else {
         // Regular users see only their joined groups and related meetings
         const userGroupIds = this.members
-        .filter(member => member.relationships.user.data.id.toString() === currentUserId.toString())
-        .map(member => member.relationships.group.data.id.toString());
+          .filter(member => {
+            const memberUserId = member.relationships?.user?.data?.id?.toString();
+            return memberUserId === currentUserId;
+          })
+          .map(member => member.relationships.group.data.id.toString());
         
         this.groups = this.allGroups.filter(group => userGroupIds.includes(group.id.toString()));
         this.meetings = this.allMeetings.filter(meeting => {
@@ -137,8 +145,11 @@ class DashboardPage {
     if (h1) {
       let name = 'Gator';
       
-      if (this.currentUser?.userData?.attributes?.first_name) {
-        name = this.currentUser.userData.attributes.first_name;
+      // Get current user data properly
+      const currentUserData = UserService.getCurrentUserData();
+
+      if (currentUserData?.attributes?.first_name) {
+        name = currentUserData.attributes.first_name;
       } else if (this.currentUser?.username) {
         name = this.currentUser.username;
       }

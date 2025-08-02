@@ -367,6 +367,9 @@ static async loadDepartments() {
     // Close the list groups modal first
     this.closeModalById('listGroupModal');
     
+    // Set up events for the create group modal
+    this.setupCreateGroupModalEvents();
+    
     // Wait a brief moment for the close animation, then open create modal
     setTimeout(() => {
       this.showModalById('addGroupModal');
@@ -383,6 +386,15 @@ static async loadDepartments() {
       
       newBtn.addEventListener('click', () => {
         this.openCreateGroupModal();
+      });
+    }
+  }
+
+  static setupCreateGroupModalEvents() {
+    const addGroupModal = document.getElementById('addGroupModal');
+    if (addGroupModal) {
+      addGroupModal.addEventListener('show.bs.modal', async () => {
+        await this.loadDepartments();
       });
     }
   }

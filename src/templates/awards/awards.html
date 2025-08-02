@@ -1,4 +1,41 @@
 <div class="inner-wrapper">
-  <h1>Awards</h1>
-  <p>Content coming soon...</p>
+  <div class="mx-auto mw-md-730p">
+    <div class="bg-white opacity-75 p-5 rounded-4">
+      <div class="text-center">
+        <h1>Awards</h1>
+        <p class="mt-4 fw-500 fs-18p text-lighter-gray">Celebrate your achievements and track your progress in the StudyBuddy community. Each award recognizes your dedication to learning and collaboration.</p>
+      </div>
+    </div>
+    
+    <!-- Awards content will be dynamically inserted here -->
+    <div id="awards-stats-cards"></div>
+    
+    <div class="bg-white opacity-75 p-4 rounded-4 mt-4">
+      <div id="awards-stats-container">
+        
+        <!-- Loading state -->
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading awards...</span>
+          </div>
+          <p class="mt-3 text-muted">Loading your achievements...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Sidebar -->
+    <div class="position-fixed bottom-0 end-0 p-3 z-1">
+      <div class="bg-white rounded-4 p-3 shadow">
+        <h6 class="mb-3">Quick Actions</h6>
+        <div class="d-grid gap-2">
+          <button class="btn btn-sm btn-gator-accent" data-bs-toggle="modal" data-bs-target="#scheduleMeetingModal">
+            <span class="fa-solid fa-plus me-2"></span>New Meeting
+          </button>
+          <button class="btn btn-sm btn-outline-gator-accent" id="join-next-meeting">
+            <span class="fa-solid fa-play me-2"></span>Join Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

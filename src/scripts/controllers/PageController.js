@@ -5,6 +5,7 @@ import StudyGroupsPage from './StudyGroupsPage.js';
 import StudyGroupDetailPage from './StudyGroupDetailPage.js';
 import MeetingsPage from './MeetingsPage.js';
 import ProfilePage from './ProfilePage.js';
+import AwardsPage from './AwardsPage.js';
 
 class PageController {
   constructor() {
@@ -53,6 +54,10 @@ class PageController {
         break;
       case 'profile':
         this.currentPage = new ProfilePage();
+        this.currentPage.init();
+        break;
+      case 'awards':
+        this.currentPage = new AwardsPage();
         this.currentPage.init();
         break;
       default:

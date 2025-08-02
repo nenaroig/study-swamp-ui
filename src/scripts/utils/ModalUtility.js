@@ -4,7 +4,20 @@ import UserService from '../api/UserService.js';
 
 export class ModalUtility {
   
-  // Opens the join groups modal and loads available groups
+  // ===== INITIALIZATION =====
+  
+  static initializeModalEvents() {
+    // Load departments when create group modal is shown
+    const addGroupModal = document.getElementById('addGroupModal');
+    if (addGroupModal) {
+      addGroupModal.addEventListener('show.bs.modal', async () => {
+        await this.loadDepartments();
+      });
+    }
+  }
+
+  // ===== MODAL OPENING/CLOSING =====
+
   static openJoinGroupModal() {
     const modal = document.getElementById('listGroupModal');
     if (!modal) {
@@ -12,15 +25,8 @@ export class ModalUtility {
       return;
     }
 
-    // Clear any previous modal state
     this.clearModalState();
-
-    // Trigger modal
-    const triggerButton = document.createElement('button');
-    triggerButton.setAttribute('data-bs-toggle', 'modal');
-    triggerButton.setAttribute('data-bs-target', '#listGroupModal');
-    triggerButton.style.display = 'none';
-    document.body.appendChild(triggerButton);
+    this.triggerModal('#listGroupModal');
     
     // Set up one-time event listener for when modal is shown
     modal.addEventListener('shown.bs.modal', () => {
@@ -29,93 +35,134 @@ export class ModalUtility {
         this.showModalError('Failed to load available groups');
       });
     }, { once: true });
+  }
+
+  static openCreateGroupModal() {
+    this.closeModalById('listGroupModal');
+    
+    setTimeout(() => {
+      this.showModalById('addGroupModal');
+    }, 150);
+  }
+
+  static closeModalById(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    const closeButton = modal.querySelector('[data-bs-dismiss="modal"]');
+    if (closeButton) {
+      closeButton.click();
+    }
+  }
+
+  static showModalById(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    this.triggerModal(`#${modalId}`);
+  }
+
+  static triggerModal(target) {
+    const triggerButton = document.createElement('button');
+    triggerButton.setAttribute('data-bs-toggle', 'modal');
+    triggerButton.setAttribute('data-bs-target', target);
+    triggerButton.style.display = 'none';
+    document.body.appendChild(triggerButton);
     
     triggerButton.click();
     
-    // Clean up the temporary button after a delay
     setTimeout(() => {
       if (document.body.contains(triggerButton)) {
         document.body.removeChild(triggerButton);
       }
     }, 100);
   }
+
+  // ===== DATA LOADING =====
   
-  // Fetches and renders available groups (excluding user's current groups)
   static async loadAvailableGroups() {
     const container = document.getElementById('availableGroupsList');
     const loadingDiv = document.getElementById('loadingGroups');
     const noGroupsDiv = document.getElementById('noGroupsMessage');
     
     try {
-      // Show loading spinner and clear previous content
-      if (loadingDiv) loadingDiv.classList.remove('d-none');
-      if (container) container.innerHTML = '';
-      if (noGroupsDiv) noGroupsDiv.classList.add('d-none');
+      this.showLoading(loadingDiv, container, noGroupsDiv);
       
-      const authHeader = UserService.getAuthHeader();
-      const currentUser = UserService.getCurrentUser();
-      const currentUserId = currentUser?.userData?.id?.toString() || currentUser?.id?.toString();
-      
-      // Fetch all groups and user memberships in parallel for efficiency
-      const [allGroupsResponse, membersResponse] = await Promise.all([
-        ApiService.getData('groups/', authHeader),
-        ApiService.getData('members/', authHeader)
-      ]);
-      
-      const allGroups = allGroupsResponse.data || [];
-      const members = membersResponse.data || [];
-      
-      // Extract IDs of groups user is already a member of
-      const userGroupIds = members
-      .filter(member => member.relationships.user.data.id === currentUserId)
-      .map(member => member.relationships.group.data.id);
-      
-      // Show only groups user hasn't joined yet
+      const { allGroups, userGroupIds } = await this.fetchGroupsData();
       const availableGroups = allGroups.filter(group => !userGroupIds.includes(group.id));
       
-      // Hide loading spinner
-      if (loadingDiv) loadingDiv.classList.add('d-none');
+      this.hideLoading(loadingDiv);
       
-      // Show empty state if no groups available to join
       if (availableGroups.length === 0) {
-        if (noGroupsDiv) noGroupsDiv.classList.remove('d-none');
+        this.showEmptyState(noGroupsDiv);
         return;
       }
       
-      // Create and display group cards
-      if (container) {
-        availableGroups.forEach(group => {
-          const groupCard = this.createAvailableGroupCard(group);
-          container.appendChild(groupCard);
-        });
-      }
-      
-      // Enable search functionality after groups are rendered
-      this.setupModalSearch();
-
-      this.setupCreateGroupTrigger();
+      this.renderAvailableGroups(container, availableGroups);
+      this.setupModalInteractions();
       
     } catch (error) {
       console.error('Error loading available groups:', error);
-      if (loadingDiv) loadingDiv.classList.add('d-none');
+      this.hideLoading(loadingDiv);
       this.showModalError('Failed to load available groups');
-      throw error; // Re-throw to handle in openJoinGroupModal
+      throw error;
     }
   }
-  
-  // Creates HTML card element for a joinable group
+
+  static async fetchGroupsData() {
+    const authHeader = UserService.getAuthHeader();
+    const currentUser = UserService.getCurrentUser();
+    const currentUserId = currentUser?.userData?.id?.toString() || currentUser?.id?.toString();
+    
+    const [allGroupsResponse, membersResponse] = await Promise.all([
+      ApiService.getData('groups/', authHeader),
+      ApiService.getData('members/', authHeader)
+    ]);
+    
+    const allGroups = allGroupsResponse.data || [];
+    const members = membersResponse.data || [];
+    
+    const userGroupIds = members
+      .filter(member => member.relationships.user.data.id === currentUserId)
+      .map(member => member.relationships.group.data.id);
+    
+    return { allGroups, userGroupIds };
+  }
+
+  static async loadDepartments() {
+    try {
+      const authHeader = UserService.getAuthHeader();
+      const response = await ApiService.getEnumData('enums/', authHeader);
+      const departments = response.data?.enums?.departments || [];
+      
+      this.populateDepartmentDropdown(departments);
+      
+    } catch (error) {
+      console.error('Failed to load departments:', error);
+      this.populateFallbackDepartments();
+    }
+  }
+
+  // ===== RENDERING =====
+
+  static renderAvailableGroups(container, availableGroups) {
+    if (container) {
+      availableGroups.forEach(group => {
+        const groupCard = this.createAvailableGroupCard(group);
+        container.appendChild(groupCard);
+      });
+    }
+  }
+
   static createAvailableGroupCard(group) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'border rounded-3 p-3 mb-3';
     
     const title = group.attributes?.name || 'Untitled Group';
     const description = this.formatGroupDescription(group);
-    
-    // Check if current user is admin
     const currentUser = UserService.getCurrentUser();
     const isAdmin = currentUser?.username?.includes('admin') || false;
     
-    // Build card HTML with group info and conditionally show join button
     cardDiv.innerHTML = `
       <div class="d-flex align-items-center justify-content-between">
         <div>
@@ -123,179 +170,37 @@ export class ModalUtility {
           <p class="text-muted mb-0">${description}</p>
         </div>
         ${isAdmin ? 
-    '<span class="badge bg-secondary">Admin View</span>' : 
-    `<button class="btn btn-outline-teal btn-sm join-group-btn" data-group-id="${group.id}">
+          '<span class="badge bg-secondary">Admin View</span>' : 
+          `<button class="btn btn-outline-teal btn-sm join-group-btn" data-group-id="${group.id}">
             <span class="fa-solid fa-plus me-1"></span>Join
           </button>`
-  }
+        }
       </div>
     `;
   
-  // Attach click handler for join functionality only if not admin
-  if (!isAdmin) {
-    const joinBtn = cardDiv.querySelector('.join-group-btn');
-    joinBtn.addEventListener('click', () => this.handleJoinGroup(group));
-  }
-  
-  return cardDiv;
-}
-
-// Adds user as member to selected group and provides feedback
-static async handleJoinGroup(group) {
-  try {
-    const authHeader = UserService.getAuthHeader();
-    const currentUser = UserService.getCurrentUser();
-    const currentUserId = currentUser?.userData?.id || currentUser?.id;
-    
-    const memberData = {
-      user: parseInt(currentUserId),
-      group: parseInt(group.id),
-      creator: false
-    };
-    
-    const response = await ApiService.postData('members/', memberData, authHeader);
-    
-    // Check if the membership was actually created
-    if (!response.data || !response.data.id) {
-      // Special message for admin users
-      if (currentUser.username && currentUser.username.includes('admin')) {
-        throw new Error('Admin users cannot join groups. Please contact support if this is unexpected.');
-      } else {
-        throw new Error('Failed to join group - membership not created');
-      }
+    if (!isAdmin) {
+      const joinBtn = cardDiv.querySelector('.join-group-btn');
+      joinBtn.addEventListener('click', () => this.handleJoinGroup(group));
     }
-    
-    this.showModalSuccess(`Successfully joined ${group.attributes?.name}!`);
-    
-    // Auto-close modal after success message is shown
-    setTimeout(() => {
-      const modal = document.getElementById('listGroupModal');
-      if (modal) {
-        const closeBtn = modal.querySelector('[data-bs-dismiss="modal"]');
-        if (closeBtn) closeBtn.click();
-      }
-    }, 1500);
-    
-  } catch (error) {
-    console.error('Error joining group:', error);
-    this.showModalError(error.message || 'Failed to join group. Please try again.');
+  
+    return cardDiv;
   }
-}
 
-// Displays error message in modal alert
-static showModalError(message) {
-  const errorDiv = document.getElementById('modalErrorMessage');
-  const errorText = document.getElementById('errorText');
-  
-  errorText.textContent = message;
-  errorDiv.classList.remove('d-none');
-  errorDiv.classList.add('show');
-}
-
-// Displays success message in modal alert
-static showModalSuccess(message) {
-  const successDiv = document.getElementById('modalSuccessMessage');
-  const successText = document.getElementById('successText');
-  
-  successText.textContent = message;
-  successDiv.classList.remove('d-none');
-  successDiv.classList.add('show');
-}
-
-// Enables real-time search filtering of group cards
-static setupModalSearch() {
-  const searchInput = document.getElementById('groupSearch');
-  const groupsList = document.getElementById('availableGroupsList');
-  
-  if (!searchInput || !groupsList) return;
-  
-  // Filter groups as user types
-  searchInput.addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase().trim();
-    const groupCards = groupsList.querySelectorAll('.border.rounded-3');
-    
-    groupCards.forEach(card => {
-      const title = card.querySelector('h5')?.textContent?.toLowerCase() || '';
-      const description = card.querySelector('p')?.textContent?.toLowerCase() || '';
-      
-      // Show/hide cards based on search term match
-      const matches = title.includes(searchTerm) || description.includes(searchTerm);
-      card.style.display = matches ? 'block' : 'none';
-    });
-    
-    // Show "no results" message when search yields no matches
-    const visibleCards = Array.from(groupCards).filter(card => card.style.display !== 'none');
-    const noGroupsDiv = document.getElementById('noGroupsMessage');
-    
-    if (visibleCards.length === 0 && searchTerm) {
-      if (noGroupsDiv) {
-        noGroupsDiv.classList.remove('d-none');
-        noGroupsDiv.querySelector('p').textContent = `No groups found matching "${searchTerm}"`;
-      }
-    } else {
-      if (noGroupsDiv) {
-        noGroupsDiv.classList.add('d-none');
-      }
-    }
-  });
-  
-  // Reset search state when modal is closed
-  const modal = document.getElementById('listGroupModal');
-  modal.addEventListener('hidden.bs.modal', () => {
-    searchInput.value = '';
-    // Make all cards visible again
-    const groupCards = groupsList.querySelectorAll('.border.rounded-3');
-    groupCards.forEach(card => {
-      card.style.display = 'block';
-    });
-    // Reset no groups message to default
-    const noGroupsDiv = document.getElementById('noGroupsMessage');
-    if (noGroupsDiv) {
-      noGroupsDiv.classList.add('d-none');
-      noGroupsDiv.querySelector('p').textContent = 'No study groups available to join';
-    }
-  });
-}
-
-// Formats group info as "DEPT ####" (e.g., "COP 3530")
-static formatGroupDescription(group) {
-  const department = group.attributes?.department;
-  const classNumber = group.attributes?.class_number;
-  
-  if (department && classNumber) {
-    return `${department} ${classNumber}`;
-  } else if (department) {
-    return department;
-  } else if (classNumber) {
-    return `Class ${classNumber}`;
-  }
-  
-  return 'Study Group';
-}
-
-// Load departments from API and populate dropdown
-static async loadDepartments() {
-  try {
-    const authHeader = UserService.getAuthHeader();
-    const response = await ApiService.getEnumData('enums/', authHeader);
-    const departments = response.data?.enums?.departments || [];
-    
+  static populateDepartmentDropdown(departments) {
     const departmentSelect = document.getElementById('department');
     if (!departmentSelect) return;
     
-    // Clear existing options except the default
     departmentSelect.innerHTML = '<option value="">Dept</option>';
     
-    // Add department options
     departments.forEach(dept => {
       const option = document.createElement('option');
       option.value = dept.value;
       option.textContent = dept.label;
       departmentSelect.appendChild(option);
     });
-    
-  } catch (error) {
-    console.error('Failed to load departments:', error);
+  }
+
+  static populateFallbackDepartments() {
     const departmentSelect = document.getElementById('department');
     if (departmentSelect) {
       departmentSelect.innerHTML = `
@@ -309,37 +214,151 @@ static async loadDepartments() {
       `;
     }
   }
-}
 
-  // Utility to close a Bootstrap modal by its DOM id.
-  static closeModalById(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    
-    // Find and click the close button
-    const closeButton = modal.querySelector('[data-bs-dismiss="modal"]');
-    if (closeButton) {
-      closeButton.click();
+  // ===== EVENT HANDLING =====
+
+  static setupModalInteractions() {
+    this.setupModalSearch();
+    this.setupCreateGroupTrigger();
+  }
+
+  static async handleJoinGroup(group) {
+    try {
+      const authHeader = UserService.getAuthHeader();
+      const currentUser = UserService.getCurrentUser();
+      const currentUserId = currentUser?.userData?.id || currentUser?.id;
+      
+      const memberData = {
+        user: parseInt(currentUserId),
+        group: parseInt(group.id),
+        creator: false
+      };
+      
+      const response = await ApiService.postData('members/', memberData, authHeader);
+      
+      if (!response.data || !response.data.id) {
+        if (currentUser.username && currentUser.username.includes('admin')) {
+          throw new Error('Admin users cannot join groups. Please contact support if this is unexpected.');
+        } else {
+          throw new Error('Failed to join group - membership not created');
+        }
+      }
+      
+      this.showModalSuccess(`Successfully joined ${group.attributes?.name}!`);
+      this.autoCloseModal('listGroupModal', 1500);
+      
+    } catch (error) {
+      console.error('Error joining group:', error);
+      this.showModalError(error.message || 'Failed to join group. Please try again.');
     }
   }
 
-  // Utility to show a Bootstrap modal by its DOM id.
-  static showModalById(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    
-    // Use data attributes approach
-    const triggerButton = document.createElement('button');
-    triggerButton.setAttribute('data-bs-toggle', 'modal');
-    triggerButton.setAttribute('data-bs-target', `#${modalId}`);
-    triggerButton.style.display = 'none';
-    document.body.appendChild(triggerButton);
-    
-    triggerButton.click();
-    document.body.removeChild(triggerButton);
+  static setupCreateGroupTrigger() {
+    const createGroupBtn = document.getElementById('addGroupModalLabel');
+    if (createGroupBtn) {
+      createGroupBtn.replaceWith(createGroupBtn.cloneNode(true));
+      const newBtn = document.getElementById('addGroupModalLabel');
+      
+      newBtn.addEventListener('click', () => {
+        this.openCreateGroupModal();
+      });
+    }
   }
 
-  // Clear modal state and reset content
+  static setupModalSearch() {
+    const searchInput = document.getElementById('groupSearch');
+    const groupsList = document.getElementById('availableGroupsList');
+    
+    if (!searchInput || !groupsList) return;
+    
+    searchInput.addEventListener('input', (e) => {
+      this.filterGroups(e.target.value, groupsList);
+    });
+    
+    this.setupSearchReset();
+  }
+
+  static filterGroups(searchTerm, groupsList) {
+    const term = searchTerm.toLowerCase().trim();
+    const groupCards = groupsList.querySelectorAll('.border.rounded-3');
+    
+    groupCards.forEach(card => {
+      const title = card.querySelector('h5')?.textContent?.toLowerCase() || '';
+      const description = card.querySelector('p')?.textContent?.toLowerCase() || '';
+      const matches = title.includes(term) || description.includes(term);
+      card.style.display = matches ? 'block' : 'none';
+    });
+    
+    this.updateSearchResults(groupCards, term);
+  }
+
+  static updateSearchResults(groupCards, searchTerm) {
+    const visibleCards = Array.from(groupCards).filter(card => card.style.display !== 'none');
+    const noGroupsDiv = document.getElementById('noGroupsMessage');
+    
+    if (visibleCards.length === 0 && searchTerm) {
+      this.showSearchNoResults(noGroupsDiv, searchTerm);
+    } else {
+      this.hideSearchNoResults(noGroupsDiv);
+    }
+  }
+
+  static setupSearchReset() {
+    const modal = document.getElementById('listGroupModal');
+    modal.addEventListener('hidden.bs.modal', () => {
+      this.resetSearchState();
+    });
+  }
+
+  // ===== UI STATE MANAGEMENT =====
+
+  static showLoading(loadingDiv, container, noGroupsDiv) {
+    if (loadingDiv) loadingDiv.classList.remove('d-none');
+    if (container) container.innerHTML = '';
+    if (noGroupsDiv) noGroupsDiv.classList.add('d-none');
+  }
+
+  static hideLoading(loadingDiv) {
+    if (loadingDiv) loadingDiv.classList.add('d-none');
+  }
+
+  static showEmptyState(noGroupsDiv) {
+    if (noGroupsDiv) noGroupsDiv.classList.remove('d-none');
+  }
+
+  static showSearchNoResults(noGroupsDiv, searchTerm) {
+    if (noGroupsDiv) {
+      noGroupsDiv.classList.remove('d-none');
+      noGroupsDiv.querySelector('p').textContent = `No groups found matching "${searchTerm}"`;
+    }
+  }
+
+  static hideSearchNoResults(noGroupsDiv) {
+    if (noGroupsDiv) {
+      noGroupsDiv.classList.add('d-none');
+    }
+  }
+
+  static resetSearchState() {
+    const searchInput = document.getElementById('groupSearch');
+    const groupsList = document.getElementById('availableGroupsList');
+    const noGroupsDiv = document.getElementById('noGroupsMessage');
+    
+    if (searchInput) searchInput.value = '';
+    
+    if (groupsList) {
+      const groupCards = groupsList.querySelectorAll('.border.rounded-3');
+      groupCards.forEach(card => {
+        card.style.display = 'block';
+      });
+    }
+    
+    if (noGroupsDiv) {
+      noGroupsDiv.classList.add('d-none');
+      noGroupsDiv.querySelector('p').textContent = 'No study groups available to join';
+    }
+  }
+
   static clearModalState() {
     const container = document.getElementById('availableGroupsList');
     const loadingDiv = document.getElementById('loadingGroups');
@@ -348,7 +367,6 @@ static async loadDepartments() {
     const errorDiv = document.getElementById('modalErrorMessage');
     const successDiv = document.getElementById('modalSuccessMessage');
 
-    // Clear content and reset states
     if (container) container.innerHTML = '';
     if (loadingDiv) loadingDiv.classList.add('d-none');
     if (noGroupsDiv) noGroupsDiv.classList.add('d-none');
@@ -363,40 +381,55 @@ static async loadDepartments() {
     }
   }
 
-  static openCreateGroupModal() {
-    // Close the list groups modal first
-    this.closeModalById('listGroupModal');
+  // ===== UI FEEDBACK =====
+
+  static showModalError(message) {
+    const errorDiv = document.getElementById('modalErrorMessage');
+    const errorText = document.getElementById('errorText');
     
-    // Set up events for the create group modal
-    this.setupCreateGroupModalEvents();
+    if (errorText) errorText.textContent = message;
+    if (errorDiv) {
+      errorDiv.classList.remove('d-none');
+      errorDiv.classList.add('show');
+    }
+  }
+
+  static showModalSuccess(message) {
+    const successDiv = document.getElementById('modalSuccessMessage');
+    const successText = document.getElementById('successText');
     
-    // Wait a brief moment for the close animation, then open create modal
+    if (successText) successText.textContent = message;
+    if (successDiv) {
+      successDiv.classList.remove('d-none');
+      successDiv.classList.add('show');
+    }
+  }
+
+  static autoCloseModal(modalId, delay) {
     setTimeout(() => {
-      this.showModalById('addGroupModal');
-    }, 150);
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        const closeBtn = modal.querySelector('[data-bs-dismiss="modal"]');
+        if (closeBtn) closeBtn.click();
+      }
+    }, delay);
   }
 
-  static setupCreateGroupTrigger() {
-    // Setup the create group button in the list groups modal
-    const createGroupBtn = document.getElementById('addGroupModalLabel');
-    if (createGroupBtn) {
-      // Remove any existing listeners to prevent duplicates
-      createGroupBtn.replaceWith(createGroupBtn.cloneNode(true));
-      const newBtn = document.getElementById('addGroupModalLabel');
-      
-      newBtn.addEventListener('click', () => {
-        this.openCreateGroupModal();
-      });
-    }
-  }
+  // ===== UTILITY HELPERS =====
 
-  static setupCreateGroupModalEvents() {
-    const addGroupModal = document.getElementById('addGroupModal');
-    if (addGroupModal) {
-      addGroupModal.addEventListener('show.bs.modal', async () => {
-        await this.loadDepartments();
-      });
+  static formatGroupDescription(group) {
+    const department = group.attributes?.department;
+    const classNumber = group.attributes?.class_number;
+    
+    if (department && classNumber) {
+      return `${department} ${classNumber}`;
+    } else if (department) {
+      return department;
+    } else if (classNumber) {
+      return `Class ${classNumber}`;
     }
+    
+    return 'Study Group';
   }
 }
 

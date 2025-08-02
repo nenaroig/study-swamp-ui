@@ -29,6 +29,8 @@ class DashboardPage {
     
     this.currentUser = UserService.getCurrentUser();
     this.setupWelcomeMessage();
+
+    ModalUtility.initializeModalEvents();
     await this.loadDashboardData();
     
     this.isInitialized = true;

@@ -2,6 +2,7 @@ import PageController from './PageController.js';
 import UserService from '../api/UserService.js';
 import StudyGroupDetailService from '../api/StudyGroupDetailService.js';
 import ApiService from '../api/ApiService.js';
+import ModalUtility from '../utils/ModalUtility.js';
 
 // Convert group name to URL-friendly slug
 export function createGroupSlug(groupName) {
@@ -96,6 +97,7 @@ class StudyGroupDetailPage {
       this.renderComments();
       this.setupCommentForm();
       this.setupMeetingModal();
+      this.setupEditGroupModal();
       
     } catch (error) {
       console.error('Failed to load study group:', error);
@@ -114,6 +116,74 @@ class StudyGroupDetailPage {
     const classNum = this.currentGroup.attributes?.class_number || '';
 
     department.textContent = `${deptCode} ${classNum}`;
+    
+    // Show/hide edit button based on user permissions
+    this.updateEditButtonVisibility();
+  }
+  
+  updateEditButtonVisibility() {
+    const editBtn = document.getElementById('edit-group-btn');
+    if (!editBtn) {
+      console.error('Edit button not found in DOM');
+      return;
+    }
+    
+    // Check if current user is a creator or editor of the group
+    const currentUserId = this.currentUser?.userData?.id;
+    const currentUsername = this.currentUser?.username;
+    
+    if (!currentUserId && !currentUsername) {
+      console.warn('No current user ID or username found');
+      editBtn.classList.add('d-none');
+      return;
+    }
+    
+    // TODO: this can be done with user attributes
+    // Find user's membership in the group - try multiple ways of matching
+    const userMembership = this.groupMembers.find(member => {
+      const memberUserId = member.relationships?.user?.data?.id;
+      return (
+        // Try to match by ID (string or number)
+        (currentUserId && memberUserId == currentUserId) || 
+        // If that fails, check if current user is admin
+        (currentUsername && currentUsername.includes('admin'))
+      );
+    });
+    
+    // For admins, we show the button regardless
+    if (currentUsername && currentUsername.includes('admin')) {
+      editBtn.classList.remove('d-none');
+      return;
+    }
+    
+    // Log detailed info to help debug
+    if (userMembership) {
+      // Show edit button if user is creator or editor
+      if (userMembership.attributes?.creator || userMembership.attributes?.editor) {
+        console.log('User has edit permissions, showing edit button');
+        editBtn.classList.remove('d-none');
+      } else {
+        console.log('User does not have edit permissions, hiding edit button');
+        editBtn.classList.add('d-none');
+      }
+    } else {
+      console.log('User is not a member of this group, hiding edit button');
+      editBtn.classList.add('d-none');
+    }
+  }
+  
+  renderGroupStats() {
+    // Update member count
+    const memberCount = document.getElementById('member-count');
+    memberCount.textContent = this.groupMembers.length;
+    
+    // Update meeting count
+    const meetingCount = document.getElementById('meeting-count');
+    meetingCount.textContent = this.groupMeetings.length;
+    
+    // Update comment count
+    const commentCount = document.getElementById('comment-count');
+    commentCount.textContent = this.groupComments.length;
     if (description) descriptionContainer.textContent = `${description}`;
   }
   
@@ -596,6 +666,27 @@ async handleMeetingSubmit(e) {
     createBtn.textContent = originalText;
   }
 }
+
+setupEditGroupModal() {
+  const editBtn = document.getElementById('edit-group-btn');
+  const editForm = document.getElementById('editGroupForm');
+  const modal = document.getElementById('editGroupModal');
+
+  // Set up modal shown event to populate form
+  if (modal) {
+    modal.addEventListener('show.bs.modal', this.showEditGroupModal.bind(this));
+  }
+
+  // Set up form submit event
+  if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      console.log('Form submit event triggered');
+      this.handleEditGroupSubmit(e);
+    });
+  }
+}
+
 renderGroupActions() {
   const actionsContainer = document.getElementById('group-actions');
   if (!actionsContainer) return;
@@ -627,6 +718,204 @@ renderGroupActions() {
       this.handleLeaveGroup();
     });
   }
+}
+
+async showEditGroupModal(event) {
+  try {
+    // Populate form with current group data
+    const groupNameInput = document.getElementById('editGroupName');
+    const departmentSelect = document.getElementById('editDepartment');
+    const courseNumberInput = document.getElementById('editCourseNumber');
+    const descriptionTextarea = document.getElementById('editGroupDescription');
+    
+    if (groupNameInput) groupNameInput.value = this.currentGroup.attributes?.name || '';
+    if (courseNumberInput) courseNumberInput.value = this.currentGroup.attributes?.class_number || '';
+    if (descriptionTextarea) descriptionTextarea.value = this.currentGroup.attributes?.description || '';
+    
+    // Load departments if not already loaded
+    await this.loadDepartmentsForEdit();
+    
+    // Set the current department
+    if (departmentSelect && this.currentGroup.attributes?.department) {
+      departmentSelect.value = this.currentGroup.attributes.department;
+    }
+    
+    // Clear any previous messages
+    this.clearEditModalMessages();
+    
+  } catch (error) {
+    console.error('Error showing edit group modal:', error);
+    alert(`Error loading group edit form: ${error.message}`);
+  }
+}
+
+async loadDepartmentsForEdit() {
+  try {
+    const departmentSelect = document.getElementById('editDepartment');
+    if (!departmentSelect) return;
+    
+    // Check if departments are already loaded
+    if (departmentSelect.children.length > 1) return;
+    
+    const authHeader = UserService.getAuthHeader();
+    const response = await ApiService.getData('groups/', authHeader);
+    
+    if (response && response.data) {
+      // Extract unique departments from existing groups
+      const departments = [...new Set(response.data.map(group => group.attributes?.department).filter(Boolean))];
+      
+      // Clear loading option
+      departmentSelect.innerHTML = '<option value="">Select Department</option>';
+      
+      // Add department options
+      departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept;
+        option.textContent = dept;
+        departmentSelect.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('Error loading departments:', error);
+  }
+}
+
+async handleEditGroupSubmit(e) {
+  e.preventDefault();
+  console.log('Edit group form submitted');
+  
+  const submitBtn = document.getElementById('edit-group-submit-btn');
+  const originalText = submitBtn.textContent || 'Save Changes';
+  
+  try {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    // Get form data
+    const name = document.getElementById('editGroupName').value.trim();
+    const department = document.getElementById('editDepartment').value;
+    const courseNumber = document.getElementById('editCourseNumber').value.trim();
+    const description = document.getElementById('editGroupDescription').value.trim();
+    
+    console.log('Form data:', { name, department, courseNumber, description });
+    
+    // Validate required fields
+    if (!name || !department || !courseNumber) {
+      this.showEditModalError('Please fill in all required fields.');
+      return;
+    }
+    
+    // Prepare update data
+    const updateData = {
+      name: name,
+      department: department,
+      class_number: parseInt(courseNumber, 10) || 0,
+    };
+    
+    // Only include description if it exists
+    if (description) {
+      updateData.description = description;
+    }
+    
+    console.log('Update data:', updateData);
+    console.log('Group ID:', this.currentGroup.id);
+    
+    // Submit the update
+    const authHeader = UserService.getAuthHeader();
+    console.log('Auth header:', authHeader ? 'Present' : 'Missing');
+    const result = await ApiService.putData(`groups/${this.currentGroup.id}/`, updateData, authHeader);
+    
+    if (result) {
+      console.log('Group update successful:', result);
+      // Show success message
+      this.showEditModalSuccess('Group updated successfully!');
+      
+      // Close modal after a short delay and redirect if name changed
+      setTimeout(() => {
+        ModalUtility.closeModalById('editGroupModal');
+        // Check if the group name changed and redirect if needed
+        const newGroupName = document.getElementById('editGroupName').value.trim();
+        const currentGroupName = this.currentGroup?.attributes?.name;
+        
+        if (newGroupName && newGroupName !== currentGroupName) {
+          // Convert the new name to URL-friendly format (lowercase, replace spaces with hyphens)
+          const newSlug = newGroupName.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+            .replace(/\s+/g, '-') // Replace spaces with hyphens
+            .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+            .trim('-'); // Remove leading/trailing hyphens
+          
+          console.log('Redirecting to new group URL:', `/study-groups/${newSlug}`);
+          // Redirect to the new URL
+          window.location.href = `/study-groups/${newSlug}`;
+        } else {
+          // Just reload group data if name didn't change
+          this.loadStudyGroup();
+        }
+      }, 1500);
+    } else {
+      this.showEditModalError('Failed to update group. Please try again.');
+    }
+    
+  } catch (error) {
+    console.error('Error updating group:', error);
+    this.showEditModalError('Error updating group. Please try again.');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
+}
+
+showEditModalError(message) {
+  const errorDiv = document.getElementById('editModalErrorMessage');
+  const errorText = document.getElementById('editErrorText');
+  
+  if (errorDiv && errorText) {
+    errorText.textContent = message;
+    errorDiv.classList.remove('d-none');
+    errorDiv.classList.add('show');
+    this.hideEditSuccessMessage();
+  } else {
+    alert(message);
+  }
+}
+
+showEditModalSuccess(message) {
+  console.log('Success message:', message);
+  const successDiv = document.getElementById('editModalSuccessMessage');
+  const successText = document.getElementById('editSuccessText');
+  
+  if (successDiv && successText) {
+    console.log('Success elements found, showing message');
+    successText.textContent = message;
+    successDiv.classList.remove('d-none');
+    successDiv.classList.add('show');
+    this.hideEditErrorMessage();
+  } else {
+    console.warn('Success elements not found, using alert');
+    alert(message);
+  }
+}
+
+hideEditErrorMessage() {
+  const errorDiv = document.getElementById('editModalErrorMessage');
+  if (errorDiv) {
+    errorDiv.classList.add('d-none');
+    errorDiv.classList.remove('show');
+  }
+}
+
+hideEditSuccessMessage() {
+  const successDiv = document.getElementById('editModalSuccessMessage');
+  if (successDiv) {
+    successDiv.classList.add('d-none');
+    successDiv.classList.remove('show');
+  }
+}
+
+clearEditModalMessages() {
+  this.hideEditErrorMessage();
+  this.hideEditSuccessMessage();
 }
 
 // Handle leaving a group

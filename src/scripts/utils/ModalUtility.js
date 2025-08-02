@@ -287,6 +287,58 @@ static async loadDepartments() {
     }
   }
 }
+
+/**
+ * Utility to close a Bootstrap modal by its DOM id.
+ * Works with or without Bootstrap JS loaded.
+ */
+static closeModalById(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  // Try Bootstrap 5 API if available
+  if (window.bootstrap && window.bootstrap.Modal) {
+    const modalInstance = window.bootstrap.Modal.getInstance(modal) || new window.bootstrap.Modal(modal);
+    modalInstance.hide();
+    return;
+  }
+  // Fallback: click the close button if present
+  const closeButton = modal.querySelector('[data-bs-dismiss="modal"]');
+  if (closeButton) {
+    closeButton.click();
+    return;
+  }
+  // Fallback: hide via classes
+  modal.classList.remove('show');
+  modal.style.display = 'none';
+  modal.setAttribute('aria-hidden', 'true');
+  // Remove backdrop if present
+  const backdrop = document.querySelector('.modal-backdrop');
+  if (backdrop) backdrop.remove();
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
+}
+
+/**
+ * Utility to show a Bootstrap modal by its DOM id.
+ */
+static showModalById(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  if (window.bootstrap && window.bootstrap.Modal) {
+    const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modal);
+    modalInstance.show();
+    return;
+  }
+  // Fallback: trigger click on a button with data-bs-toggle
+  const btn = document.createElement('button');
+  btn.setAttribute('data-bs-toggle', 'modal');
+  btn.setAttribute('data-bs-target', `#${modalId}`);
+  btn.style.display = 'none';
+  document.body.appendChild(btn);
+  btn.click();
+  document.body.removeChild(btn);
+}
 }
 
 export default ModalUtility;

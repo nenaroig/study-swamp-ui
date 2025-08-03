@@ -4,36 +4,31 @@
     <div class="bg-white p-5 text-center rounded-4 shadow">
       <div class="mb-4">
         <span class="fa-solid fa-calendar-check fa-3x mb-3 d-block opacity-90 mx-auto text-teal"></span>
-        <h1 id="meeting-title" class="mb-3">Loading...</h1>
+        <h1 id="meeting-title" class="mb-3"></h1>
         <div class="text-muted">
           <p class="mb-2">
             <span class="fa-solid fa-clock me-2"></span>
-            <span id="meeting-time">Loading...</span>
+            <span id="meeting-time"></span>
           </p>
           <p class="mb-2">
             <span class="fa-solid fa-map-marker-alt me-2"></span>
-            <span id="meeting-location">Loading...</span>
+            <span id="meeting-location"></span>
           </p>
           <p class="mb-0">
             <span class="fa-solid fa-users me-2"></span>
-            Study Group: <span id="meeting-group">Loading...</span>
+            Study Group: <span id="meeting-group"></span>
           </p>
         </div>
       </div>
+      
       <div class="d-flex justify-content-center gap-3">
         <a class="btn btn-sm btn-outline-gator-accent d-inline-flex align-items-center" href="/meetings">
           <span class="fa-solid fa-arrow-left me-2"></span>Back to Meetings
         </a>
-        <button class="btn btn-sm btn-gator-accent" id="delete-meeting-btn">
+        <button class="btn btn-sm btn-gator-accent" id="delete-meeting-btn" style="display: none;">
           <span class="fa-solid fa-trash me-2"></span>Delete Meeting
         </button>
       </div>
-    </div>
-    
-    <!-- Meeting Description (Optional) -->
-    <div class="bg-white rounded-4 p-4 mt-4" id="description-section" style="display: none;">
-      <h3><span class="fa-solid fa-info-circle text-teal me-3"></span>About This Meeting</h3>
-      <p id="meeting-description" class="text-muted mb-0">Loading description...</p>
     </div>
     
     <!-- Meeting Discussion -->

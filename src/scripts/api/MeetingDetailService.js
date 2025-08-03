@@ -1,11 +1,11 @@
+// MeetingDetailService - manages current meeting data and UI
+
 import ApiService from './ApiService.js';
 import UserService from './UserService.js';
 import BaseService from './BaseService.js';
 
 class MeetingDetailService extends BaseService {
-  
-  /* ======= COMMON HELPERS ======= */
-  
+
   // Fetch meetings with auth
   static async fetchMeetings() {
     try {
@@ -21,19 +21,21 @@ class MeetingDetailService extends BaseService {
   // Convert meeting name to slug (shared utility)
   static createMeetingSlug(meetingName) {
     return meetingName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-+/g, '-');
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-');
   }
-  
-  /* ======= GETTERS ======= */
   
   // Fetches a specific meeting by slug
   static async getMeetingBySlug(slug) {
     try {
+      console.log('Fetching meetings for slug:', slug);
       const response = await this.fetchMeetings();
+      console.log('All meetings response:', response);
+      
       const allMeetings = response.data || [];
+      console.log('All meetings:', allMeetings);
       
       // Find meeting by matching slug
       const meeting = allMeetings.find(meeting => {
@@ -51,46 +53,19 @@ class MeetingDetailService extends BaseService {
     }
   }
   
-  /* ======= MEETING MANAGEMENT ======= */
-  
-  // Delete a meeting (only for admins or meeting creators)
+  // Delete a meeting (only for admin users)
   static async deleteMeeting(meetingId) {
     try {
       const authHeader = UserService.getAuthHeader();
       
+      // Delete the meeting
       await ApiService.deleteData(`meetings/${meetingId}`, authHeader);
       
       return { success: true };
-      
     } catch (error) {
       console.error('Failed to delete meeting:', error);
       throw error;
     }
-  }
-  
-  // Update meeting details
-  static async updateMeeting(meetingId, meetingData) {
-    try {
-      const authHeader = UserService.getAuthHeader();
-      
-      const response = await ApiService.putData(`meetings/${meetingId}/`, meetingData, authHeader);
-      
-      return { success: true, data: response };
-      
-    } catch (error) {
-      console.error('Failed to update meeting:', error);
-      throw error;
-    }
-  }
-  
-  // Check if user can edit a meeting (creator or admin)
-  static canUserEditMeeting(meeting, currentUser) {
-    const isAdmin = currentUser?.userData?.attributes?.is_superuser || 
-                    currentUser?.username?.toLowerCase().includes('admin');
-    
-    // For now, allow admins to edit any meeting
-    // In the future, you might want to check meeting creator
-    return isAdmin;
   }
 }
 

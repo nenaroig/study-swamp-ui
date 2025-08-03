@@ -3,8 +3,9 @@
 import ApiService from './ApiService.js';
 import UserService from './UserService.js';
 import BaseService from './BaseService.js';
+import MeetingDetailService from './MeetingDetailService.js';
 
-class MeetingService extends BaseService {
+class MeetingsService extends BaseService {
 
   // Fetches all meetings for the current user
   static async getUpcomingMeetings() {
@@ -117,7 +118,7 @@ class MeetingService extends BaseService {
 
   // Populates meeting data in template (legacy method)
   static populateCardData(clone, data) {
-    console.log('MeetingService.populateCardData called with:', data);
+    console.log('MeetingsService.populateCardData called with:', data);
 
     if (data && data.status) {
       const statusBadge = clone.querySelector('.meeting-status-badge');
@@ -211,25 +212,12 @@ class MeetingService extends BaseService {
     const meetingName = meeting.attributes?.name || '';
 
     // Create URL-friendly slug from meeting name
-    const meetingSlug = this.createMeetingSlug(meetingName);
+    const meetingSlug = MeetingDetailService.createMeetingSlug(meetingName);
     
-    // Navigate to meeting detail page
+    // Navigate to meeting detail page (same pattern as groups)
     const meetingUrl = `/meetings/${meetingSlug}`;
-    window.history.pushState({page: 'meeting'}, '', meetingUrl);
-    
-    // Dispatch navigation event to load the meeting detail page
-    const event = new CustomEvent('pageLoaded', { detail: { page: 'meeting' } });
-    window.dispatchEvent(event);
-  }
-
-  // Create URL-friendly slug from meeting name
-  static createMeetingSlug(meetingName) {
-    return meetingName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .replace(/-+/g, '-');
+    window.location.href = meetingUrl;
   }
 }
 
-export default MeetingService;
+export default MeetingsService;

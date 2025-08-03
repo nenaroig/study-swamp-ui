@@ -66,9 +66,7 @@ class AppRouter {
       // Convert plural to singular for detail pages
       const singularMap = {
         'study-groups': 'group',
-        'meetings': 'meeting', 
-        'users': 'user',
-        'awards': 'award'
+        'meetings': 'meeting',
       };
       return singularMap[basePage] || basePage;
     }

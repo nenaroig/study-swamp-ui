@@ -1,8 +1,7 @@
 import PageController from './PageController.js';
 import UserService from '../api/UserService.js';
-import MeetingService from '../api/MeetingsService.js';
+import MeetingsService from '../api/MeetingsService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
-import StatsService from '../api/StatsService.js';
 import { Modal } from 'bootstrap';
 
 class MeetingsPage {
@@ -66,7 +65,7 @@ class MeetingsPage {
 
       // Load all data in parallel
       const [meetingsResponse, groupsResponse, membersResponse, locationsResponse] = await Promise.all([
-        MeetingService.getUpcomingMeetings(),
+        MeetingsService.getUpcomingMeetings(),
         StudyGroupsService.getMyStudyGroups(),
         UserService.makeAuthenticatedRequest('members/'),
         UserService.makeAuthenticatedRequest('locations/')
@@ -586,7 +585,7 @@ class MeetingsPage {
     }
     
     // Render filtered and sorted meetings
-    MeetingService.renderMeetings(filteredMeetings, 'meetings-container', {
+    MeetingsService.renderMeetings(filteredMeetings, 'meetings-container', {
       locations: this.locations,
       groups: this.allGroups
     });

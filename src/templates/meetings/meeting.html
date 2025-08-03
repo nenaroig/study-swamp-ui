@@ -1,0 +1,54 @@
+<div class="inner-wrapper">
+  <div class="mx-auto mw-md-730p">
+    <!-- Meeting Header -->
+    <div class="bg-white p-5 text-center rounded-4 shadow">
+      <div class="mb-4">
+        <span class="fa-solid fa-calendar-check fa-3x mb-3 d-block opacity-90 mx-auto text-teal"></span>
+        <h1 id="meeting-title" class="mb-3">Loading...</h1>
+        <div class="text-muted">
+          <p class="mb-2">
+            <span class="fa-solid fa-clock me-2"></span>
+            <span id="meeting-time">Loading...</span>
+          </p>
+          <p class="mb-2">
+            <span class="fa-solid fa-map-marker-alt me-2"></span>
+            <span id="meeting-location">Loading...</span>
+          </p>
+          <p class="mb-0">
+            <span class="fa-solid fa-users me-2"></span>
+            Study Group: <span id="meeting-group">Loading...</span>
+          </p>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center gap-3">
+        <a class="btn btn-sm btn-outline-gator-accent" href="/meetings">
+          <span class="fa-solid fa-arrow-left me-2"></span>Back to Meetings
+        </a>
+      </div>
+    </div>
+    
+    <!-- Meeting Description (Optional) -->
+    <div class="bg-white rounded-4 p-4 mt-4" id="description-section" style="display: none;">
+      <h3><span class="fa-solid fa-info-circle text-teal me-3"></span>About This Meeting</h3>
+      <p id="meeting-description" class="text-muted mb-0">Loading description...</p>
+    </div>
+    
+    <!-- Meeting Discussion -->
+    <div class="bg-white rounded-4 p-4 mt-4">
+      <h3><span class="fa-solid fa-comments text-teal me-3"></span>Meeting Discussion</h3>
+      <div id="comments-list"></div>
+      
+      <!-- Add Comment Form -->
+      <div class="mt-4 pt-3 border-top">
+        <div class="d-flex align-items-start mt-3">
+          <div id="current-user-avatar" class="member-avatar rounded-circle text-white me-3"></div>
+          <div class="flex-grow-1">
+            <textarea id="comment-textarea" class="form-control" rows="3" placeholder="Share your thoughts about this meeting..."></textarea>
+            <button id="post-comment-btn" class="btn btn-sm btn-teal mt-3">Post Comment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>

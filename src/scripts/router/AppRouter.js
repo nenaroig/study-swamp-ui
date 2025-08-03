@@ -11,6 +11,7 @@ import dashboardContent from '../../templates/dashboard/dashboard.html';
 import groupsContent from '../../templates/groups/groups.html';
 import groupContent from '../../templates/groups/group.html';
 import meetingsContent from '../../templates/meetings/meetings.html';
+import meetingContent from '../../templates/meetings/meeting.html';
 import awardsContent from '../../templates/awards/awards.html';
 import profileContent from '../../templates/profile/profile.html';
 import UserService from '../api/UserService';
@@ -26,12 +27,13 @@ class AppRouter {
       'study-groups': groupsContent,
       'group': groupContent,
       'meetings': meetingsContent,
+      'meeting': meetingContent,
       'awards': awardsContent,
       'profile': profileContent,
     };
     
     // Pages that need navigation sidebar
-    this.pagesWithNav = ['dashboard', 'study-groups', 'group', 'meetings', 'awards', 'profile'];
+    this.pagesWithNav = ['dashboard', 'study-groups', 'group', 'meetings', 'meeting', 'awards', 'profile'];
     
     // Page titles for browser tab
     this.titles = {
@@ -42,6 +44,7 @@ class AppRouter {
       'study-groups': 'Study Swamp - My Study Groups',
       'group': 'Study Swamp - Study Group',
       'meetings': 'Study Swamp - Meetings',
+      'meeting': 'Study Swamp - Meeting',
       'awards': 'Study Swamp - Awards',
       'profile': 'Study Swamp - My Profile',
     };

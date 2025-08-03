@@ -5,4 +5,10 @@
   &-sm {
     padding: .4rem 1.8rem;
   }
+  &-outline-gator-accent {
+    color: var(--gator-accent);
+    &:hover {
+      color: var(--bs-white);
+    }
+  }
 }

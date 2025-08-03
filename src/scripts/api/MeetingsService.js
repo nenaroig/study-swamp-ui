@@ -103,14 +103,14 @@ class MeetingService extends BaseService {
     contentDiv.appendChild(titleElement);
     contentDiv.appendChild(descriptionElement);
 
-    const joinBtn = document.createElement('div');
-    joinBtn.className = 'btn btn-gator-accent btn-sm';
-    joinBtn.textContent = 'Join';
-    joinBtn.style.cursor = 'pointer';
-    joinBtn.addEventListener('click', () => this.handleMeetingAction(meeting));
+    const viewBtn = document.createElement('div');
+    viewBtn.className = 'btn btn-gator-accent btn-sm';
+    viewBtn.textContent = 'View';
+    viewBtn.style.cursor = 'pointer';
+    viewBtn.addEventListener('click', () => this.handleMeetingAction(meeting));
 
     cardDiv.appendChild(contentDiv);
-    cardDiv.appendChild(joinBtn);
+    cardDiv.appendChild(viewBtn);
 
     return cardDiv;
   }
@@ -208,12 +208,27 @@ class MeetingService extends BaseService {
 
   // Handles meeting card interactions
   static handleMeetingAction(meeting) {
-    console.log('Meeting action clicked:', meeting);
+    const meetingName = meeting.attributes?.name || '';
 
-    const meetingName = meeting.attributes?.name || 'Untitled Meeting';
-    const meetingId = meeting.id;
+    // Create URL-friendly slug from meeting name
+    const meetingSlug = this.createMeetingSlug(meetingName);
+    
+    // Navigate to meeting detail page
+    const meetingUrl = `/meetings/${meetingSlug}`;
+    window.history.pushState({page: 'meeting'}, '', meetingUrl);
+    
+    // Dispatch navigation event to load the meeting detail page
+    const event = new CustomEvent('pageLoaded', { detail: { page: 'meeting' } });
+    window.dispatchEvent(event);
+  }
 
-    console.log(`Action requested for meeting: ${meetingName} (ID: ${meetingId})`);
+  // Create URL-friendly slug from meeting name
+  static createMeetingSlug(meetingName) {
+    return meetingName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-');
   }
 }
 

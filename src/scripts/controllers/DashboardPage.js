@@ -4,7 +4,7 @@ import MeetingsService from '../api/MeetingsService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
 import StatsService from '../api/StatsService.js';
 import PageController from './PageController.js';
-import ModalUtility from '../utils/ModalUtility.js';
+import { ModalUtility } from '../utils/ModalUtility.js';
 
 class DashboardPage {
   constructor() {
@@ -72,7 +72,6 @@ class DashboardPage {
     const currentUserId = currentUserData?.data?.id?.toString() || currentUserData?.id?.toString();
     
     if (!currentUserId) {
-      console.error('❌ Dashboard - No user ID found in:', currentUserData);
       throw new Error('Unable to determine current user ID. Please try logging in again.');
     }
     

@@ -4,6 +4,9 @@ import UserService from '../api/UserService.js';
 
 export class ModalUtility {
   
+  // Add flag to prevent double-loading
+  static isLoading = false;
+  
   // ===== INITIALIZATION =====
   
   static initializeModalEvents() {
@@ -19,9 +22,17 @@ export class ModalUtility {
   // ===== MODAL OPENING/CLOSING =====
 
   static openJoinGroupModal() {
+    // Prevent double-loading if already in progress
+    if (this.isLoading) return;
+    
     const modal = document.getElementById('listGroupModal');
     if (!modal) {
       console.error('Join group modal not found');
+      return;
+    }
+
+    // Check if modal is already visible
+    if (modal.classList.contains('show')) {
       return;
     }
 
@@ -81,6 +92,10 @@ export class ModalUtility {
   // ===== DATA LOADING =====
   
   static async loadAvailableGroups() {
+    // Prevent multiple simultaneous loads
+    if (this.isLoading) return;
+    this.isLoading = true;
+    
     const container = document.getElementById('availableGroupsList');
     const loadingDiv = document.getElementById('loadingGroups');
     const noGroupsDiv = document.getElementById('noGroupsMessage');
@@ -106,6 +121,9 @@ export class ModalUtility {
       this.hideLoading(loadingDiv);
       this.showModalError('Failed to load available groups');
       throw error;
+    } finally {
+      // Reset loading flag
+      this.isLoading = false;
     }
   }
 

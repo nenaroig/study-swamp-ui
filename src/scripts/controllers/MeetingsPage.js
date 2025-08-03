@@ -244,7 +244,9 @@ class MeetingsPage {
       e.preventDefault();
       this.handleScheduleMeeting(e);
     });
-  }  // Setup event handlers for meeting card actions (edit, cancel)
+  }  
+  
+  // Setup event handlers for meeting card actions (edit, cancel)
   setupMeetingCardActions() {
     const meetingsContainer = document.getElementById('meetings-container');
     if (!meetingsContainer) return;
@@ -323,18 +325,44 @@ class MeetingsPage {
       // Check if we're in edit mode
       const modal = document.getElementById('scheduleMeetingModal');
       const editingMeetingId = modal?.dataset.editingMeetingId;
-      const isEditMode = !!editingMeetingId;
+      const isEditMode = !!(editingMeetingId);
+      
+      // Get form elements first and check they exist
+      const nameEl = document.getElementById('meeting-name');
+      const dateEl = document.getElementById('meeting-date');
+      const startTimeEl = document.getElementById('meeting-start-time');
+      const durationEl = document.getElementById('meeting-duration');
+      const locationEl = document.getElementById('meeting-location');
+      const groupEl = document.getElementById('meeting-group');
+      const descriptionEl = document.getElementById('meeting-description');
+      
+      // Debug: Log which elements are found/missing
+      console.log('Form elements check:', {
+        'meeting-name': nameEl ? 'found' : 'MISSING',
+        'meeting-date': dateEl ? 'found' : 'MISSING',
+        'meeting-start-time': startTimeEl ? 'found' : 'MISSING',
+        'meeting-duration': durationEl ? 'found' : 'MISSING',
+        'meeting-location': locationEl ? 'found' : 'MISSING',
+        'meeting-group': groupEl ? 'found' : 'MISSING',
+        'meeting-description': descriptionEl ? 'found' : 'MISSING'
+      });
+      
+      // Check for missing required elements
+      if (!nameEl || !dateEl || !startTimeEl || !durationEl || !locationEl || !groupEl) {
+        console.error('Missing form elements. Modal may not be properly loaded.');
+        this.showModalError('Form is not properly loaded. Please close the modal and try again.');
+        return;
+      }
       
       // Get form data
-      const formData = new FormData(event.target);
       const meetingData = {
-        name: document.getElementById('meeting-name').value,
-        date: document.getElementById('meeting-date').value,
-        startTime: document.getElementById('meeting-start-time').value,
-        duration: parseFloat(document.getElementById('meeting-duration').value),
-        location: parseInt(document.getElementById('meeting-location').value),
-        group: document.getElementById('meeting-group').value,
-        description: document.getElementById('meeting-description').value
+        name: nameEl.value,
+        date: dateEl.value,
+        startTime: startTimeEl.value,
+        duration: parseFloat(durationEl.value),
+        location: parseInt(locationEl.value),
+        group: groupEl.value,
+        description: descriptionEl ? descriptionEl.value : ''
       };
       
       // Validate required fields

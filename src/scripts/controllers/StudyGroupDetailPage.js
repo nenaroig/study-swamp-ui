@@ -57,8 +57,6 @@ class StudyGroupDetailPage {
       const groupResponse = await StudyGroupDetailService.getGroupBySlug(groupSlug);
       this.currentGroup = groupResponse.studyGroupData || {};
 
-      console.log({currentGroup: this.currentGroup});
-      
       if (!this.currentGroup.id) {
         throw new Error('Group not found');
       }
@@ -125,8 +123,6 @@ class StudyGroupDetailPage {
   updateEditButtonVisibility() {
     const editBtn = document.getElementById('edit-group-btn');
     if (!editBtn) {
-      // Edit button will be created in renderGroupActions() if needed
-      console.log('Edit button not found - will be created in renderGroupActions if user has permissions');
       return;
     }
     
@@ -158,14 +154,11 @@ class StudyGroupDetailPage {
     // Show edit button if user is creator or editor
     if (userMembership) {
       if (userMembership.attributes?.creator || userMembership.attributes?.editor) {
-        console.log('User has edit permissions, showing edit button');
         editBtn.classList.remove('d-none');
       } else {
-        console.log('User does not have edit permissions, hiding edit button');
         editBtn.classList.add('d-none');
       }
     } else {
-      console.log('User is not a member of this group, hiding edit button');
       editBtn.classList.add('d-none');
     }
   }
@@ -182,7 +175,6 @@ class StudyGroupDetailPage {
     // Update comment count
     const commentCount = document.getElementById('comment-count');
     commentCount.textContent = this.groupComments.length;
-    if (description) descriptionContainer.textContent = `${description}`;
   }
   
   renderMembers() {
@@ -193,9 +185,6 @@ class StudyGroupDetailPage {
     }
     
     membersList.innerHTML = '';
-    
-    // Add debugging to see all member data
-    console.log('All group members:', this.groupMembers);
     
     this.groupMembers.forEach((member, index) => {
       
@@ -291,13 +280,6 @@ class StudyGroupDetailPage {
         locationText = `${building} - Room ${room}`;
       }
     }
-
-    console.log({
-      meetingName: name,
-      locationId: locationId,
-      locationText: locationText,
-      allLocationsCount: this.allLocations?.length || 0
-    });
     
     // Format time display
     const timeString = this.formatMeetingTime(startTime, endTime);
@@ -314,48 +296,6 @@ class StudyGroupDetailPage {
           </p>
         </div>
       </div>
-    `;
-    
-    return div;
-  }
-
-  createMemberCard(member, user) {
-    const div = document.createElement('div');
-    div.className = 'd-flex align-items-center justify-content-between mt-4';
-    
-    const firstName = user.attributes?.first_name || '';
-    const lastName = user.attributes?.last_name || '';
-    const email = user.attributes?.email || '';
-    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-    
-    // Add debugging to see what's in the member attributes
-    console.log('Member data:', {
-      memberAttributes: member.attributes,
-      creator: member.attributes?.creator,
-      editor: member.attributes?.editor,
-      userName: `${firstName} ${lastName}`
-    });
-    
-    let roleHtml = '';
-    if (member.attributes?.creator) {
-      roleHtml += '<span class="badge rounded-pill text-bg-info text-white">Creator</span>';
-    }
-    if (member.attributes?.editor) {
-      roleHtml += '<span class="badge rounded-pill bg-success ms-1">Editor</span>';
-    }
-    if (!member.attributes?.creator && !member.attributes?.editor) {
-      roleHtml = '<span class="badge rounded-pill bg-secondary">Member</span>';
-    }
-    
-    div.innerHTML = `
-      <div class="d-flex align-items-center mt-3">
-        <div class="member-avatar rounded-circle text-white me-3">${initials}</div>
-        <div>
-          <h4 class="h5 fw-500">${firstName} ${lastName}</h4>
-          <p class="smaller text-muted mb-0">${email}</p>
-        </div>
-      </div>
-      <div>${roleHtml}</div>
     `;
     
     return div;
@@ -399,225 +339,233 @@ class StudyGroupDetailPage {
     // Sort comments by creation date (newest first)
     const sortedComments = [...this.groupComments].sort((a, b) =>
       new Date(b.attributes?.created_at) - new Date(a.attributes?.created_at)
-  );
-  
-  sortedComments.forEach(comment => {
-    const commentCard = this.createCommentCard(comment);
-    commentsList.appendChild(commentCard);
-  });
-}
-
-createCommentCard(comment) {
-  const div = document.createElement('div');
-  div.className = 'd-flex mt-4';
-  
-  // Find the user who made this comment
-  const userId = comment.relationships?.user?.data?.id;
-  const user = this.allUsers.find(u => u.id === userId);
-  
-  if (!user) {
-    return div; // Return empty div if user not found
+    );
+    
+    sortedComments.forEach(comment => {
+      const commentCard = this.createCommentCard(comment);
+      commentsList.appendChild(commentCard);
+    });
   }
-  
-  const firstName = user.attributes?.first_name || '';
-  const lastName = user.attributes?.last_name || '';
-  const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-  const commentText = comment.attributes?.text || '';
-  const createdAt = new Date(comment.attributes?.created_at);
-  
-  // Format relative time
-  const timeString = this.formatRelativeTime(createdAt);
-  
-  div.innerHTML = `
-      <div class="member-avatar rounded-circle text-white me-3">${initials}</div>
-      <div class="flex-grow-1">
-        <p class="fw-500 mb-2">${firstName} ${lastName}</p>
-        <div class="comment-bubble">
-          <p class="mt-4 fw-500 mb-1">${commentText}</p>
-          <p class="smaller text-muted">${timeString}</p>
+
+  createCommentCard(comment) {
+    const div = document.createElement('div');
+    div.className = 'd-flex mt-4';
+    
+    // Find the user who made this comment
+    const userId = comment.relationships?.user?.data?.id;
+    const user = this.allUsers.find(u => u.id === userId);
+    
+    if (!user) {
+      return div; // Return empty div if user not found
+    }
+    
+    const firstName = user.attributes?.first_name || '';
+    const lastName = user.attributes?.last_name || '';
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    const commentText = comment.attributes?.text || '';
+    const createdAt = new Date(comment.attributes?.created_at);
+    
+    // Format relative time
+    const timeString = this.formatRelativeTime(createdAt);
+    
+    div.innerHTML = `
+        <div class="member-avatar rounded-circle text-white me-3">${initials}</div>
+        <div class="flex-grow-1">
+          <p class="fw-500 mb-2">${firstName} ${lastName}</p>
+          <div class="comment-bubble">
+            <p class="mt-4 fw-500 mb-1">${commentText}</p>
+            <p class="smaller text-muted">${timeString}</p>
+          </div>
         </div>
-      </div>
-    `;
-  
-  return div;
-}
-
-formatRelativeTime(date) {
-  const now = new Date();
-  const diffInMs = now - date;
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  const diffInDays = Math.floor(diffInHours / 24);
-  
-  if (diffInMinutes < 1) {
-    return 'Just now';
-  } else if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
-  } else if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
-  } else if (diffInDays < 7) {
-    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
-  } else {
-    return date.toLocaleDateString();
+      `;
+    
+    return div;
   }
-}
 
-setupCommentForm() {
-  const commentForm = document.getElementById('comment-textarea');
-  const postButton = document.getElementById('post-comment-btn');
-  
-  if (!commentForm || !postButton) return;
-  
-  // Set up current user's avatar in the form
-  this.updateCommentFormAvatar();
-  
-  // Add click handler for post button
-  postButton.addEventListener('click', async (e) => {
-    e.preventDefault();
-    await this.postComment(commentForm);
-  });
-  
-  // Add Enter+Ctrl shortcut for posting
-  commentForm.addEventListener('keydown', async (e) => {
-    if (e.ctrlKey && e.key === 'Enter') {
+  formatRelativeTime(date) {
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+    
+    if (diffInMinutes < 1) {
+      return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  }
+
+  setupCommentForm() {
+    const commentForm = document.getElementById('comment-textarea');
+    const postButton = document.getElementById('post-comment-btn');
+    
+    if (!commentForm || !postButton) return;
+    
+    // Set up current user's avatar in the form
+    this.updateCommentFormAvatar();
+    
+    // Add click handler for post button
+    postButton.addEventListener('click', async (e) => {
       e.preventDefault();
       await this.postComment(commentForm);
+    });
+    
+    // Add Enter+Ctrl shortcut for posting
+    commentForm.addEventListener('keydown', async (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        await this.postComment(commentForm);
+      }
+    });
+  }
+
+  updateCommentFormAvatar() {
+    const avatarElement = document.getElementById('current-user-avatar');
+    if (!avatarElement || !this.currentUser) return;
+    
+    const userData = this.currentUser.userData || {};
+    const firstName = userData.attributes?.first_name || '';
+    const lastName = userData.attributes?.last_name || '';
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'YU';
+    
+    avatarElement.textContent = initials;
+  }
+
+  async postComment(commentForm) {
+    const commentText = commentForm.value.trim();
+    
+    if (!commentText) {
+      alert('Please enter a comment before posting.');
+      return;
     }
-  });
-}
-
-updateCommentFormAvatar() {
-  const avatarElement = document.getElementById('current-user-avatar');
-  if (!avatarElement || !this.currentUser) return;
-  
-  const userData = this.currentUser.userData || {};
-  const firstName = userData.attributes?.first_name || '';
-  const lastName = userData.attributes?.last_name || '';
-  const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'YU';
-  
-  avatarElement.textContent = initials;
-}
-
-async postComment(commentForm) {
-  const commentText = commentForm.value.trim();
-  
-  if (!commentText) {
-    alert('Please enter a comment before posting.');
-    return;
+    
+    if (!this.currentGroup.id) {
+      alert('Unable to post comment - group not found.');
+      return;
+    }
+    
+    try {
+      // Disable the form while posting
+      const postButton = document.getElementById('post-comment-btn');
+      const originalText = postButton.textContent;
+      postButton.disabled = true;
+      postButton.textContent = 'Posting...';
+      
+      // Get current user ID
+      const currentUserId = this.currentUser?.userData?.id || '1'; // fallback to admin1
+      
+      // Prepare comment data
+      const commentData = {
+        text: commentText,
+        group: this.currentGroup.id,
+        user: currentUserId
+      };
+      
+      // Post the comment
+      const authHeader = UserService.getAuthHeader();
+      const response = await ApiService.postData('group_comments/', commentData, authHeader);
+      
+      // Clear the form
+      commentForm.value = '';
+      
+      // Refresh the comments to show the new one
+      await this.refreshComments();
+      
+      // Re-enable the form
+      postButton.disabled = false;
+      postButton.textContent = originalText;
+      
+    } catch (error) {
+      console.error('Failed to post comment:', error);
+      alert('Failed to post comment. Please try again.');
+      
+      // Re-enable the form
+      const postButton = document.getElementById('post-comment-btn');
+      postButton.disabled = false;
+      postButton.textContent = 'Post Comment';
+    }
   }
-  
-  if (!this.currentGroup.id) {
-    alert('Unable to post comment - group not found.');
-    return;
-  }
-  
-  try {
-    // Disable the form while posting
-    const postButton = document.getElementById('post-comment-btn');
-    const originalText = postButton.textContent;
-    postButton.disabled = true;
-    postButton.textContent = 'Posting...';
-    
-    // Get current user ID
-    const currentUserId = this.currentUser?.userData?.id || '1'; // fallback to admin1
-    
-    // Prepare comment data
-    const commentData = {
-      text: commentText,
-      group: this.currentGroup.id,
-      user: currentUserId
-    };
-    
-    // Post the comment
-    const authHeader = UserService.getAuthHeader();
-    const response = await ApiService.postData('group_comments/', commentData, authHeader);
-    
-    // Clear the form
-    commentForm.value = '';
-    
-    // Refresh the comments to show the new one
-    await this.refreshComments();
-    
-    // Re-enable the form
-    postButton.disabled = false;
-    postButton.textContent = originalText;
-    
-  } catch (error) {
-    console.error('Failed to post comment:', error);
-    alert('Failed to post comment. Please try again.');
-    
-    // Re-enable the form
-    const postButton = document.getElementById('post-comment-btn');
-    postButton.disabled = false;
-    postButton.textContent = 'Post Comment';
-  }
-}
 
-async refreshComments() {
-  try {
-    // Fetch updated comments
-    const authHeader = UserService.getAuthHeader();
-    const commentsResponse = await ApiService.getData('group_comments/', authHeader);
-    
-    // Filter for this group
-    const groupId = this.currentGroup.id;
-    this.groupComments = commentsResponse.data?.filter(comment =>
-      comment.relationships?.group?.data?.id === groupId
-    ) || [];
-    
-    // Re-render comments and update stats
-    this.renderComments();
-    
-  } catch (error) {
-    console.error('Failed to refresh comments:', error);
+  async refreshComments() {
+    try {
+      // Fetch updated comments
+      const authHeader = UserService.getAuthHeader();
+      const commentsResponse = await ApiService.getData('group_comments/', authHeader);
+      
+      // Filter for this group
+      const groupId = this.currentGroup.id;
+      this.groupComments = commentsResponse.data?.filter(comment =>
+        comment.relationships?.group?.data?.id === groupId
+      ) || [];
+      
+      // Re-render comments and update stats
+      this.renderComments();
+      
+    } catch (error) {
+      console.error('Failed to refresh comments:', error);
+    }
   }
-}
 
-// Refresh group data and re-render
-async refreshGroup() {
-  await this.loadStudyGroup();
-}
+  // Refresh group data and re-render
+  async refreshGroup() {
+    await this.loadStudyGroup();
+  }
 
   setupMeetingModal() {
     const modal = document.getElementById('scheduleMeetingModal');
-    const meetingForm = document.getElementById('meeting-form');
+    const form = document.getElementById('meeting-form');
     
-    if (modal) {
-      modal.addEventListener('show.bs.modal', () => {
-        this.showMeetingModal();
-      });
-    }
+    if (!modal || !form) return;
     
-    if (meetingForm) {
-      meetingForm.addEventListener('submit', this.handleMeetingSubmit.bind(this));
-    }
+    // Use Bootstrap's modal events instead of manual click handlers
+    modal.addEventListener('show.bs.modal', async () => {
+      try {
+        await this.loadLocations();
+        this.populateGroupSelect();
+        
+        // Set default date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateInput = document.getElementById('meeting-date');
+        if (dateInput) {
+          dateInput.value = tomorrow.toISOString().split('T')[0];
+        }
+      } catch (error) {
+        console.error('Error setting up meeting modal:', error);
+        alert('Error loading meeting form. Please try again.');
+      }
+    });
+    
+    // Handle form submission
+    form.addEventListener('submit', this.handleMeetingSubmit.bind(this));
   }
 
-  async showMeetingModal() {
-    console.log('showMeetingModal called');
+  // Add this new method to populate the group select
+  populateGroupSelect() {
+    const groupSelect = document.getElementById('meeting-group');
+    if (!groupSelect || !this.currentGroup) return;
     
-    try {
-      // Load locations first
-      await this.loadLocations();
-      
-      // Set default date to tomorrow
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateInput = document.getElementById('meeting-date');
-      if (dateInput) {
-        dateInput.value = tomorrow.toISOString().split('T')[0];
-      }
-      
-    } catch (error) {
-      console.error('Error in showMeetingModal:', error);
-      alert(`Error loading meeting form: ${error.message}`);
-    }
+    groupSelect.innerHTML = '<option value="">Select study group...</option>';
+    
+    // Pre-select the current group
+    const option = document.createElement('option');
+    option.value = this.currentGroup.id;
+    option.textContent = this.currentGroup.attributes?.name || 'Current Group';
+    option.selected = true;
+    groupSelect.appendChild(option);
   }
 
   async loadLocations() {
     try {
       const authHeader = UserService.getAuthHeader();
-      const locations = await ApiService.getData('locations/', authHeader);
+      const response = await ApiService.getData('locations/', authHeader);
       const locationSelect = document.getElementById('meeting-location');
       
       if (!locationSelect) {
@@ -625,47 +573,63 @@ async refreshGroup() {
         return;
       }
       
-      if (locationSelect && locations.data) {
+      if (response.data && response.data.length > 0) {
         locationSelect.innerHTML = '<option value="">Select location...</option>';
         
-        locations.data.forEach(location => {
+        response.data.forEach(location => {
           const option = document.createElement('option');
           option.value = location.id;
           option.textContent = `${location.attributes.building} - Room ${location.attributes.room}`;
           locationSelect.appendChild(option);
         });
       } else {
-        console.error('No locations data found:', locations);
+        locationSelect.innerHTML = '<option value="">No locations available</option>';
+        console.warn('No locations data found:', response);
       }
     } catch (error) {
       console.error('Error loading locations:', error);
-      console.error('Error details:', error.message, error.stack);
-      throw error; // Re-throw to be caught by showMeetingModal
+      const locationSelect = document.getElementById('meeting-location');
+      if (locationSelect) {
+        locationSelect.innerHTML = '<option value="">Error loading locations</option>';
+      }
+      throw error;
     }
   }
 
   async handleMeetingSubmit(e) {
     e.preventDefault();
     
-    // Use the correct button ID from your HTML
-    const submitBtn = document.getElementById('schedule-meeting-btn');
-    if (!submitBtn) {
-      console.error('Submit button not found');
-      return;
-    }
-    
-    const originalText = submitBtn.textContent;
+    const submitBtn = document.querySelector('#scheduleMeetingModal [type="submit"]');
+    const originalText = submitBtn?.textContent || 'Schedule Meeting';
     
     try {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Creating...';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+      }
+      
+      // Get form elements first and check they exist
+      const nameEl = document.getElementById('meeting-name');
+      const dateEl = document.getElementById('meeting-date');
+      const startTimeEl = document.getElementById('meeting-start-time');
+      const durationEl = document.getElementById('meeting-duration');
+      const locationEl = document.getElementById('meeting-location');
+      const descriptionEl = document.getElementById('meeting-description');
+      
+      // Check for missing required elements
+      if (!nameEl || !dateEl || !startTimeEl || !durationEl || !locationEl) {
+        console.error('Missing form elements. Modal may not be properly loaded.');
+        alert('Form is not properly loaded. Please close the modal and try again.');
+        return;
+      }
       
       // Get form data
-      const name = document.getElementById('meeting-name').value;
-      const date = document.getElementById('meeting-date').value;
-      const startTime = document.getElementById('meeting-start-time').value;
-      const duration = parseFloat(document.getElementById('meeting-duration').value);
-      const locationId = document.getElementById('meeting-location').value;
+      const name = nameEl.value;
+      const date = dateEl.value;
+      const startTime = startTimeEl.value;
+      const duration = parseFloat(durationEl.value);
+      const locationId = locationEl.value;
+      const description = descriptionEl ? descriptionEl.value : '';
       
       // Validate required fields
       if (!name || !date || !startTime || !locationId) {
@@ -677,28 +641,31 @@ async refreshGroup() {
       const startDateTime = new Date(`${date}T${startTime}`);
       const endDateTime = new Date(startDateTime.getTime() + duration * 60 * 60 * 1000);
       
-      // Create meeting data
+      // Create meeting data using the same format as MeetingsPage
       const meetingData = {
         name: name,
+        description: description || '',
         start_time: startDateTime.toISOString(),
         end_time: endDateTime.toISOString(),
-        group: this.currentGroup.id,
-        location: locationId
+        group: parseInt(this.currentGroup.id),
+        location: parseInt(locationId)
       };
       
-      // Submit the meeting
-      const authHeader = UserService.getAuthHeader();
-      const result = await ApiService.postData('meetings/', meetingData, authHeader);
+      // Use the same API method as MeetingsPage
+      const result = await UserService.makeAuthenticatedPostRequest('meetings/', meetingData);
       
       if (result) {
-        // Close modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleMeetingModal'));
-        modal.hide();
-        
-        // Clear form
+        // Clear form first
         document.getElementById('meeting-form').reset();
         
-        // Reload meetings section
+        // Close modal using the close button (like ModalUtility does)
+        const modal = document.getElementById('scheduleMeetingModal');
+        const closeBtn = modal.querySelector('[data-bs-dismiss="modal"]');
+        if (closeBtn) {
+          closeBtn.click();
+        }
+        
+        // Reload the page data
         await this.loadStudyGroup();
         
         alert('Meeting scheduled successfully!');
@@ -706,10 +673,13 @@ async refreshGroup() {
       
     } catch (error) {
       console.error('Error creating meeting:', error);
+      console.error('Error details:', error.message, error.stack);
       alert('Error scheduling meeting. Please try again.');
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     }
   }
 
@@ -727,7 +697,6 @@ async refreshGroup() {
     if (editForm) {
       editForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        console.log('Form submit event triggered');
         this.handleEditGroupSubmit(e);
       });
     }
@@ -801,7 +770,6 @@ async refreshGroup() {
       
     } catch (error) {
       console.error('Error showing edit group modal:', error);
-      alert(`Error loading group edit form: ${error.message}`);
     }
   }
 
@@ -838,7 +806,6 @@ async refreshGroup() {
 
   async handleEditGroupSubmit(e) {
     e.preventDefault();
-    console.log('Edit group form submitted');
     
     const submitBtn = document.getElementById('edit-group-submit-btn');
     const originalText = submitBtn.textContent || 'Save Changes';
@@ -888,7 +855,6 @@ async refreshGroup() {
               .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
               .trim('-'); // Remove leading/trailing hyphens
             
-            console.log('Redirecting to new group URL:', `/study-groups/${newSlug}`);
             // Redirect to the new URL
             window.location.href = `/study-groups/${newSlug}`;
           } else {
@@ -918,18 +884,14 @@ async refreshGroup() {
       errorDiv.classList.remove('d-none');
       errorDiv.classList.add('show');
       this.hideEditSuccessMessage();
-    } else {
-      alert(message);
     }
   }
 
   showEditModalSuccess(message) {
-    console.log('Success message:', message);
     const successDiv = document.getElementById('editModalSuccessMessage');
     const successText = document.getElementById('editSuccessText');
     
     if (successDiv && successText) {
-      console.log('Success elements found, showing message');
       successText.textContent = message;
       successDiv.classList.remove('d-none');
       successDiv.classList.add('show');

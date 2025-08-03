@@ -4,6 +4,7 @@ import DashboardPage from './DashboardPage.js';
 import StudyGroupsPage from './StudyGroupsPage.js';
 import StudyGroupDetailPage from './StudyGroupDetailPage.js';
 import MeetingsPage from './MeetingsPage.js';
+import MeetingDetailPage from './MeetingDetailPage.js';
 import ProfilePage from './ProfilePage.js';
 import AwardsPage from './AwardsPage.js';
 
@@ -51,6 +52,12 @@ class PageController {
       case 'meetings':
         this.currentPage = new MeetingsPage();
         this.currentPage.init();
+        break;
+      case 'meeting':
+        // Extract the meetings slug from the URL
+        const meetingSlug = this.extractSlugFromPath('meetings');
+        this.currentPage = new MeetingDetailPage();
+        this.currentPage.init(meetingSlug);
         break;
       case 'profile':
         this.currentPage = new ProfilePage();

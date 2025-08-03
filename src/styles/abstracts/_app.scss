@@ -9,9 +9,11 @@
     overflow-y: auto;
   }
   a {
-    color: var(--teal);
-    font-weight: 600;
-    font-size: .85rem;
+    &:not(.btn) {
+      color: var(--teal);
+      font-weight: 600;
+      font-size: .85rem;
+    }
   }
   .pointer {
     cursor: pointer;

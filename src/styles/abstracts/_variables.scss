@@ -24,6 +24,7 @@ $theme-colors: (
 :root {
   --teal: #{theme-color('teal')};
   --purple: #{theme-color('purple')};
+  --gator-accent: #{theme-color('gator-accent')};
 }
 
 $spacer: 1rem !default;

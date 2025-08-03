@@ -63,78 +63,11 @@
       </div>
     </div>
     
-    
-    <!-- Empty State Card -->
-    <div class="bg-white text-center p-5 rounded-4 w-xs-500p mx-auto mt-5 d-none" id="empty-state-card">
-      <span class="fa-solid fa-calendar-xmark fa-2x text-teal"></span>
-      <h2 class="mt-4">No Meetings Found</h2>
-      <p class="mt-4">You don't have any meetings scheduled yet. Create your first meeting to start collaborating with your study groups!</p>
-    </div>
-    
     <!-- Meeting Card Template -->
     <template id="meeting-card-template">
       <div class="col mt-5 meeting-card" data-meeting-id="" data-filter-status="">
-        <div class="bg-white p-4 rounded-4 h-100">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <div class="meeting-status-badge badge bg-info">Upcoming</div>
-            <div class="dropdown">
-              <span class="fa-solid fa-ellipsis-vertical dropdown-toggle pointer" data-bs-toggle="dropdown"></span>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item edit-meeting" href="#"><span class="fa-solid fa-edit me-2"></span>Edit</a></li>
-                <li><a class="dropdown-item cancel-meeting" href="#"><span class="fa-solid fa-times me-2"></span>Cancel</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <h3 class="h5 meeting-name mb-2">Meeting name</h3>
-          <p class="meeting-description text-muted small mb-3">Meeting description</p>
-          
-          <div class="meeting-details">
-            <div class="d-flex align-items-center mb-2">
-              <span class="fa-regular fa-fw fa-calendar text-teal me-2"></span>
-              <span class="meeting-date small">Aug 7, 2025</span>
-            </div>
-            <div class="d-flex align-items-center mb-2">
-              <span class="fa-regular fa-fw fa-clock text-teal me-2"></span>
-              <span class="meeting-time small">5:00pm</span>
-            </div>
-            <div class="d-flex align-items-center mb-2">
-              <span class="fa-solid fa-fw fa-map-marker-alt text-teal me-2"></span>
-              <span class="meeting-location small">Online</span>
-            </div>
-            <div class="d-flex align-items-center mb-3">
-              <span class="fa-solid fa-fw fa-users text-teal me-2"></span>
-              <span class="meeting-group small">Study Group</span>
-            </div>
-          </div>
-          
-          <!-- Don't worry about this for now. We need to implement functionality -->
-          <div class="d-flex gap-2 mt-auto">
-            <button class="btn btn-sm btn-gator-accent join-meeting flex-fill">
-              <span class="fa-solid fa-video me-2"></span>Join
-            </button>
-            <button class="btn btn-sm btn-outline-gator-accent share-meeting">
-              <span class="fa-solid fa-share me-2"></span>Share
-            </button>
-          </div>
-        </div>
       </div>
     </template>
-    
-    <!-- Quick Actions Sidebar -->
-    <div class="position-fixed bottom-0 end-0 p-3 z-1">
-      <div class="bg-white rounded-4 p-3 shadow">
-        <h6 class="mb-3">Quick Actions</h6>
-        <div class="d-grid gap-2">
-          <button class="btn btn-sm btn-gator-accent" data-bs-toggle="modal" data-bs-target="#scheduleMeetingModal">
-            <span class="fa-solid fa-plus me-2"></span>New Meeting
-          </button>
-          <button class="btn btn-sm btn-outline-gator-accent" id="join-next-meeting">
-            <span class="fa-solid fa-play me-2"></span>Join Next
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 

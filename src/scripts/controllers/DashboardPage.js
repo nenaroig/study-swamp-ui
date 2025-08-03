@@ -1,6 +1,6 @@
 import ApiService from '../api/ApiService.js';
 import UserService from '../api/UserService.js';
-import MeetingService from '../api/MeetingsService.js';
+import MeetingsService from '../api/MeetingsService.js';
 import StudyGroupsService from '../api/StudyGroupsService.js';
 import StatsService from '../api/StatsService.js';
 import PageController from './PageController.js';
@@ -47,7 +47,7 @@ class DashboardPage {
       
       // Load all data in parallel
       const [meetingsResponse, groupsResponse, membersResponse] = await Promise.all([
-        MeetingService.getUpcomingMeetings(),
+        MeetingsService.getUpcomingMeetings(),
         StudyGroupsService.getMyStudyGroups(),
         UserService.makeAuthenticatedRequest('members/')
       ]);
@@ -182,7 +182,7 @@ class DashboardPage {
       return meetingDate >= now;
     });
     
-    MeetingService.renderMeetings(upcomingMeetings.slice(0, 3), 'meetings-container', {
+    MeetingsService.renderMeetings(upcomingMeetings.slice(0, 3), 'meetings-container', {
       userGroups: this.groups
     });
     

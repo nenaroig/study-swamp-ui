@@ -75,6 +75,8 @@ class MeetingDetailPage {
       this.renderMeetingDetails();
       this.renderComments();
       this.setupCommentForm();
+      this.setupDeleteButton();
+      this.renderMeetingActions();
       
     } catch (error) {
       console.error('Failed to load meeting:', error);
@@ -243,6 +245,16 @@ class MeetingDetailPage {
     }
   }
 
+  setupDeleteButton() {
+    const deleteBtn = document.getElementById('delete-meeting-btn');
+    if (!deleteBtn) return;
+    
+    // Add event listener for delete
+    deleteBtn.addEventListener('click', () => {
+      this.handleDeleteMeeting(this.currentMeeting.id);
+    });
+  }
+
   setupCommentForm() {
     const commentForm = document.getElementById('comment-textarea');
     const postButton = document.getElementById('post-comment-btn');
@@ -351,6 +363,59 @@ class MeetingDetailPage {
       
     } catch (error) {
       console.error('Failed to refresh comments:', error);
+    }
+  }
+
+  async handleDeleteMeeting(meetingId) {
+    console.log('Delete meeting:', meetingId);
+    
+    if (!this.currentMeeting) {
+      console.error('Meeting not found');
+      return;
+    }
+
+    // Show confirmation dialog
+    const meetingName = this.currentMeeting.attributes?.name || 'this meeting';
+    const confirmed = confirm(`Are you sure you want to delete "${meetingName}"? This action cannot be undone.`);
+    
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      // Delete the meeting via API
+      const authHeader = UserService.getAuthHeader();
+      if (!authHeader) {
+        throw new Error('No authentication available');
+      }
+
+      await ApiService.deleteData(`meetings/${meetingId}/`, authHeader);
+      
+      // Navigate back to meetings page after successful deletion
+      alert('Meeting deleted successfully!');
+      PageController.navigateTo('meetings');
+      
+    } catch (error) {
+      console.error('Error deleting meeting:', error);
+      alert('Failed to delete meeting. Please try again.');
+    }
+  }
+
+  // Add this method to show/hide admin-only delete buttons
+  renderMeetingActions() {
+    const deleteBtn = document.getElementById('delete-meeting-btn');
+    if (!deleteBtn) return;
+    
+    // Check if current user is admin
+    const isAdmin = this.currentUser?.userData?.attributes?.is_superuser || 
+                    this.currentUser?.username?.includes('admin');
+    
+    if (isAdmin) {
+      // Show delete button for admin users
+      deleteBtn.style.display = 'inline-flex';
+    } else {
+      // Hide delete button for non-admin users
+      deleteBtn.style.display = 'none';
     }
   }
 }

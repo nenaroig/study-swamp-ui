@@ -53,16 +53,6 @@ class MeetingsService extends BaseService {
 
     const meetingDate = new Date(meeting.attributes?.start_time || meeting.attributes?.date);
 
-    console.log('Meeting status check:', {
-      meetingName: meeting.attributes?.name,
-      meetingDate: meetingDate,
-      now: now,
-      today: today,
-      isPast: meetingDate < now,
-      isToday: meetingDate >= today && meetingDate < tomorrow,
-      isUpcoming: meetingDate >= now
-    });
-
     if (meetingDate < now) {
       return {
         text: 'Past',
@@ -118,8 +108,6 @@ class MeetingsService extends BaseService {
 
   // Populates meeting data in template (legacy method)
   static populateCardData(clone, data) {
-    console.log('MeetingsService.populateCardData called with:', data);
-
     if (data && data.status) {
       const statusBadge = clone.querySelector('.meeting-status-badge');
       if (statusBadge) {

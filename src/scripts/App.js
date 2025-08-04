@@ -45,8 +45,6 @@ class App {
     if (process.env.NODE_ENV === 'development') {
       this.hmrManager = new HMRManager(this.router);
     }
-    
-    console.log('✅ Study Swamp App Initialized');
   }
   
   setupGlobalListeners() {

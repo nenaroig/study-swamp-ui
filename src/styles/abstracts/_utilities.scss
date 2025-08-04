@@ -7,7 +7,7 @@
   # Iterate for what you need.
 ============================================ */
 $sizes: () !default;
-@for $i from 1 through 2000 {
+@for $i from 1 through 1200 {
   @if $i <= 100 {
     @if $i%5 == 0 {
       $holdingArrayPercent: (

@@ -131,8 +131,6 @@ class UserService {
       if (storedUsername && storedPassword) {
         this.setCredentials(storedUsername, storedPassword);
         return true;
-      } else {
-        console.log('🔴 No stored credentials found');
       }
     }
 

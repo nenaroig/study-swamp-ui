@@ -1,7 +1,7 @@
 /**
-* AppRouter - Client-side router for single-page application
-* Handles navigation between pages without full page reloads
-*/
+ * AppRouter - Client-side SPA router
+ * Handles navigation between pages without full page reloads
+ */
 
 import loginContent from '../../templates/login.html';
 import navigationContent from '../../templates/navigation.html';
@@ -18,7 +18,7 @@ import UserService from '../api/UserService';
 
 class AppRouter {
   constructor() {
-    // Map page names to their HTML content
+    // Page identifier to HTML template mapping
     this.contentMap = {
       'login': loginContent,
       'signup': signUpContent,
@@ -32,10 +32,10 @@ class AppRouter {
       'profile': profileContent,
     };
     
-    // Pages that need navigation sidebar
+    // Pages that display the navigation sidebar
     this.pagesWithNav = ['dashboard', 'study-groups', 'group', 'meetings', 'meeting', 'awards', 'profile'];
     
-    // Page titles for browser tab
+    // Browser tab titles for each page
     this.titles = {
       'login': 'Study Swamp - Login',
       'signup': 'Study Swamp - Sign Up',
@@ -52,7 +52,7 @@ class AppRouter {
     this.navigationContent = navigationContent;
   }
   
-  // Extract page name from current URL
+  // Extract page identifier from current URL path
   getCurrentPage() {
     const path = window.location.pathname;
     const segments = path.split('/').filter(Boolean);

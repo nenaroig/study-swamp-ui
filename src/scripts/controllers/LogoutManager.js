@@ -14,7 +14,6 @@ class LogoutManager {
     // This works regardless of when the button is added to the DOM
     document.addEventListener('click', (e) => {
       if (e.target.closest('.logout-btn')) {
-        console.log('Logout button clicked:', e.target);
         e.preventDefault();
         this.performLogout();
       }

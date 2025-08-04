@@ -30,12 +30,8 @@ class MeetingDetailService extends BaseService {
   // Fetches a specific meeting by slug
   static async getMeetingBySlug(slug) {
     try {
-      console.log('Fetching meetings for slug:', slug);
       const response = await this.fetchMeetings();
-      console.log('All meetings response:', response);
-      
       const allMeetings = response.data || [];
-      console.log('All meetings:', allMeetings);
       
       // Find meeting by matching slug
       const meeting = allMeetings.find(meeting => {

@@ -3,14 +3,13 @@
 import ApiService from './ApiService.js';
 import UserService from './UserService.js';
 import BaseService from './BaseService.js';
-import PageController from '../controllers/PageController.js';
 import { createGroupUrl } from '../controllers/StudyGroupDetailPage.js';
 
 class StudyGroupsService extends BaseService {
   
   /* ======= GETTERS ======= */
   
-  // Fetches all study groups that the current user is a member of
+  // Fetches all study groups for the current user
   static async getMyStudyGroups() {
     try {
       const authHeader = UserService.getAuthHeader();
@@ -122,7 +121,7 @@ class StudyGroupsService extends BaseService {
     return colDiv;
   }
   
-  // Smart render function that detects context and renders appropriately
+  // Renders study groups with automatic layout detection based on container
   static renderStudyGroups(groups, containerId = 'study-groups-container', membersData = [], onJoinClick = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -240,8 +239,7 @@ class StudyGroupsService extends BaseService {
   
   /* ======= DISPLAY/RENDERING ======= */
   
-  // Formats study group description for display
-  // Combines department and class number information into a readable format
+  // Formats group description from department and class number
   static formatGroupDescription(group) {
     const department = group.attributes?.department,
     classNumber = group.attributes?.class_number;
@@ -257,6 +255,7 @@ class StudyGroupsService extends BaseService {
     return 'Study Group';
   }
   
+  // Populate member avatars
   static async populateMemberAvatars(container, members) {
     // Clear existing avatars
     container.innerHTML = '';
@@ -309,14 +308,7 @@ class StudyGroupsService extends BaseService {
   
   /* ======= ACTION HANDLERS ======= */
   
-  /**
-  * Handles user interactions with study group cards (e.g., action button clicks)
-  * Currently logs the action - should be implemented with actual functionality
-  * 
-  * @todo Implement actual group actions such as:
-  *   - Joining/leaving group
-  *   - Accessing group resources
-  */
+  // Navigates to group detail page when group card is clicked
   static handleGroupAction(group) {
     const groupName = group.attributes?.name || 'Untitled Group';
     
@@ -331,14 +323,11 @@ class StudyGroupsService extends BaseService {
     try {
       const authHeader = UserService.getAuthHeader();
       const currentUser = UserService.getCurrentUser();
-      console.log('Creating group with user:', currentUser);
       
       let currentUserId = currentUser?.userData?.id;
       if (!currentUserId && currentUser?.userData?.data) {
         currentUserId = currentUser.userData.data.id;
       }
-      
-      console.log('Current user ID for group creation:', currentUserId);
       
       const payload = {
         name: groupData.name,
@@ -346,105 +335,74 @@ class StudyGroupsService extends BaseService {
         class_number: parseInt(groupData.courseNumber, 10) || 0
       };
       
-      console.log('Creating group with payload:', payload);
       const groupResponse = await ApiService.postData('groups/', payload, authHeader);
-      console.log('Group creation response:', groupResponse);
       
       if (groupResponse && groupResponse.data && groupResponse.data.id) {
         const groupId = groupResponse.data.id;
         
         // Check existing memberships
-        console.log('Checking existing memberships for group:', groupId);
         const membersResponse = await ApiService.getData('members/', authHeader);
         const existingMembership = membersResponse.data?.find(member => 
           member.relationships?.user?.data?.id == currentUserId && 
           member.relationships?.group?.data?.id == groupId
         );
         
-if (existingMembership) {
-  console.log('User is already a member of this group:', existingMembership);
-  console.log('Current member attributes:', existingMembership.attributes);
-  
-  if (!existingMembership.attributes?.creator) {
-    console.log('Updating existing member to creator status...');
-    
-    // Use JSON:API format that matches your API structure
-    const updateData = {
-      data: {
-        type: "Member",
-        id: existingMembership.id,
-        attributes: {
-          creator: true,
-          editor: true
-        },
-        relationships: {
-          user: {
-            data: {
-              type: "User",
-              id: currentUserId.toString()
-            }
-          },
-          group: {
-            data: {
-              type: "Group", 
-              id: groupId.toString()
+        if (existingMembership) {
+          
+          if (!existingMembership.attributes?.creator) {
+            
+            const updateData = {
+              data: {
+                type: "Member",
+                id: existingMembership.id,
+                attributes: {
+                  creator: true,
+                  editor: true
+                },
+                relationships: {
+                  user: {
+                    data: {
+                      type: "User",
+                      id: currentUserId.toString()
+                    }
+                  },
+                  group: {
+                    data: {
+                      type: "Group", 
+                      id: groupId.toString()
+                    }
+                  }
+                }
+              }
+            };
+            
+            try {
+              const memberId = existingMembership.id;
+              const updateResponse = await ApiService.patchData(`members/${memberId}/`, updateData, authHeader);
+              
+              if (updateResponse && updateResponse.data) {
+                const verifyResponse = await ApiService.getData(`members/${memberId}/`, authHeader);
+              }
+              
+            } catch (updateError) {
+              console.error('PATCH request failed:', updateError);
+              
+              // If PATCH fails, use PUT format as fallback
+              const simpleUpdateData = {
+                creator: true,
+                editor: true,
+                user: parseInt(currentUserId, 10),
+                group: parseInt(groupId, 10)
+              };
+              
+              try {
+                const putResponse = await ApiService.putData(`members/${memberId}/`, simpleUpdateData, authHeader);
+              } catch (putError) {
+                console.error('PUT fallback request failed:', putError);
+              }
             }
           }
         }
-      }
-    };
-    
-    try {
-      const memberId = existingMembership.id;
-      console.log('BEFORE UPDATE - Current attributes:', existingMembership.attributes);
-      console.log('Updating member with JSON:API format:', updateData);
-      
-      const updateResponse = await ApiService.patchData(`members/${memberId}/`, updateData, authHeader);
-      console.log('PATCH response:', updateResponse);
-      
-      if (updateResponse && updateResponse.data) {
-        console.log('✅ Member updated successfully:', {
-          memberId: updateResponse.data.id,
-          creator: updateResponse.data.attributes?.creator,
-          editor: updateResponse.data.attributes?.editor
-        });
-        
-        // Verify the update worked
-        console.log('Fetching member again to verify...');
-        const verifyResponse = await ApiService.getData(`members/${memberId}/`, authHeader);
-        console.log('Verification - member attributes:', verifyResponse.data?.attributes);
-      }
-      
-    } catch (updateError) {
-      console.error('❌ PATCH failed:', updateError);
-      
-      // If PATCH fails, try the simpler PUT format as fallback
-      console.log('Trying PUT with simple format as fallback...');
-      const simpleUpdateData = {
-        creator: true,
-        editor: true,
-        user: parseInt(currentUserId, 10),
-        group: parseInt(groupId, 10)
-      };
-      console.log('User creating group:', {
-  username: currentUser?.username,
-  userId: currentUserId,
-  isAdmin: currentUser?.userData?.attributes?.is_superuser,
-  userAttributes: currentUser?.userData?.attributes
-});
-      
-      try {
-        console.log('PUT fallback data:', simpleUpdateData);
-        const putResponse = await ApiService.putData(`members/${memberId}/`, simpleUpdateData, authHeader);
-        console.log('PUT fallback response:', putResponse);
-      } catch (putError) {
-        console.error('❌ PUT fallback also failed:', putError);
-      }
-    }
-  } else {
-    console.log('Member already has creator status');
-  }
-}
       } else {
         throw new Error('Group creation failed - no response data');
       }

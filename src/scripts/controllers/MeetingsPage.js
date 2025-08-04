@@ -44,10 +44,8 @@ class MeetingsPage {
       const checkTemplate = () => {
         const template = document.getElementById('meeting-card-template');
         if (template && template.tagName === 'TEMPLATE' && template.content) {
-          console.log('Meeting card template found and ready');
           resolve();
         } else {
-          console.log('Waiting for meeting card template...');
           setTimeout(checkTemplate, 100);
         }
       };
@@ -83,8 +81,6 @@ class MeetingsPage {
       // Filter meetings for current user
       this.filterMeetingsForCurrentUser();
 
-      console.log(`Loaded ${this.meetings.length} meetings for user ${currentUserId}`);
-      
       this.renderMeetingsPage();
 
     } catch (error) {
@@ -216,7 +212,6 @@ class MeetingsPage {
     const scheduleButtons = document.querySelectorAll('[data-bs-target="#scheduleMeetingModal"]');
     scheduleButtons.forEach(button => {
       button.addEventListener('click', () => {
-        console.log('Schedule New Meeting button clicked - clearing editing state');
         // Clear any existing editing meeting ID immediately
         delete modal.dataset.editingMeetingId;
         // Pre-clear the form immediately
@@ -226,11 +221,9 @@ class MeetingsPage {
     
     // Populate study groups dropdown when modal opens
     modal.addEventListener('show.bs.modal', () => {
-      console.log('Modal opening, editingMeetingId:', modal.dataset.editingMeetingId);
       
       // If no editing meeting ID is set, this is a "create new" operation
       if (!modal.dataset.editingMeetingId) {
-        console.log('Create mode detected - clearing form first');
         this.resetModalToCreateMode();
       }
       
@@ -336,17 +329,6 @@ class MeetingsPage {
       const groupEl = document.getElementById('meeting-group');
       const descriptionEl = document.getElementById('meeting-description');
       
-      // Debug: Log which elements are found/missing
-      console.log('Form elements check:', {
-        'meeting-name': nameEl ? 'found' : 'MISSING',
-        'meeting-date': dateEl ? 'found' : 'MISSING',
-        'meeting-start-time': startTimeEl ? 'found' : 'MISSING',
-        'meeting-duration': durationEl ? 'found' : 'MISSING',
-        'meeting-location': locationEl ? 'found' : 'MISSING',
-        'meeting-group': groupEl ? 'found' : 'MISSING',
-        'meeting-description': descriptionEl ? 'found' : 'MISSING'
-      });
-      
       // Check for missing required elements
       if (!nameEl || !dateEl || !startTimeEl || !durationEl || !locationEl || !groupEl) {
         console.error('Missing form elements. Modal may not be properly loaded.');
@@ -372,14 +354,10 @@ class MeetingsPage {
       }
       
       // Create or update meeting via API
-      console.log(isEditMode ? 'Updating meeting with data:' : 'Creating meeting with data:', meetingData);
-      
       const result = isEditMode 
         ? await this.updateMeeting(editingMeetingId, meetingData)
         : await this.createMeeting(meetingData);
         
-      console.log(isEditMode ? 'Update meeting result:' : 'Create meeting result:', result);
-      
       if (result.success) {
         const successMessage = isEditMode ? 'Meeting updated successfully!' : 'Meeting scheduled successfully!';
         this.showModalSuccess(successMessage);
@@ -398,7 +376,6 @@ class MeetingsPage {
         }
         
         // Refresh meetings data immediately
-        console.log('Meeting saved successfully, refreshing page data...');
         await this.loadMeetingsData();
       } else {
         this.showModalError(result.error || 'Failed to schedule meeting. Please try again.');
@@ -422,9 +399,6 @@ class MeetingsPage {
       const startDateTime = new Date(`${meetingData.date}T${meetingData.startTime}`);
       const endDateTime = new Date(startDateTime.getTime() + (meetingData.duration * 60 * 60 * 1000));
       
-      console.log('Start time:', startDateTime.toISOString());
-      console.log('End time:', endDateTime.toISOString());
-      
       // Prepare API payload (using flat format like StudyGroupDetailPage)
       const payload = {
         name: meetingData.name,
@@ -435,12 +409,8 @@ class MeetingsPage {
         location: parseInt(meetingData.location)
       };
       
-      console.log('API payload:', JSON.stringify(payload, null, 2));
-      
       // Make API request
       const response = await UserService.makeAuthenticatedPostRequest('meetings/', payload);
-      console.log('API response:', response);
-      
       return { success: true, data: response };
       
     } catch (error) {
@@ -461,9 +431,6 @@ class MeetingsPage {
       const startDateTime = new Date(`${meetingData.date}T${meetingData.startTime}`);
       const endDateTime = new Date(startDateTime.getTime() + (meetingData.duration * 60 * 60 * 1000));
       
-      console.log('Update - Start time:', startDateTime.toISOString());
-      console.log('Update - End time:', endDateTime.toISOString());
-      
       // Prepare API payload (same format as create)
       const payload = {
         name: meetingData.name,
@@ -474,11 +441,8 @@ class MeetingsPage {
         location: parseInt(meetingData.location)
       };
       
-      console.log('Update API payload:', JSON.stringify(payload, null, 2));
-      
       // Make API PUT request
       const response = await ApiService.putData(`meetings/${meetingId}/`, payload, authHeader);
-      console.log('Update API response:', response);
       
       return { success: true, data: response };
       
@@ -490,7 +454,6 @@ class MeetingsPage {
 
   // Reset modal back to create mode
   resetModalToCreateMode() {
-    console.log('Resetting modal to create mode');
     
     // Reset modal title
     const modalTitle = document.querySelector('#scheduleMeetingModal .modal-title');
@@ -518,7 +481,6 @@ class MeetingsPage {
     
     // Use setTimeout to ensure DOM is ready and force clear specific problematic fields
     setTimeout(() => {
-      console.log('Force clearing persistent fields...');
       
       // Manually clear all fields to ensure they're empty
       const fields = [
@@ -534,8 +496,6 @@ class MeetingsPage {
       fields.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) {
-          console.log(`Clearing ${fieldId}, current value: "${field.value}"`);
-          
           if (field.type === 'select-one') {
             field.selectedIndex = 0; // Reset to first option
           } else {
@@ -549,13 +509,9 @@ class MeetingsPage {
           // Trigger events to ensure any framework updates
           field.dispatchEvent(new Event('input', { bubbles: true }));
           field.dispatchEvent(new Event('change', { bubbles: true }));
-          
-          console.log(`After clearing ${fieldId}, value: "${field.value}"`);
         }
       });
     }, 50); // Small delay to ensure DOM operations complete
-    
-    console.log('Modal reset complete');
   }
 
   // Apply current filters and sort, then render meetings
@@ -621,11 +577,9 @@ class MeetingsPage {
   
   // Refresh all meetings data and UI
   async refreshMeetings() {
-    console.log('RefreshMeetings called - reloading data...');
     this.meetings = [];
     this.allMeetings = [];
     await this.loadMeetingsData();
-    console.log('RefreshMeetings completed');
   }
   
   // Handle data loading errors
@@ -684,8 +638,6 @@ class MeetingsPage {
 
   // Handle editing a meeting
   async handleEditMeeting(meetingId) {
-    console.log('Edit meeting:', meetingId);
-    
     // Find the meeting data
     const meeting = this.allMeetings.find(m => m.id === meetingId);
     if (!meeting) {
@@ -711,7 +663,6 @@ class MeetingsPage {
     modal.dataset.editingMeetingId = meetingId;
     
     // Populate dropdowns first, then populate form with existing meeting data
-    console.log('Populating dropdowns for edit. Groups:', this.groups.length, 'Locations:', this.locations.length);
     this.populateGroupsDropdown();
     this.populateLocationsDropdown();
     
@@ -721,14 +672,12 @@ class MeetingsPage {
     
     // Wait for modal to be fully shown, then populate form
     modal.addEventListener('shown.bs.modal', () => {
-      console.log('Modal fully shown, now populating form...');
       this.populateEditForm(meeting);
     }, { once: true }); // Use once: true so the listener is removed after firing
   }
 
   // Handle canceling/deleting a meeting
   async handleCancelMeeting(meetingId) {
-    console.log('Cancel meeting:', meetingId);
     
     // Find the meeting data
     const meeting = this.allMeetings.find(m => m.id === meetingId);
@@ -758,7 +707,6 @@ class MeetingsPage {
       await this.loadMeetingsData();
       
       // Show success message (you could add a toast notification here)
-      console.log('Meeting cancelled successfully');
       alert('Meeting cancelled successfully!');
       
     } catch (error) {
@@ -769,44 +717,31 @@ class MeetingsPage {
 
   // Populate the edit form with existing meeting data
   populateEditForm(meeting) {
-    console.log('Full meeting object structure:', JSON.stringify(meeting, null, 2));
     
     const attrs = meeting.attributes;
     if (!attrs) {
-      console.log('No attributes found in meeting object');
       return;
     }
 
-    console.log('Populating edit form with meeting data:', meeting);
-    console.log('Meeting attributes:', attrs);
 
     // Set form values
     document.getElementById('meeting-name').value = attrs.name || '';
     
     // Debug description field specifically - check multiple possible locations
     const descriptionField = document.getElementById('meeting-description');
-    console.log('Description field element:', descriptionField);
     
     // Try multiple possible locations for description
     let descriptionValue = '';
     if (attrs.description !== undefined) {
       descriptionValue = attrs.description;
-      console.log('Found description in attrs.description:', descriptionValue);
     } else if (meeting.description !== undefined) {
       descriptionValue = meeting.description;
-      console.log('Found description in meeting.description:', descriptionValue);
     } else if (attrs.text !== undefined) {
       descriptionValue = attrs.text;
-      console.log('Found description in attrs.text:', descriptionValue);
-    } else {
-      console.log('No description found in any expected location');
-      console.log('Available attrs keys:', Object.keys(attrs));
-      console.log('Available meeting keys:', Object.keys(meeting));
     }
     
     if (descriptionField) {
       descriptionField.value = descriptionValue || '';
-      console.log('Set description field value to:', descriptionField.value);
     } else {
       console.error('Description field not found!');
     }
@@ -838,16 +773,11 @@ class MeetingsPage {
       // Try different possible locations for group ID
       if (meeting.relationships?.group?.data?.id) {
         groupId = meeting.relationships.group.data.id;
-        console.log('Found group ID in relationships:', groupId);
       } else if (attrs.group) {
         groupId = attrs.group;
-        console.log('Found group ID in attrs.group:', groupId);
       } else if (attrs.group_id) {
         groupId = attrs.group_id;
-        console.log('Found group ID in attrs.group_id:', groupId);
       }
-      
-      console.log('Available group options:', Array.from(groupDropdown.options).map(opt => `${opt.value}: ${opt.text}`));
       
       if (groupId) {
         // Try multiple methods to set the dropdown value
@@ -858,10 +788,6 @@ class MeetingsPage {
         if (optionIndex >= 0) {
           groupDropdown.selectedIndex = optionIndex;
         }
-        
-        console.log('Set group dropdown to:', groupId, 'Selected value:', groupDropdown.value, 'Selected index:', groupDropdown.selectedIndex);
-      } else {
-        console.log('No group ID found in meeting data');
       }
     }
     
@@ -873,16 +799,11 @@ class MeetingsPage {
       // Try different possible locations for location ID
       if (meeting.relationships?.location?.data?.id) {
         locationId = meeting.relationships.location.data.id;
-        console.log('Found location ID in relationships:', locationId);
       } else if (attrs.location) {
         locationId = attrs.location;
-        console.log('Found location ID in attrs.location:', locationId);
       } else if (attrs.location_id) {
         locationId = attrs.location_id;
-        console.log('Found location ID in attrs.location_id:', locationId);
       }
-      
-      console.log('Available location options:', Array.from(locationDropdown.options).map(opt => `${opt.value}: ${opt.text}`));
       
       if (locationId) {
         // Try multiple methods to set the dropdown value
@@ -893,10 +814,6 @@ class MeetingsPage {
         if (optionIndex >= 0) {
           locationDropdown.selectedIndex = optionIndex;
         }
-        
-        console.log('Set location dropdown to:', locationId, 'Selected value:', locationDropdown.value, 'Selected index:', locationDropdown.selectedIndex);
-      } else {
-        console.log('No location ID found in meeting data');
       }
     }
   }

@@ -50,14 +50,9 @@ class MeetingDetailPage {
 
       // Fetch the specific meeting by slug
       const meetingResponse = await MeetingDetailService.getMeetingBySlug(meetingSlug);
-      console.log('Meeting response:', meetingResponse);
       
       // Try different ways to access the meeting data
       this.currentMeeting = meetingResponse.meetingData || {};
-
-      console.log('Current meeting after assignment:', this.currentMeeting);
-      console.log('Meeting ID:', this.currentMeeting?.id);
-      console.log('Meeting attributes:', this.currentMeeting?.attributes);
       
       if (!this.currentMeeting || !this.currentMeeting.id) {
         console.error('Meeting data structure:', JSON.stringify(meetingResponse, null, 2));
@@ -75,15 +70,11 @@ class MeetingDetailPage {
       
       // Filter data for this specific meeting
       const meetingId = this.currentMeeting.id?.toString();
-      console.log('Filtering comments for meeting ID:', meetingId);
       
       this.meetingComments = commentsResponse.data?.filter(comment => {
         const commentMeetingId = comment.relationships?.meeting?.data?.id?.toString();
-        console.log('Comparing:', commentMeetingId, 'with', meetingId);
         return commentMeetingId === meetingId;
       }) || [];
-      
-      console.log('Found comments:', this.meetingComments.length);
       
       this.allGroups = groupsResponse.data || [];
       this.allUsers = usersResponse.data || [];
@@ -389,8 +380,6 @@ class MeetingDetailPage {
   }
 
   async handleDeleteMeeting(meetingId) {
-    console.log('Delete meeting:', meetingId);
-    
     if (!this.currentMeeting) {
       console.error('Meeting not found');
       return;
@@ -425,24 +414,15 @@ class MeetingDetailPage {
 
   // Add this method to show/hide admin-only delete buttons
   renderMeetingActions() {
-    console.log('Rendering meeting actions...');
-    console.log('Document body HTML preview:', document.body.innerHTML.substring(0, 500));
-    
     // Try to find the button with different methods
     const deleteBtn = document.getElementById('delete-meeting-btn');
     const deleteBtnQuery = document.querySelector('#delete-meeting-btn');
     const deleteBtnClass = document.querySelector('.btn.btn-sm.btn-gator-accent');
     
-    console.log('Delete button by ID:', !!deleteBtn);
-    console.log('Delete button by querySelector:', !!deleteBtnQuery);
-    console.log('Any button with similar class:', !!deleteBtnClass);
-    
     // Check if the meeting-title element exists (to confirm template loaded)
     const titleElement = document.getElementById('meeting-title');
-    console.log('Meeting title element exists:', !!titleElement);
     
     if (!deleteBtn) {
-      console.log('Button not found. Available elements with IDs:');
       const elementsWithIds = document.querySelectorAll('[id]');
       elementsWithIds.forEach(el => console.log('- ID:', el.id));
       return;
@@ -452,15 +432,10 @@ class MeetingDetailPage {
     const isAdmin = this.currentUser?.userData?.attributes?.is_superuser || 
                     this.currentUser?.username?.includes('admin');
     
-    console.log('Current user:', this.currentUser);
-    console.log('Is admin:', isAdmin);
-    
     if (isAdmin) {
       deleteBtn.style.display = 'inline-flex';
-      console.log('Showing delete button for admin');
     } else {
       deleteBtn.style.display = 'none';
-      console.log('Hiding delete button for non-admin');
     }
   }
 }
